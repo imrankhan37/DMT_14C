@@ -16,13 +16,21 @@
         </div>
     </div>
 
-    <div>
-        <form onsubmit="saveProfileName()" id="profileForm">
-            <p class="text-xl font-bold ml-6 mt-4 mb-3">Name your profile:</p> 
-            <input type="text" id="profileName" name="name" class="ml-4 mb-4 border-2 p-3" size="100"><br>
-        </form>
-    </div>    
-
+    <div class="bg-white rounded p-3 ml-4 mr-4 mb-4">
+        <div class="flex justify-between items-center">
+            <form onsubmit="saveProfileName()" id="profileForm">
+                <p class="text-xl font-bold mt-4 mb-3">Name your profile:</p> 
+                <input type="text" id="profileName" name="name" class="ml-4 mb-4 border-2 p-3" size="100">
+            </form>
+            <div class="text-left ml-4"> <!-- Changed from text-center to text-left -->
+                <input type="submit" value="Submit values" class="bg-green-500 hover:bg-green-600 text-xl font-bold rounded p-3 mt-5">
+            </div>
+        </div>
+    </div>
+    </div>
+    
+    
+    
     <script>
         function saveProfileName(event) {
             event.preventDefault(); // Prevent form submission
@@ -50,85 +58,132 @@
         }
     </script>
     
+    
 
     <form action="{{url_for('motor_input_parameters')}}" method="post">
         
         <div class="bg-white rounded p-3 ml-4 mr-4 mb-4">
-            <p class="text-slate-500 ml-1 mb-3">Fan Motor</p>
+            <h2 class="text-slate-500 ml-1 mb-3">Fan Motor</h2>
             <div class="grid grid-cols-2 gap-4">   
                 <div class="text-center">
-                    <p class="text-xl font-bold mb-3">Duty cycle [%]</p>
+                    <div>
+                        <label class="text-xl font-bold mb-3" for="duty_cycle">Duty cycle [%]</label>
+                    </div>
                     {% if error_duty_cycle and error_duty_cycle.field == 'duty_cycle' %}
                         <p class="error-message text-red-600 mb-2">{{ error_duty_cycle.message }}</p>
                     {% endif %} 
-                    <input type="number" id="duty_cycle" name="duty_cycle" class="text-center bg-slate-100 border-2 rounded p-3 mb-3" style="width: 15em" value="0.5"><br>      
+                    <div>
+                        <input type="number" id="duty_cycle" name="duty_cycle" class="text-center bg-slate-100 border-2 rounded p-3 mb-3" style="width: 15em" value="0.5">
+                    </div>     
                 </div>
                 <div class="text-center">
-                    <p class="text-xl font-bold mb-3">Current [A]</p>    
+                    <div>
+                        <label class="text-xl font-bold mb-3" for="current">Current [A]</label>
+                    </div>
                     {% if error_current and error_current.field == 'current' %}
                         <p class="error-message text-red-600 mb-2">{{ error_current.message }}</p>
                     {% endif %}              
-                    <input type="number" id="current" name="current" class="col-span-2 text-center bg-slate-100 border-2 rounded p-3 mb-3" style="width: 15em" value="2"><br>          
+                    <div>
+                        <input type="number" id="current" name="current" class="text-center bg-slate-100 border-2 rounded p-3 mb-3" style="width: 15em" value="2">
+                    </div>         
                 </div>
+            </div>
+        
+            <div class="grid grid-cols-3 gap-4 mt-4">
+                <div class="text-center">
+                    <div>
+                        <label class="text-xl font-bold mb-3" for="speed">Input speed [rpm]</label>
+                    </div>
+                    {% if error_speed and error_speed.field == 'speed' %}
+                        <p class="error-message text-red-600 mb-2">{{ error_speed.message }}</p>
+                    {% endif %}  
+                    <div>
+                        <input type="number" id="speed" name="speed" class="text-center bg-slate-100 border-2 rounded p-3 mb-2" style="width: 15em" value="50">
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div>
+                        <label class="text-xl font-bold mb-3" for="ramp_down_speed">Final speed (ramp down) [rpm]</label>
+                    </div>
+                    {% if error_ramp_down_speed and error_ramp_down_speed.field == 'ramp_down_speed' %}
+                        <p class="error-message text-red-600 mb-2">{{ error_ramp_down_speed.message }}</p>
+                    {% endif %} 
+                    <div>
+                        <input type="number" id="ramp_down_speed" name="ramp_down_speed" class="text-center bg-slate-100 border-2 rounded p-3 mb-2" style="width: 15em" value="0">
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div>
+                        <label class="text-xl font-bold mb-3" for="ramp_up_speed">Final speed (ramp up) [rpm]</label>
+                    </div>
+                    {% if error_ramp_up_speed and error_ramp_up_speed.field == 'ramp_up_speed' %}
+                        <p class="error-message text-red-600 mb-2">{{ error_ramp_up_speed.message }}</p>
+                    {% endif %}  
+                    <div>
+                        <input type="number" id="ramp_up_speed" name="ramp_up_speed" class="text-center bg-slate-100 border-2 rounded p-3 mb-2" style="width: 15em" value="50">
+                    </div>
+                </div>
+            </div>
+        </div>
+            
+
+
             </div>
 
                 </div>
-                <div class="grid grid-cols-3 gap-4 mt-4">
-                    <div class="text-center">
-                        <p class="text-xl font-bold mb-3">Input speed [rpm]</p>
-                        {% if error_speed and error_speed.field == 'speed' %}
-                            <p class="error-message text-red-600 mb-2">{{ error_speed.message }}</p>
-                        {% endif %}  
-                        <input type="number" id="speed" name="speed" class="col-span-2 text-center bg-slate-100 border-2 rounded p-3 mb-2" style="width: 15em"><br>
-                    </div>
-                    <div class="text-center">
-                        <p class="text-xl font-bold mb-3">Final speed (ramp down) [rpm]</p>
-                        {% if error_ramp_down_speed and error_ramp_down_speed.field == 'ramp_down_speed' %}
-                            <p class="error-message text-red-600 mb-2">{{ error_ramp_down_speed.message }}</p>
-                        {% endif %} 
-                        <input type="number" id="ramp_down_speed" name="ramp_down_speed" class="col-span-2 text-center bg-slate-100 border-2 rounded p-3 mb-2" style="width: 15em"><br>
-                    </div>
-                    <div class="text-center">
-                        <p class="text-xl font-bold mb-3">Final speed (ramp up) [rpm]</p>
-                        {% if error_ramp_up_speed and error_ramp_up_speed.field == 'ramp_up_speed' %}
-                            <p class="error-message text-red-600 mb-2">{{ error_ramp_up_speed.message }}</p>
-                        {% endif %}  
-                        <input type="number" id="ramp_up_speed" name="ramp_up_speed" class="col-span-2 text-center bg-slate-100 border-2 rounded p-3 mb-2" style="width: 15em"><br>
-                    </div>
-                </div>
+                
             
-                <p class="text-slate-500 ml-1 mt-10 mb-3">Linear Actuator & Rotary Motor</p>
-                <div class="grid grid-cols-3 gap-4 mt-4">
-                    <div class="text-center">
-                        <p class="text-xl font-bold mb-5">Linear actuator position [mm]</p>
-                        {% if error_linear_actuator and error_linear_actuator.field == 'linear_actuator' %}
-                        <p class="error-message text-red-600 mb-2">{{ error_linear_actuator.message }}</p>
-                        {% endif %} 
-                        <input type="number" id="linear_actuator" name="linear_actuator" class="text-center bg-slate-100 border-2 rounded p-3 mb-2" style="width: 15em"><br>      
+                <div class="flex gap-4 mt-4 ml-4 mr-4">
+                    <div class="bg-white rounded p-3 flex-1 w-1/2">
+                        <h2 class="text-slate-500 ml-1 mt-10 mb-3">Linear Actuator & Rotary Motor</h2>
+                        <div class="grid grid-cols-2 gap-4 mt-4">
+                            <div class="text-center">
+                                <div>
+                                    <label class="text-xl font-bold mb-3" for="linear_actuator">Linear actuator position [mm]</label>
+                                </div>
+                                {% if error_linear_actuator and error_linear_actuator.field == 'linear_actuator' %}
+                                    <p class="error-message text-red-600 mb-2">{{ error_linear_actuator.message }}</p>
+                                {% endif %} 
+                                <div>
+                                    <input type="number" id="linear_actuator" name="linear_actuator" class="text-center bg-slate-100 border-2 rounded p-3 mb-2" style="width: 15em" value="100">
+                                </div>      
+                            </div>
+                            <div class="text-center">
+                                <div>
+                                    <label class="text-xl font-bold mb-3" for="rotary_motor">Rotary motor position [°]</label>
+                                </div>
+                                {% if error_rotary_motor and error_rotary_motor.field == 'rotary_motor' %}
+                                    <p class="error-message text-red-600 mb-2">{{ error_rotary_motor.message }}</p>
+                                {% endif %} 
+                                <div>
+                                    <input type="number" id="rotary_motor" name="rotary_motor" class="text-center bg-slate-100 border-2 rounded p-3 mb-2" style="width: 15em" value="10">
+                                </div>  
+                            </div>
+                        </div>
                     </div>
-                    <div class="text-center">
-                        <p class="text-xl font-bold mb-5">Rotary motor position [&#176;]</p>
-                        {% if error_rotary_motor and error_rotary_motor.field == 'rotary_motor' %}
-                        <p class="error-message text-red-600 mb-2">{{ error_rotary_motor.message }}</p>
-                        {% endif %} 
-                        <input type="number" id="rotary_motor" name="rotary_motor" class="text-center bg-slate-100 border-2 rounded p-3 mb-2" style="width: 15em"><br>  
-                    </div>
-
-                     <div class="grid grid-cols-2 gap-4 mt-4">
-                    <div class="text-center">
-                        <p class="text-xl font-bold mb-5">VESC Port</p>
-                        <input type="text" id="vesc_port" name="vesc_port" class="text-center bg-slate-100 border-2 rounded p-3 mb-2" style="width: 15em" value="COM4"><br>      
-                    </div>
-                    <div class="text-center">
-                        <p class="text-xl font-bold mb-5">Arduino Port</p>
-                        <input type="text" id="arduino_port" name="arduino_port" class="text-center bg-slate-100 border-2 rounded p-3 mb-2" style="width: 15em" value="COM3"><br>  
+                    <div class="bg-white rounded p-3 flex-1 w-1/2">
+                        <h2 class="text-slate-500 ml-1 mt-10 mb-3">Ports</h2>
+                        <div class="grid grid-cols-2 gap-4 mt-4">
+                            <div class="text-center">
+                                <div>
+                                    <label class="text-xl font-bold mb-3" for="vesc_port">VESC Port</label>
+                                </div>
+                                <div>
+                                    <input type="text" id="vesc_port" name="vesc_port" class="text-center bg-slate-100 border-2 rounded p-3 mb-2" style="width: 15em" value="COM4">
+                                </div>      
+                            </div>
+                            <div class="text-center">
+                                <div>
+                                    <label class="text-xl font-bold mb-3" for="arduino_port">Arduino Port</label>
+                                </div>
+                                <div>
+                                    <input type="text" id="arduino_port" name="arduino_port" class="text-center bg-slate-100 border-2 rounded p-3 mb-2" style="width: 15em" value="COM3">
+                                </div>  
+                            </div>
+                        </div>
                     </div>
                 </div>
-
-                    <div class="text-center">
-                        <input type="submit" value="Submit values" class="bg-green-500 hover:bg-green-600 text-xl text-center font-bold rounded p-3 mt-5">
-                    </div>
-                </div>
+                
         </div>
     </form>  
 
