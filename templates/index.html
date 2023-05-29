@@ -422,6 +422,27 @@
                 <button class="bg-green-400 hover:bg-green-500 rounded p-4 mt-4 text-lg text-center font-bold" style="width: 7em; {% if not export_csv_enabled %}background-color: green;{% endif %}" {% if not export_csv_enabled %}disabled{% endif %}>Export To CSV</button>
             </form>
         </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function updateData() {
+            $.ajax({
+                url: '/start_all',
+                type: 'POST',
+                success: function(response) {
+                    // Update the content of the container with the received data
+                    $('#updated-data-container').html(JSON.stringify(response));
+                },
+                error: function(error) {
+                    console.log(error);
+                }
+            });
+        }
+    
+        // Call the updateData function at regular intervals to fetch updated data
+        setInterval(updateData, 5000); // Adjust the interval as needed
+    </script>
+        
 </body>
 
 

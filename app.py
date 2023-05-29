@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, redirect, url_for, jsonify, Response
+from flask import Flask, render_template, request, session, redirect, url_for, jsonify, Response, stream_template, stream_with_context
 from motor_vesc import VESC
 from actuator import ArduinoControl
 import threading
@@ -177,7 +177,6 @@ def index():
     json_strain_gauge_zero_data = session.get('json_strain_gauge_zero_data')
     json_strain_gauge_one_data = session.get('json_strain_gauge_one_data')
     json_motor_temp_data = session.get('json_motor_temp_data')
-
     
     # Render the template with the input motor data and last values
     return render_template('index.html', input_motor_data=input_motor_data, last_values=last_values, time_data=time_data, json_p_zero_data=json_p_zero_data, json_p_one_data=json_p_one_data, json_p_two_data=json_p_two_data, json_p_three_data=json_p_three_data, json_strain_gauge_zero_data=json_strain_gauge_zero_data, json_strain_gauge_one_data=json_strain_gauge_one_data, json_motor_temp_data=json_motor_temp_data, start_button_disabled=False)
@@ -551,7 +550,6 @@ def start_all():
 
         # Initialize the last_values dictionary
         last_values = {}
-
         while experiment_running == True:
 
             # Call the main function to start the data acquisition and get the updated last_values
@@ -573,11 +571,9 @@ def start_all():
                 last_values[key] = round(last_values[key], 2)
 
             # Render the template with updated values
-            return render_template('index.html', input_motor_data=input_motor_data, last_values=last_values, time_data=time_data, json_p_zero_data=json_p_zero_data, json_p_one_data=json_p_one_data, json_p_two_data=json_p_two_data, json_p_three_data=json_p_three_data, json_strain_gauge_zero_data=json_strain_gauge_zero_data, json_strain_gauge_one_data=json_strain_gauge_one_data, json_motor_temp_data=json_motor_temp_data, start_button_disabled=session.get('start_button_disabled', False))
+        return render_template('index.html', input_motor_data=input_motor_data, last_values=last_values, time_data=time_data, json_p_zero_data=json_p_zero_data, json_p_one_data=json_p_one_data, json_p_two_data=json_p_two_data, json_p_three_data=json_p_three_data, json_strain_gauge_zero_data=json_strain_gauge_zero_data, json_strain_gauge_one_data=json_strain_gauge_one_data, json_motor_temp_data=json_motor_temp_data, start_button_disabled=session.get('start_button_disabled', False))
 
     return redirect(url_for('index'))
-
-
 
 def start_motor(vesc, speed, profile, current, duty_cycle):
     vesc.start_motor(speed, profile, current, duty_cycle)
@@ -673,7 +669,7 @@ def export_csv():
     else:
         return "CSV Export is not enabled"
 
-@app.route('/stop', methods=['POST'])
+@app.route('/stop', methods=['GET', 'POST'])
 def stop():
     global experiment_running
 
