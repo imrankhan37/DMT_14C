@@ -55,21 +55,23 @@
         
         <div class="bg-white rounded p-3 ml-4 mr-4 mb-4">
             <p class="text-slate-500 ml-1 mb-3">Fan Motor</p>
-                <div class="grid grid-cols-2 gap-4">   
-                    <div class="text-center">
-                        <p class="text-xl font-bold mb-3">Duty cycle [%]</p>
-                        {% if error_duty_cycle and error_duty_cycle.field == 'duty_cycle' %}
-                            <p class="error-message text-red-600 mb-2">{{ error_duty_cycle.message }}</p>
-                        {% endif %} 
-                        <input type="number" id="duty_cycle" name="duty_cycle" class="text-center bg-slate-100 border-2 rounded p-3 mb-3" style="width: 15em"><br>      
-                    </div>
-                    <div class="text-center">
-                        <p class="text-xl font-bold mb-3">Current [A]</p>    
-                        {% if error_current and error_current.field == 'current' %}
-                            <p class="error-message text-red-600 mb-2">{{ error_current.message }}</p>
-                        {% endif %}              
-                        <input type="number" id="current" name="current" class="col-span-2 text-center bg-slate-100 border-2 rounded p-3 mb-3" style="width: 15em"><br>          
-                    </div>
+            <div class="grid grid-cols-2 gap-4">   
+                <div class="text-center">
+                    <p class="text-xl font-bold mb-3">Duty cycle [%]</p>
+                    {% if error_duty_cycle and error_duty_cycle.field == 'duty_cycle' %}
+                        <p class="error-message text-red-600 mb-2">{{ error_duty_cycle.message }}</p>
+                    {% endif %} 
+                    <input type="number" id="duty_cycle" name="duty_cycle" class="text-center bg-slate-100 border-2 rounded p-3 mb-3" style="width: 15em" value="0.5"><br>      
+                </div>
+                <div class="text-center">
+                    <p class="text-xl font-bold mb-3">Current [A]</p>    
+                    {% if error_current and error_current.field == 'current' %}
+                        <p class="error-message text-red-600 mb-2">{{ error_current.message }}</p>
+                    {% endif %}              
+                    <input type="number" id="current" name="current" class="col-span-2 text-center bg-slate-100 border-2 rounded p-3 mb-3" style="width: 15em" value="2"><br>          
+                </div>
+            </div>
+
                 </div>
                 <div class="grid grid-cols-3 gap-4 mt-4">
                     <div class="text-center">
@@ -112,14 +114,17 @@
                         <input type="number" id="rotary_motor" name="rotary_motor" class="text-center bg-slate-100 border-2 rounded p-3 mb-2" style="width: 15em"><br>  
                     </div>
 
-                    <p class="text-slate-500 ml-1 mt-10 mb-3">VESC Port</p>
-                    <div class="grid grid-cols-2 gap-4">
-                            <div class="text-center">
-                            <p class="text-xl font-bold mb-3">VESC Port Number</p>
-                            <input type="text" id="vesc_port" name="vesc_port" class="text-center bg-slate-100 border-2 rounded p-3 mb-2" style="width: 15em"><br>      
-                        </div>
+                     <div class="grid grid-cols-2 gap-4 mt-4">
+                    <div class="text-center">
+                        <p class="text-xl font-bold mb-5">VESC Port</p>
+                        <input type="text" id="vesc_port" name="vesc_port" class="text-center bg-slate-100 border-2 rounded p-3 mb-2" style="width: 15em" value="COM4"><br>      
                     </div>
-                    
+                    <div class="text-center">
+                        <p class="text-xl font-bold mb-5">Arduino Port</p>
+                        <input type="text" id="arduino_port" name="arduino_port" class="text-center bg-slate-100 border-2 rounded p-3 mb-2" style="width: 15em" value="COM3"><br>  
+                    </div>
+                </div>
+
                     <div class="text-center">
                         <input type="submit" value="Submit values" class="bg-green-500 hover:bg-green-600 text-xl text-center font-bold rounded p-3 mt-5">
                     </div>
