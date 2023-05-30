@@ -175,6 +175,11 @@ def save_profile():
 
     return jsonify(success=True)
 
+@app.route('/get_profiles')
+def get_profiles():
+    with open(PROFILES_FILE, 'r') as file:
+        profiles = json.load(file)
+    return jsonify(profiles=profiles)
 
 
 @app.route('/saved_profiles')

@@ -27,31 +27,6 @@
     </select><br>
     </form>
 
-    <script> 
-    // Update the receiveProfiles function
-    function receiveProfiles(profiles) {
-        const dropdown = document.getElementById('currentProfileDropdown');
-        profiles.forEach(profile => {
-            const option = document.createElement('option');
-            option.value = profile.name;
-            option.textContent = profile.name;
-            dropdown.appendChild(option);
-        });
-    }
-
-    // Make a request to the server to get the profiles
-    fetch('/saved_profiles')
-        .then(response => response.json())
-        .then(data => {
-            receiveProfiles(data);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-
-
-    </script>   
-    
     <div>
         <p class="text-xl font-bold ml-4 mt-5 mb-3">Inputted values</p>
         <div>
@@ -463,6 +438,27 @@
     
         // Call the updateData function at regular intervals to fetch updated data
         setInterval(updateData, 5000); // Adjust the interval as needed
+    
+
+        function receiveProfileNames(data) {
+        const dropdown = document.getElementById('currentProfileDropdown');
+        data.profiles.forEach(profile => {
+            const option = document.createElement('option');
+            option.value = profile.name;
+            option.textContent = profile.name;
+            dropdown.appendChild(option);
+        });
+    }
+
+    // Fetch the profiles data from the server
+    fetch('/get_profiles')
+        .then(response => response.json())
+        .then(data => {
+            receiveProfileNames(data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
 
     </script>
         
