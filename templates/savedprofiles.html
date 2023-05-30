@@ -4,7 +4,52 @@
     <title>DMT 14C: Data acquisition software - Saved profiles</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="{{url_for('static',filename='dist/css/output.css')}}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='dist/css/output.css') }}" rel="stylesheet">
+    <style>
+        .saved-profile {
+            background-color: #E2ECF6;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .profile-name {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .expand-button,
+        .delete-button {
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+        }
+
+        .expand-button {
+            color: #000;
+        }
+
+        .delete-button {
+            color: red;
+        }
+
+        .profile-details {
+            display: none;
+            margin-top: 12px;
+        }
+    </style>
 </head>
 <body>
     <div class="bg-blue-900 p-3">
@@ -16,12 +61,87 @@
 
     <div>
         <p class="text-xl font-bold ml-4 mt-5 mb-3">Saved Profiles:</p>
-        <div>
-            <select class="text-center bg-white border-2 rounded p-3 ml-4 mb-3" id="savedProfilesDropdown">
-                {% for profileName in savedProfiles %}
-                    <option value="{{ profileName }}">{{ profileName }}</option>
-                {% endfor %}
-            </select><br>
+        <div class="ml-4 mb-3">
+            {% for profile in profiles %}
+                <div class="saved-profile">
+                    <div class="profile-header">
+                        <span class="profile-name">{{ profile.name }}</span>
+                        <div class="button-group">
+                            <button class="expand-button" onclick="toggleProfileDetails(this)">
+                                &#9660;
+                            </button>
+                            <button class="delete-button" onclick="deleteProfile('{{ profile.name }}')">
+                                &#10006;
+                            </button>
+                        </div>
+                    </div>
+                    <div class="profile-details">
+                        <p><strong>Duty Cycle:</strong> {{ profile.duty_cycle }}</p>
+                        <p><strong>Current:</strong> {{ profile.current }}</p>
+                        <p><strong>Speed:</strong> {{ profile.speed }}</p>
+                        <p><strong>Ramp Down Speed:</strong> {{ profile.ramp_down_speed }}</p>
+                        <p><strong>Ramp Up Speed:</strong> {{ profile.ramp_up_speed }}</p>
+                        <p><strong>Linear Actuator Position:</strong> {{ profile.linear_actuator }}</p>
+                        <p><strong>Rotary Motor Position:</strong> {{ profile.rotary_motor }}</p>
+                        <p><strong>VESC Port:</strong> {{ profile.vesc_port }}</p>
+                        <p><strong>Arduino Port:</strong> {{ profile.arduino_port }}</p>
+                    </div>
+                </div>
+            {% endfor %}
         </div>
     </div>
+
+    <script>
+        function toggleProfileDetails(button) {
+            const profileDetails = button.parentNode.parentNode.querySelector('.profile-details');
+            const expandButton = button.querySelector('.expand-button');
+            profileDetails.style.display = profileDetails.style.display === 'none' ? 'block' : 'none';
+            expandButton.innerHTML = profileDetails.style.display === 'none' ? '&#9660;' : '&#9650;';
+        }
+
+        function deleteProfile(profileName) {
+        const confirmation = confirm(`Are you sure you want to delete profile "${profileName}"?`);
+        if (confirmation) {
+            // Perform deletion logic here
+            const requestOptions = {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ profileName }),
+            };
+
+            fetch('/delete_profile', requestOptions)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Profile deleted successfully, refresh the page or update the UI
+                        location.reload(); // Refresh the page
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+    }
     
+    const profileItems = document.querySelectorAll('.saved-profile');
+    profileItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const profileDetails = item.querySelector('.profile-details');
+            const expandButton = item.querySelector('.expand-button');
+            profileDetails.style.display = profileDetails.style.display === 'none' ? 'block' : 'none';
+            expandButton.innerHTML = profileDetails.style.display === 'none' ? '&#9660;' : '&#9650;';
+        });
+    });
+
+        // Pass the profile names to the parent window (index.html)
+        const profileNames = Array.from(profileItems, item => item.querySelector('.profile-name').textContent);
+        window.opener.receiveProfileNames(profileNames);
+
+        // Receive the profile names from the server
+        receiveProfiles({{ profiles | tojson }});
+
+    </script>
+</body>
+</html>

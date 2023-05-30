@@ -140,6 +140,7 @@ def readDAQData(task, samples_per_channel, channels, type):
         return None
 
 
+
 # This allows the app to start
 app = Flask(__name__, static_url_path='/static', template_folder='templates')
 app.secret_key = "secret_key"
@@ -158,11 +159,58 @@ def software_manual():
 def input_parameters():
     return render_template('inputparameters.html')
 
+profiles = []
+
+# Path to the JSON file to store the profiles
+PROFILES_FILE = 'profiles.json'
+
+@app.route('/save_profile', methods=['POST'])
+def save_profile():
+    profile_data = request.get_json()
+    profiles.append(profile_data)
+
+    # Write the updated profiles to the JSON file
+    with open(PROFILES_FILE, 'w') as file:
+        json.dump(profiles, file)
+
+    return jsonify(success=True)
+
+
+
 @app.route('/saved_profiles')
 def saved_profiles():
-    saved_profiles = []  # Retrieve the saved profiles from your storage mechanism
+    # Read the profiles from the JSON file
+    with open(PROFILES_FILE, 'r') as file:
+        saved_profiles = json.load(file)
 
-    return render_template('savedprofiles.html', savedProfiles=saved_profiles)
+    return render_template('savedprofiles.html', profiles=saved_profiles)
+
+
+
+@app.route('/get_profile_names', methods=['GET'])
+def get_profile_names():
+    # Retrieve the saved profile names from the profiles list
+    profile_names = [profile['name'] for profile in profiles]
+
+    return jsonify(profile_names)
+
+@app.route('/delete_profile', methods=['DELETE'])
+def delete_profile():
+    profile_name = request.get_json().get('profileName')
+
+    # Find and remove the profile with the matching name from the profiles list
+    for profile in profiles:
+        if profile['name'] == profile_name:
+            profiles.remove(profile)
+            break
+
+    # Write the updated profiles list to the JSON file
+    with open(PROFILES_FILE, 'w') as file:
+        json.dump(profiles, file)
+
+    return jsonify(success=True)
+
+
 
 
 @app.route('/', methods=['GET'])

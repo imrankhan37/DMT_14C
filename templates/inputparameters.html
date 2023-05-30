@@ -3,8 +3,8 @@
 <head>
     <title>DMT 14C: Data acquisition software - Input parameters</title>
     <meta charset="UTF-8">
-    <meta name ="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="{{url_for('static',filename='dist/css/output.css')}}" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{{ url_for('static', filename='dist/css/output.css') }}" rel="stylesheet">
 </head>
 
 <body class="bg-slate-100">
@@ -18,20 +18,117 @@
 
     <div class="bg-white rounded p-3 ml-4 mr-4 mb-4">
         <div class="flex justify-between items-center">
-            <form onsubmit="saveProfileName()" id="profileForm">
+            <form onsubmit="saveProfileName(event)" id="profileForm">
                 <p class="text-xl font-bold mt-4 mb-3">Name your profile:</p> 
                 <input type="text" id="profileName" name="name" class="ml-4 mb-4 border-2 p-3" size="100">
             </form>
-            <div class="text-left ml-4"> <!-- Changed from text-center to text-left -->
-                <input type="submit" value="Submit values" class="bg-green-500 hover:bg-green-600 text-xl font-bold rounded p-3 mt-5">
+            <div class="text-left ml-4">
+                <input type="submit" value="Submit values" class="bg-green-500 hover:bg-green-600 text-xl font-bold rounded p-3 mt-5" onclick="saveProfileName(event)">
             </div>
         </div>
     </div>
-    </div>
-    
-    
-    
     <script>
+        function saveProfileName(event) {
+        event.preventDefault();
+
+        const profileNameInput = document.getElementById('profileName');
+        const profileName = profileNameInput.value.trim();
+
+        if (profileName !== '') {
+            const profileData = {
+            name: profileName,
+            duty_cycle: document.getElementById('duty_cycle').value,
+            current: document.getElementById('current').value,
+            speed: document.getElementById('speed').value,
+            ramp_down_speed: document.getElementById('ramp_down_speed').value,
+            ramp_up_speed: document.getElementById('ramp_up_speed').value,
+            linear_actuator: document.getElementById('linear_actuator').value,
+            rotary_motor: document.getElementById('rotary_motor').value,
+            vesc_port: document.getElementById('vesc_port').value,
+            arduino_port: document.getElementById('arduino_port').value
+            };
+
+            fetch('/save_profile', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(profileData),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                document.getElementById('profileForm').reset();
+                window.location.href = '/saved_profiles';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+        }
+
+    </script>
+</body>
+</html>
+
+
+    </div>
+
+
+    <!-- <script>
+        function saveProfile(event) {
+            event.preventDefault(); // Prevent form submission
+
+            const profileNameInput = document.getElementById('profileName');
+            const profileName = profileNameInput.value.trim();
+
+            if (profileName !== '') {
+                // Retrieve the input values
+                const dutyCycleInput = document.getElementById('duty_cycle');
+                const currentInput = document.getElementById('current');
+                const speedInput = document.getElementById('speed');
+                const rampDownSpeedInput = document.getElementById('ramp_down_speed');
+                const rampUpSpeedInput = document.getElementById('ramp_up_speed');
+                const linearActuatorInput = document.getElementById('linear_actuator');
+                const rotaryMotorInput = document.getElementById('rotary_motor');
+                const vescPortInput = document.getElementById('vesc_port');
+                const arduinoPortInput = document.getElementById('arduino_port');
+
+                // Store the profile in local storage
+                const profile = {
+                    name: profileName,
+                    dutyCycle: dutyCycleInput.value,
+                    current: currentInput.value,
+                    speed: speedInput.value,
+                    rampDownSpeed: rampDownSpeedInput.value,
+                    rampUpSpeed: rampUpSpeedInput.value,
+                    linearActuator: linearActuatorInput.value,
+                    rotaryMotor: rotaryMotorInput.value,
+                    vescPort: vescPortInput.value,
+                    arduinoPort: arduinoPortInput.value
+                };
+
+                let savedProfiles = localStorage.getItem('savedProfiles');
+
+                if (!savedProfiles) {
+                    savedProfiles = []; // Initialize an empty array if no profiles exist
+                } else {
+                    savedProfiles = JSON.parse(savedProfiles); // Parse existing profiles from local storage
+                }
+
+                savedProfiles.push(profile); // Add the new profile
+                localStorage.setItem('savedProfiles', JSON.stringify(savedProfiles)); // Save the updated profiles
+
+                document.getElementById('profileForm').reset(); // Reset the form
+
+                // Redirect to the Saved Profiles page
+                window.location.href = '/saved_profiles';
+            }
+        }
+    </script> -->
+    
+    <!-- <script>
         function saveProfileName(event) {
             event.preventDefault(); // Prevent form submission
     
@@ -56,7 +153,7 @@
                 window.location.href = '/saved_profiles';
             }
         }
-    </script>
+    </script> -->
     
     
 
@@ -186,6 +283,5 @@
                 
         </div>
     </form>  
-
 </body>
 </html>
