@@ -167,12 +167,14 @@ PROFILES_FILE = 'profiles.json'
 @app.route('/save_profile', methods=['POST'])
 def save_profile():
     profile_data = request.get_json()
-    session['input_motor_data'] = profile_data
-    return jsonify(success=True)
+    profiles.append(profile_data)
 
     # Write the updated profiles to the JSON file
     with open(PROFILES_FILE, 'w') as file:
         json.dump(profiles, file)
+
+    # Update the session's input_motor_data with the new profile data
+    session['input_motor_data'] = profile_data
 
     return jsonify(success=True)
 
@@ -231,8 +233,7 @@ def index():
     json_strain_gauge_zero_data = session.get('json_strain_gauge_zero_data')
     json_strain_gauge_one_data = session.get('json_strain_gauge_one_data')
     json_motor_temp_data = session.get('json_motor_temp_data')
-    
-    # Render the template with the input motor data and last values
+
     return render_template('index.html', input_motor_data=input_motor_data, last_values=last_values, time_data=time_data, json_p_zero_data=json_p_zero_data, json_p_one_data=json_p_one_data, json_p_two_data=json_p_two_data, json_p_three_data=json_p_three_data, json_strain_gauge_zero_data=json_strain_gauge_zero_data, json_strain_gauge_one_data=json_strain_gauge_one_data, json_motor_temp_data=json_motor_temp_data, start_button_disabled=False)
 
 
@@ -385,10 +386,10 @@ def motor_input_parameters():
     input_motor_data = session.get('input_motor_data', {})
     return render_template('inputparameters.html', input_motor_data=input_motor_data)
 
-# This clears all user inputted data, effectively starting a new session
+# Clears the input parameters from the session
 @app.route('/reset_session', methods=['POST'])
 def reset_session():
-    session.clear()
+    session.pop('input_motor_data', None)
     return redirect(url_for('index'))
 
 @app.route('/stop_button', methods=['POST'])

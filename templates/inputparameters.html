@@ -19,8 +19,9 @@
     <div class="bg-white rounded p-3 ml-4 mr-4 mb-4">
         <div class="flex justify-between items-center">
             <form onsubmit="saveProfileData(event)" id="profileForm">
-                <p class="text-xl font-bold mt-4 mb-3">Name your profile:</p> 
-                <input type="text" id="profileName" name="name" class="ml-4 mb-4 border-2 p-3" size="100">
+                <p class="text-xl font-bold mt-4 mb-3">Name your profile:</p>
+                <input type="text" id="profileName" name="name" class="ml-4 mb-4 border-2 p-3" size="100" oninput="toggleSubmitButton()">
+    
 
                 <p class="text-xl font-bold mt-4 mb-3">Fan motor:</p> 
 
@@ -50,52 +51,66 @@
                     <input type="text" id="vesc_port" name="vesc_port" class="ml-4 mb-4 border-2 p-3" size="100" placeholder="VESC Port">
                     <input type="text" id="arduino_port" name="arduino_port" class="ml-4 mb-4 border-2 p-3" size="100" placeholder="Arduino Port">
                 </div>
+                <div class="text-left ml-4">
+                    <input type="submit" value="Submit values" id="submitButton" class="bg-green-500 hover:bg-green-600 text-xl font-bold rounded p-3 mt-5" onclick="saveProfileData(event)" disabled>
+                </div>
             </form>
-            <div class="text-left ml-4">
-                <input type="submit" value="Submit values" class="bg-green-500 hover:bg-green-600 text-xl font-bold rounded p-3 mt-5" onclick="saveProfileData(event)">
-            </div>
+
         </div>
     </div>
     <script>
-        function saveProfileData(event) {
-            event.preventDefault();
+function saveProfileData(event) {
+    event.preventDefault();
 
-            const profileNameInput = document.getElementById('profileName');
-            const profileName = profileNameInput.value.trim();
+    const profileNameInput = document.getElementById('profileName');
+    const profileName = profileNameInput.value.trim();
 
-            if (profileName !== '') {
-                const profileData = {
-                    name: profileName,
-                    duty_cycle: document.getElementById('duty_cycle').value,
-                    current: document.getElementById('current').value,
-                    speed: document.getElementById('speed').value,
-                    ramp_down_speed: document.getElementById('ramp_down_speed').value,
-                    ramp_up_speed: document.getElementById('ramp_up_speed').value,
-                    linear_actuator: document.getElementById('linear_actuator').value,
-                    rotary_motor: document.getElementById('rotary_motor').value,
-                    vesc_port: document.getElementById('vesc_port').value,
-                    arduino_port: document.getElementById('arduino_port').value
-                };
+    if (profileName !== '') {
+        const profileData = {
+            name: profileName,
+            duty_cycle: document.getElementById('duty_cycle').value,
+            current: document.getElementById('current').value,
+            speed: document.getElementById('speed').value,
+            ramp_down_speed: document.getElementById('ramp_down_speed').value,
+            ramp_up_speed: document.getElementById('ramp_up_speed').value,
+            linear_actuator: document.getElementById('linear_actuator').value,
+            rotary_motor: document.getElementById('rotary_motor').value,
+            vesc_port: document.getElementById('vesc_port').value,
+            arduino_port: document.getElementById('arduino_port').value
+        };
 
-                fetch('/save_profile', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(profileData),
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        document.getElementById('profileForm').reset();
-                        window.location.href = '/';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
+        fetch('/save_profile', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(profileData),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('profileForm').reset();
+                window.location.href = '/';
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+}
+
+function toggleSubmitButton() {
+        const profileNameInput = document.getElementById('profileName');
+        const submitButton = document.getElementById('submitButton');
+
+        if (profileNameInput.value.trim() !== '') {
+            submitButton.disabled = false;
+        } else {
+            submitButton.disabled = true;
         }
-    </script>
+    }
+</script>
 </body>
 </html>
+
+
