@@ -1,1 +1,1 @@
-[{"name": "test10", "duty_cycle": "0.5", "current": "2", "speed": "50", "ramp_down_speed": "0", "ramp_up_speed": "50", "linear_actuator": "100", "rotary_motor": "10", "vesc_port": "COM4", "arduino_port": "COM3"}]
+[{"name": "test20", "duty_cycle": "0.8", "current": "2", "speed": "50", "ramp_down_speed": "0", "ramp_up_speed": "50", "linear_actuator": "100", "rotary_motor": "10", "vesc_port": "COM4", "arduino_port": "COM3"}]
