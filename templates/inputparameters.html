@@ -18,270 +18,84 @@
 
     <div class="bg-white rounded p-3 ml-4 mr-4 mb-4">
         <div class="flex justify-between items-center">
-            <form onsubmit="saveProfileName(event)" id="profileForm">
+            <form onsubmit="saveProfileData(event)" id="profileForm">
                 <p class="text-xl font-bold mt-4 mb-3">Name your profile:</p> 
                 <input type="text" id="profileName" name="name" class="ml-4 mb-4 border-2 p-3" size="100">
+
+                <p class="text-xl font-bold mt-4 mb-3">Fan motor:</p> 
+
+                <div class="grid grid-cols-5 gap-2 mb-2">
+                    <input type="text" id="duty_cycle" name="duty_cycle" class="ml-4 mb-4 border-2 p-3" size="100" placeholder="Duty cycle [%]">
+                    <input type="text" id="current" name="current" class="ml-4 mb-4 border-2 p-3" size="100" placeholder="Current [A]">
+                    <input type="text" id="speed" name="speed" class="ml-4 mb-4 border-2 p-3" size="100" placeholder="Input speed [rpm]">
+                    <input type="text" id="ramp_down_speed" name="ramp_down_speed" class="ml-4 mb-4 border-2 p-3" size="100" placeholder="Ramp down speed [rpm]">
+                    <input type="text" id="ramp_up_speed" name="ramp_up_speed" class="ml-4 mb-4 border-2 p-3" size="100" placeholder="Ramp up speed [rpm]">
+                </div>
+
+                <p class="text-xl font-bold mt-4 mb-3">Linear actuator:</p> 
+
+                <div class="grid grid-cols-5 gap-2 mb-2">
+                    <input type="text" id="linear_actuator" name="linear_actuator" class="ml-4 mb-4 border-2 p-3" size="100" placeholder="Actuator position [mm]">
+                </div>
+
+                <p class="text-xl font-bold mt-4 mb-3">Rotary motor:</p> 
+
+                <div class="grid grid-cols-5 gap-2 mb-2">
+                    <input type="text" id="rotary_motor" name="rotary_motor" class="ml-4 mb-4 border-2 p-3" size="100" placeholder="Rotary position [°]">
+                </div>
+
+                <p class="text-xl font-bold mt-4 mb-3">Other parameters:</p> 
+
+                <div class="grid grid-cols-5 gap-2 mb-2">
+                    <input type="text" id="vesc_port" name="vesc_port" class="ml-4 mb-4 border-2 p-3" size="100" placeholder="VESC Port">
+                    <input type="text" id="arduino_port" name="arduino_port" class="ml-4 mb-4 border-2 p-3" size="100" placeholder="Arduino Port">
+                </div>
             </form>
             <div class="text-left ml-4">
-                <input type="submit" value="Submit values" class="bg-green-500 hover:bg-green-600 text-xl font-bold rounded p-3 mt-5" onclick="saveProfileName(event)">
+                <input type="submit" value="Submit values" class="bg-green-500 hover:bg-green-600 text-xl font-bold rounded p-3 mt-5" onclick="saveProfileData(event)">
             </div>
         </div>
     </div>
     <script>
-        function saveProfileName(event) {
-        event.preventDefault();
-
-        const profileNameInput = document.getElementById('profileName');
-        const profileName = profileNameInput.value.trim();
-
-        if (profileName !== '') {
-            const profileData = {
-            name: profileName,
-            duty_cycle: document.getElementById('duty_cycle').value,
-            current: document.getElementById('current').value,
-            speed: document.getElementById('speed').value,
-            ramp_down_speed: document.getElementById('ramp_down_speed').value,
-            ramp_up_speed: document.getElementById('ramp_up_speed').value,
-            linear_actuator: document.getElementById('linear_actuator').value,
-            rotary_motor: document.getElementById('rotary_motor').value,
-            vesc_port: document.getElementById('vesc_port').value,
-            arduino_port: document.getElementById('arduino_port').value
-            };
-
-            fetch('/save_profile', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(profileData),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                document.getElementById('profileForm').reset();
-                window.location.href = '/saved_profiles';
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        }
-        }
-
-    </script>
-</body>
-</html>
-
-
-    </div>
-
-
-    <!-- <script>
-        function saveProfile(event) {
-            event.preventDefault(); // Prevent form submission
+        function saveProfileData(event) {
+            event.preventDefault();
 
             const profileNameInput = document.getElementById('profileName');
             const profileName = profileNameInput.value.trim();
 
             if (profileName !== '') {
-                // Retrieve the input values
-                const dutyCycleInput = document.getElementById('duty_cycle');
-                const currentInput = document.getElementById('current');
-                const speedInput = document.getElementById('speed');
-                const rampDownSpeedInput = document.getElementById('ramp_down_speed');
-                const rampUpSpeedInput = document.getElementById('ramp_up_speed');
-                const linearActuatorInput = document.getElementById('linear_actuator');
-                const rotaryMotorInput = document.getElementById('rotary_motor');
-                const vescPortInput = document.getElementById('vesc_port');
-                const arduinoPortInput = document.getElementById('arduino_port');
-
-                // Store the profile in local storage
-                const profile = {
+                const profileData = {
                     name: profileName,
-                    dutyCycle: dutyCycleInput.value,
-                    current: currentInput.value,
-                    speed: speedInput.value,
-                    rampDownSpeed: rampDownSpeedInput.value,
-                    rampUpSpeed: rampUpSpeedInput.value,
-                    linearActuator: linearActuatorInput.value,
-                    rotaryMotor: rotaryMotorInput.value,
-                    vescPort: vescPortInput.value,
-                    arduinoPort: arduinoPortInput.value
+                    duty_cycle: document.getElementById('duty_cycle').value,
+                    current: document.getElementById('current').value,
+                    speed: document.getElementById('speed').value,
+                    ramp_down_speed: document.getElementById('ramp_down_speed').value,
+                    ramp_up_speed: document.getElementById('ramp_up_speed').value,
+                    linear_actuator: document.getElementById('linear_actuator').value,
+                    rotary_motor: document.getElementById('rotary_motor').value,
+                    vesc_port: document.getElementById('vesc_port').value,
+                    arduino_port: document.getElementById('arduino_port').value
                 };
 
-                let savedProfiles = localStorage.getItem('savedProfiles');
-
-                if (!savedProfiles) {
-                    savedProfiles = []; // Initialize an empty array if no profiles exist
-                } else {
-                    savedProfiles = JSON.parse(savedProfiles); // Parse existing profiles from local storage
-                }
-
-                savedProfiles.push(profile); // Add the new profile
-                localStorage.setItem('savedProfiles', JSON.stringify(savedProfiles)); // Save the updated profiles
-
-                document.getElementById('profileForm').reset(); // Reset the form
-
-                // Redirect to the Saved Profiles page
-                window.location.href = '/saved_profiles';
+                fetch('/save_profile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(profileData),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('profileForm').reset();
+                        window.location.href = '/';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
             }
         }
-    </script> -->
-    
-    <!-- <script>
-        function saveProfileName(event) {
-            event.preventDefault(); // Prevent form submission
-    
-            const profileNameInput = document.getElementById('profileName');
-            const profileName = profileNameInput.value.trim();
-    
-            if (profileName !== '') {
-                let savedProfiles = localStorage.getItem('savedProfiles');
-    
-                if (!savedProfiles) {
-                    savedProfiles = []; // Initialize an empty array if no profiles exist
-                } else {
-                    savedProfiles = JSON.parse(savedProfiles); // Parse existing profiles from local storage
-                }
-    
-                savedProfiles.push(profileName); // Add the new profile name
-                localStorage.setItem('savedProfiles', JSON.stringify(savedProfiles)); // Save the updated profiles
-    
-                document.getElementById('profileForm').reset(); // Reset the form
-    
-                // Redirect to the saved profiles page
-                window.location.href = '/saved_profiles';
-            }
-        }
-    </script> -->
-    
-    
-
-    <form action="{{url_for('motor_input_parameters')}}" method="post">
-        
-        <div class="bg-white rounded p-3 ml-4 mr-4 mb-4">
-            <h2 class="text-slate-500 ml-1 mb-3">Fan Motor</h2>
-            <div class="grid grid-cols-2 gap-4">   
-                <div class="text-center">
-                    <div>
-                        <label class="text-xl font-bold mb-3" for="duty_cycle">Duty cycle [%]</label>
-                    </div>
-                    {% if error_duty_cycle and error_duty_cycle.field == 'duty_cycle' %}
-                        <p class="error-message text-red-600 mb-2">{{ error_duty_cycle.message }}</p>
-                    {% endif %} 
-                    <div>
-                        <input type="number" id="duty_cycle" name="duty_cycle" class="text-center bg-slate-100 border-2 rounded p-3 mb-3" style="width: 15em" value="0.5">
-                    </div>     
-                </div>
-                <div class="text-center">
-                    <div>
-                        <label class="text-xl font-bold mb-3" for="current">Current [A]</label>
-                    </div>
-                    {% if error_current and error_current.field == 'current' %}
-                        <p class="error-message text-red-600 mb-2">{{ error_current.message }}</p>
-                    {% endif %}              
-                    <div>
-                        <input type="number" id="current" name="current" class="text-center bg-slate-100 border-2 rounded p-3 mb-3" style="width: 15em" value="2">
-                    </div>         
-                </div>
-            </div>
-        
-            <div class="grid grid-cols-3 gap-4 mt-4">
-                <div class="text-center">
-                    <div>
-                        <label class="text-xl font-bold mb-3" for="speed">Input speed [rpm]</label>
-                    </div>
-                    {% if error_speed and error_speed.field == 'speed' %}
-                        <p class="error-message text-red-600 mb-2">{{ error_speed.message }}</p>
-                    {% endif %}  
-                    <div>
-                        <input type="number" id="speed" name="speed" class="text-center bg-slate-100 border-2 rounded p-3 mb-2" style="width: 15em" value="50">
-                    </div>
-                </div>
-                <div class="text-center">
-                    <div>
-                        <label class="text-xl font-bold mb-3" for="ramp_down_speed">Final speed (ramp down) [rpm]</label>
-                    </div>
-                    {% if error_ramp_down_speed and error_ramp_down_speed.field == 'ramp_down_speed' %}
-                        <p class="error-message text-red-600 mb-2">{{ error_ramp_down_speed.message }}</p>
-                    {% endif %} 
-                    <div>
-                        <input type="number" id="ramp_down_speed" name="ramp_down_speed" class="text-center bg-slate-100 border-2 rounded p-3 mb-2" style="width: 15em" value="0">
-                    </div>
-                </div>
-                <div class="text-center">
-                    <div>
-                        <label class="text-xl font-bold mb-3" for="ramp_up_speed">Final speed (ramp up) [rpm]</label>
-                    </div>
-                    {% if error_ramp_up_speed and error_ramp_up_speed.field == 'ramp_up_speed' %}
-                        <p class="error-message text-red-600 mb-2">{{ error_ramp_up_speed.message }}</p>
-                    {% endif %}  
-                    <div>
-                        <input type="number" id="ramp_up_speed" name="ramp_up_speed" class="text-center bg-slate-100 border-2 rounded p-3 mb-2" style="width: 15em" value="50">
-                    </div>
-                </div>
-            </div>
-        </div>
-            
-
-
-            </div>
-
-                </div>
-                
-            
-                <div class="flex gap-4 mt-4 ml-4 mr-4">
-                    <div class="bg-white rounded p-3 flex-1 w-1/2">
-                        <h2 class="text-slate-500 ml-1 mt-10 mb-3">Linear Actuator & Rotary Motor</h2>
-                        <div class="grid grid-cols-2 gap-4 mt-4">
-                            <div class="text-center">
-                                <div>
-                                    <label class="text-xl font-bold mb-3" for="linear_actuator">Linear actuator position [mm]</label>
-                                </div>
-                                {% if error_linear_actuator and error_linear_actuator.field == 'linear_actuator' %}
-                                    <p class="error-message text-red-600 mb-2">{{ error_linear_actuator.message }}</p>
-                                {% endif %} 
-                                <div>
-                                    <input type="number" id="linear_actuator" name="linear_actuator" class="text-center bg-slate-100 border-2 rounded p-3 mb-2" style="width: 15em" value="100">
-                                </div>      
-                            </div>
-                            <div class="text-center">
-                                <div>
-                                    <label class="text-xl font-bold mb-3" for="rotary_motor">Rotary motor position [°]</label>
-                                </div>
-                                {% if error_rotary_motor and error_rotary_motor.field == 'rotary_motor' %}
-                                    <p class="error-message text-red-600 mb-2">{{ error_rotary_motor.message }}</p>
-                                {% endif %} 
-                                <div>
-                                    <input type="number" id="rotary_motor" name="rotary_motor" class="text-center bg-slate-100 border-2 rounded p-3 mb-2" style="width: 15em" value="10">
-                                </div>  
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded p-3 flex-1 w-1/2">
-                        <h2 class="text-slate-500 ml-1 mt-10 mb-3">Ports</h2>
-                        <div class="grid grid-cols-2 gap-4 mt-4">
-                            <div class="text-center">
-                                <div>
-                                    <label class="text-xl font-bold mb-3" for="vesc_port">VESC Port</label>
-                                </div>
-                                <div>
-                                    <input type="text" id="vesc_port" name="vesc_port" class="text-center bg-slate-100 border-2 rounded p-3 mb-2" style="width: 15em" value="COM4">
-                                </div>      
-                            </div>
-                            <div class="text-center">
-                                <div>
-                                    <label class="text-xl font-bold mb-3" for="arduino_port">Arduino Port</label>
-                                </div>
-                                <div>
-                                    <input type="text" id="arduino_port" name="arduino_port" class="text-center bg-slate-100 border-2 rounded p-3 mb-2" style="width: 15em" value="COM3">
-                                </div>  
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-        </div>
-    </form>  
+    </script>
 </body>
 </html>

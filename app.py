@@ -167,7 +167,8 @@ PROFILES_FILE = 'profiles.json'
 @app.route('/save_profile', methods=['POST'])
 def save_profile():
     profile_data = request.get_json()
-    profiles.append(profile_data)
+    session['input_motor_data'] = profile_data
+    return jsonify(success=True)
 
     # Write the updated profiles to the JSON file
     with open(PROFILES_FILE, 'w') as file:

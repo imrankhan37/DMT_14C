@@ -46,64 +46,64 @@
     
 
         <div class="grid grid-cols-6 gap-4 ml-4 mr-4 mb-6">
-            <!--Fan motor parameters-->
+            <!-- Fan motor parameters -->
             <div class="col-span-2 bg-white rounded p-3">
                 <p class="text-slate-500 ml-1 mb-3">Fan motor</p>
-                    <div class="grid grid-cols-5 gap-2 mb-4">
-                        <p class="text-center">Duty cycle [%]</p>
-                        <p class="text-center">Current [A]</p>
-                        <p class="text-center">Input speed [rpm]</p>
-                        <p class="text-center">Ramp down speed [rpm]</p>
-                        <p class="text-center">Ramp up speed [rpm]</p>
+                <div class="grid grid-cols-5 gap-2 mb-4">
+                    <p class="text-center">Duty cycle [%]</p>
+                    <p class="text-center">Current [A]</p>
+                    <p class="text-center">Input speed [rpm]</p>
+                    <p class="text-center">Ramp down speed [rpm]</p>
+                    <p class="text-center">Ramp up speed [rpm]</p>
+                </div>
+                <div class="grid grid-cols-5 gap-2 mb-2">
+                    <div>
+                        <p class="text-xl text-center font-bold">
+                            {% if input_motor_data and input_motor_data.duty_cycle %}
+                                {{ input_motor_data.duty_cycle }}
+                            {% else %}
+                                0
+                            {% endif %}
+                        </p>
                     </div>
-                    <div class="grid grid-cols-5 gap-2 mb-2">
-                        <div>
-                            <p class="text-xl text-center font-bold">
-                                {% if input_motor_data.duty_cycle %}
-                                    {{ input_motor_data.duty_cycle}}
-                                {% else %}
-                                    0
-                                {% endif %}
-                            </p>
-                        </div>
-                        <div>
-                            <p class="text-xl text-center font-bold">
-                                {% if input_motor_data.current %}
-                                    {{ input_motor_data.current}}
-                                {% else %}
-                                    0
-                                {% endif %}
-                            </p>
-                        </div>
-                        <div>
-                            <p class="text-xl text-center font-bold">
-                                {% if input_motor_data.speed %}
-                                    {{ input_motor_data.speed}}
-                                {% else %}
-                                    0
-                                {% endif %}
-                            </p>
-                        </div>
-                        <div>
-                            <p class="text-xl text-center font-bold">
-                                {% if input_motor_data.ramp_down_speed %}
-                                    {{ input_motor_data.ramp_down_speed}}
-                                {% else %}
-                                    0
-                                {% endif %}
-                            </p>
-                        </div>
-                        <div>
-                            <p class="text-xl text-center font-bold">
-                                {% if input_motor_data.ramp_up_speed %}
-                                    {{ input_motor_data.ramp_up_speed}}
-                                {% else %}
-                                    0
-                                {% endif %}
-                            </p>
-                        </div>
+                    <div>
+                        <p class="text-xl text-center font-bold">
+                            {% if input_motor_data and input_motor_data.current %}
+                                {{ input_motor_data.current }}
+                            {% else %}
+                                0
+                            {% endif %}
+                        </p>
                     </div>
-            </div>           
+                    <div>
+                        <p class="text-xl text-center font-bold">
+                            {% if input_motor_data and input_motor_data.speed %}
+                                {{ input_motor_data.speed }}
+                            {% else %}
+                                0
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-xl text-center font-bold">
+                            {% if input_motor_data and input_motor_data.ramp_down_speed %}
+                                {{ input_motor_data.ramp_down_speed }}
+                            {% else %}
+                                0
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-xl text-center font-bold">
+                            {% if input_motor_data and input_motor_data.ramp_up_speed %}
+                                {{ input_motor_data.ramp_up_speed }}
+                            {% else %}
+                                0
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
             <!--Linear actuator-->
             <div class="bg-white rounded p-3">
                 <p class="text-slate-500 ml-1 mb-3">Linear actuator</p>
@@ -119,19 +119,20 @@
                 </div>
             </div>
             <!--Rotary motor-->
-            <div class="bg-white rounded p-3">
-                <p class="text-slate-500 ml-1 mb-3">Rotary motor</p>
-                <p class="text-xl text-center mb-5">Rotary position [&#176;]</p>
-                <div>
-                    <p class="text-xl text-center font-bold p-5">
-                        {% if input_motor_data.rotary_motor %}
-                            {{ input_motor_data.rotary_motor}}
-                        {% else %}
-                            0
-                        {% endif %}
-                    </p>
-                </div>
-            </div>
+<!--Rotary motor-->
+<div class="bg-white rounded p-3">
+    <p class="text-slate-500 ml-1 mb-3">Rotary motor</p>
+    <p class="text-xl text-center mb-5">Rotary position [°]</p>
+    <div>
+        <p class="text-xl text-center font-bold p-5">
+            {% if input_motor_data and input_motor_data.rotary_motor %}
+                {{ input_motor_data.rotary_motor }}
+            {% else %}
+                0
+            {% endif %}
+        </p>
+    </div>
+</div>
             <!--Reset button-->
             <div class="bg-white rounded p-3">
                 <p class="text-slate-500 ml-1 mb-3">Reset values</p>
