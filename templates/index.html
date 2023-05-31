@@ -340,6 +340,8 @@
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     padding: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
     transition: box-shadow 0.3s ease-in-out;
     box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
     color: #f9f9f9;
@@ -370,7 +372,7 @@
 
 .key-parameter-label {
     font-size: 15px;
-    margin-top: 15px;
+    margin-top: 10px;
     text-align: center;
     font-weight: bold;
     text-transform: uppercase;
@@ -388,6 +390,8 @@
     padding: 10px;
     transition: box-shadow 0.3s ease-in-out;
     color: #f9f9f9;
+    margin-right: 10px;
+    margin-left: 10px;
 }
 
 .calculated-measurement-card:hover {
@@ -782,19 +786,21 @@ canvas {
                     <canvas id="pressureChart" width="600" height="300"></canvas>
                 </div>  
             </div>
-                  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                  <script>
-                    var ctx1 = document.getElementById('pressureChart').getContext('2d');
-                    var labels = JSON.parse('{{ time_data | safe }}');
-                    var json_p_zero_data = JSON.parse('{{ json_p_zero_data | safe }}');
-                    var json_p_one_data = JSON.parse('{{ json_p_one_data | safe }}');
-                    var json_p_two_data = JSON.parse('{{ json_p_two_data | safe }}');
-                    var json_p_three_data = JSON.parse('{{ json_p_three_data | safe }}');
-
-                    new Chart(ctx1, {
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+                var ctx1 = document.getElementById('pressureChart').getContext('2d');
+        
+                // Generate fake data
+                var labels = [1, 2, 3, 4, 5, 6, 7];
+                var json_p_zero_data = [0, 100, 200, 150, 50, 250, 300];
+                var json_p_one_data = [0, 50, 150, 100, 200, 250, 300];
+                var json_p_two_data = [0, 200, 100, 150, 250, 50, 300];
+                var json_p_three_data = [0, 150, 50, 200, 100, 250, 300];
+        
+                new Chart(ctx1, {
                     type: 'line',
                     data: {
-                        labels,
+                        labels: labels,
                         datasets: [{
                             label: 'P_0',
                             data: json_p_zero_data,
@@ -811,8 +817,7 @@ canvas {
                             label: 'P_3',
                             data: json_p_three_data,
                             borderWidth: 1,
-                        }
-                        ]
+                        }]
                     },
                     options: {
                         scales: {
@@ -832,104 +837,104 @@ canvas {
                             },
                         }
                     }
-                    });
-
-                  </script>
+                });
+            </script>        
 
                 
 
-            <div class="graph-card">
-                <h3 class="graph-title">Thrust [N]</h3>
-                <canvas id="thrustChart" width="600" height="300"></canvas>
-            </div>
-                  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                  <script>
-                    var ctx3 = document.getElementById('thrustChart').getContext('2d');
-                    var labels = JSON.parse('{{ time_data | safe }}');
-                    var json_strain_gauge_zero_data = JSON.parse('{{ json_strain_gauge_zero_data | safe }}');
-                    var json_strain_gauge_one_data = JSON.parse('{{ json_strain_gauge_one_data | safe }}');
-                    new Chart(ctx3, {
-                    type: 'line',
-                    data: {
-                        labels,
-                        datasets: [{
-                            label: 'Strain Gauge 1',
-                            data: json_strain_gauge_zero_data,
-                            borderWidth: 1,
-                        }, {
-                            label: 'Strain Gauge 2',
-                            data: json_strain_gauge_one_data,
-                            borderWidth: 1,
-                        }
-                        ]
-                    },
-                    options: {
-                        scales: {
-                            x: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Time [s]',
-                                },
-                            },
-                            y: {
-                                beginAtZero: false,
-                                title: {
-                                    display: true,
-                                    text: 'Thrust [N]',
-                                }
-                            },
-                        }
-                    }
-                    });
-                  </script>
-
-            <div class="graph-card">
-                <h3 class="graph-title">Motor temperature [°C]</h3>
-                <canvas id="motortempChart" width="600" height="300"></canvas>
-            </div>
+        <div class="graph-card">
+            <h3 class="graph-title">Thrust [N]</h3>
+            <canvas id="thrustChart" width="600" height="300"></canvas>
         </div>
-                  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                  <script>
-                    var ctx3 = document.getElementById('motortempChart').getContext('2d');
-                    var labels = JSON.parse('{{ time_data | safe }}');
-                    var json_motor_temp_data = JSON.parse('{{ json_motor_temp_data | safe }}');
-                    new Chart(ctx3, {
-                    type: 'line',
-                    data: {
-                        labels,
-                        datasets: [{
-                            label: 'Motor temperature',
-                            data: json_motor_temp_data,
-                            borderWidth: 1,
-                        }
-                        ]
-                    },
-                    options: {
-                        scales: {
-                            x: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Time [s]',
-                                },
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            var ctx2 = document.getElementById('thrustChart').getContext('2d');
+        
+            // Generate fake data
+            var labels = [1, 2, 3, 4, 5, 6, 7];
+            var json_strain_gauge_zero_data = [0, 50, 100, 150, 200, 250, 300];
+            var json_strain_gauge_one_data = [0, 300, 250, 200, 150, 100, 50];
+        
+            new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Strain Gauge 1',
+                        data: json_strain_gauge_zero_data,
+                        borderWidth: 1,
+                    }, {
+                        label: 'Strain Gauge 2',
+                        data: json_strain_gauge_one_data,
+                        borderWidth: 1,
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Time [s]',
                             },
-                            y: {
-                                beginAtZero: false,
-                                title: {
-                                    display: true,
-                                    text: 'Temperature [\xB0C]',
-                                }
-                            },
-                        }
+                        },
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: 'Thrust [N]',
+                            }
+                        },
                     }
-                    });
-                  </script>
-            </div>
+                }
+            });
+        </script>
+        
+        <div class="graph-card">
+            <h3 class="graph-title">Motor temperature [°C]</h3>
+            <canvas id="motortempChart" width="600" height="300"></canvas>
         </div>
-    </div> 
-
-    </div>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            var ctx3 = document.getElementById('motortempChart').getContext('2d');
+        
+            // Generate fake data
+            var labels = [1, 2, 3, 4, 5, 6, 7];
+            var json_motor_temp_data = [30, 35, 40, 45, 42, 38, 36];
+        
+            new Chart(ctx3, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Motor temperature',
+                        data: json_motor_temp_data,
+                        borderWidth: 1,
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Time [s]',
+                            },
+                        },
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: 'Temperature [°C]',
+                            }
+                        },
+                    }
+                }
+            });
+        </script>
+        </div>
+        </div>
+        
 
            
 <!-- Export CSV button -->
