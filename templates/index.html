@@ -7,6 +7,11 @@
         <link href="{{url_for('static',filename='dist/css/output.css')}}" rel="stylesheet">
     
         <style>
+
+        html {
+            height: 100%;
+        }
+
             body {
                 background-image: url('https://cdn.midjourney.com/0c222994-7c72-4aee-b8ca-b6b6c7d3951c/0_3.png');
                 background-repeat: no-repeat;
@@ -119,13 +124,13 @@
 
     .motor-param-grid {
         display: grid;
-        grid-template-columns: repeat(6, 1fr);
+        grid-template-columns: repeat(12, 1fr);
         gap: 20px;
         margin: 20px;
     }
 
     .parameter-card {
-        grid-column: span 2;
+        grid-column: span 4;
         background-color: rgba(255, 255, 255, 0.1);  /* Set this to your preferred value */
         border-radius: 8px;
         padding: 10px;
@@ -177,6 +182,7 @@
     .actuator-card {
     background-color: rgba(255, 255, 255, 0.1);  /* This matches the parameter-card background */
     border-radius: 8px;
+    grid-column: span 2;
     padding: 10px;
     transition: box-shadow 0.3s ease-in-out;
     color: #f9f9f9; /* White text */
@@ -188,17 +194,17 @@
 
 .actuator-header {
     margin-left: 5px;
-    margin-top: 10px;
-    margin-bottom: 10px;
+    margin-top: 20px;
+    margin-bottom: 5px;
     text-align: center;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: bold;
     text-transform: uppercase;
 }
 
 .actuator-position-title {
-    font-size: 15px;
-    margin-top: 15px;
+    font-size: 13px;
+    margin-top: 30px;
     text-align: center;
     text-transform: uppercase;
 }
@@ -211,7 +217,7 @@
 }
 
 
-        .flex-container {
+    .flex-container {
     display: flex;
     flex-direction: column;
     }
@@ -228,6 +234,186 @@
 .motor-param-grid {
   flex: 1 1 auto;
 }
+
+.reset-card {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    grid-column: span 2;
+    padding: 10px;
+}
+
+.reset-header {
+    margin-left: 5px;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    color: #f9f9f9; /* White text */
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.reset-form {
+    text-align: center;
+}
+
+.reset-button {
+    background-color: #ffd700; /* Yellow background */
+    border-radius: 8px;
+    padding: 20px 30px; /* Padding around the button */
+    font-size: 1.2rem; /* Text size */
+    font-weight: bold; /* Bold text */
+    color: #000000; /* White text */
+    transition: background-color 0.3s ease-in-out;
+}
+
+.reset-button:hover {
+    background-color: #eead0e; /* Darker yellow on hover */
+}
+
+.control-card {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 10px;
+    grid-column: span 2;
+}
+
+.control-header {
+    margin-left: 5px;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    color: #f9f9f9; /* White text */
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.control-form {
+    text-align: center;
+}
+
+.control-button-start, .control-button-stop {
+    border-radius: 8px;
+    padding: 20px 30px; /* Padding around the button */
+    font-size: 1.2rem; /* Text size */
+    font-weight: bold; /* Bold text */
+    color: #000000; /* White text */
+    transition: background-color 0.3s ease-in-out;
+    width: 5em;
+    text-align: center;
+}
+
+.control-button-start {
+    background-color: #32CD32; /* Green background */
+}
+
+.control-button-start:hover {
+    background-color: #228B22; /* Darker green on hover */
+}
+
+.control-button-stop {
+    background-color: #FF0000; /* Red background */
+}
+
+.control-button-stop:hover {
+    background-color: #B22222; /* Darker red on hover */
+}
+
+.key-parameter-card {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 10px;
+    transition: box-shadow 0.3s ease-in-out;
+    box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+    color: #f9f9f9;
+}
+
+.key-parameter-card:hover {
+    box-shadow: 0 0 20px rgb(255, 255, 255);
+}
+
+.section-title {
+    margin-left: 5px;
+    margin-top: 10px;
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.key-parameter-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: auto;
+    gap: 10px;
+    margin-bottom: 10px;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+
+.key-parameter-label {
+    font-size: 15px;
+    margin-top: 15px;
+    text-align: center;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.key-parameter-value {
+    font-size: 15px;
+    margin-top: 5px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.calculated-measurement-card {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 10px;
+    transition: box-shadow 0.3s ease-in-out;
+    color: #f9f9f9;
+}
+
+.calculated-measurement-card:hover {
+    box-shadow: 0 0 20px rgb(255, 255, 255);
+}
+
+.calculated-measurement-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: auto;
+    gap: 10px;
+    margin-bottom: 10px;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.calculated-measurement-grid:focus-within {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+    outline: none;
+}
+
+.calculated-measurement-grid:focus-within .calculated-measurement-card {
+    box-shadow: none;
+}
+
+.calculated-measurement-label {
+    font-size: 20px;
+    margin-top: 15px;
+    text-align: center;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.calculated-measurement-value {
+    font-size: 20px;
+    margin-top: 5px;
+    font-weight: bold;
+    text-align: center;
+}
+
+
 
 
         </style>
@@ -354,120 +540,116 @@
                     </p>
                 </div>
             </div>
+
             <!--Reset button-->
-            <div class="bg-white rounded p-3">
-                <p class="text-slate-500 ml-1 mb-3">Reset values</p>
-                <form action="{{url_for('reset_session')}}" method="POST" class="text-center">
-                    <button class="bg-yellow-400 hover:bg-yellow-500 rounded p-4 mt-4 text-lg text-center font-bold" style="width: 7em">Reset</button>    
+            <div class="reset-card">
+                <p class="reset-header">Reset values</p>
+                <form action="{{url_for('reset_session')}}" method="POST" class="reset-form">
+                    <button class="reset-button">Reset</button>    
                 </form>
             </div>
-            <!--System control-->
-            <div class="bg-white rounded p-3">
-                <p class="text-slate-500 ml-1 mb-3">System control</p>
-                <div class="grid grid-cols-2 gap-4">
+
+            </div>
+            <div class="control-card">
+                <p class="control-header">System control</p>
+                <div class="grid grid-cols-2 gap-4 control-form">
                     <form action="{{url_for('start_all')}}" method="POST">
-                        <button type="submit" name="button" value="start_button" class="bg-green-500 hover:bg-green-600 rounded p-4 ml-1 mt-4 text-lg font-bold" style="width: 5em">Start</button>
+                        <button type="submit" name="button" value="start_button" class="control-button-start">Start</button>
                     </form>
                     <form action="{{url_for('stop')}}" method="POST">
-                        <button type="submit" name="button" value="stop_button" class="bg-red-500 hover:bg-red-600 rounded p-4 mr-1 mt-4 text-lg font-bold" style="width: 5em">Stop</button>
+                        <button type="submit" name="button" value="stop_button" class="control-button-stop">Stop</button>
                     </form>
                 </div>
-            </div>
+            </div>            
         </div>
     </div>
 
     <div>
-        <p class="text-xl font-bold ml-6 mt-5 mb-3">Key parameters</p>
+        <div>
+    <p class="section-title">Key parameters</p>
 
-        <div class="grid grid-cols-6 gap-4 ml-4 mr-4 mb-4">
-            <div class="bg-white rounded p-4">
-                <p class="text-slate-500 ml-1 mb-3">Pressure (static) [Pa] - P<sub>0</sub></p>
-                <p class="text-2xl text-center font-bold mt-10">
-                    {% if last_values.P_0 %}
-                        {{ last_values.P_0 }}
-                    {% else %}
-                        0
-                    {% endif %}
-                </p>
-            </div>
-            <div class="bg-white rounded p-4">
-                <p class="text-slate-500 ml-1 mb-3">Pressure (differential) [Pa] - P<sub>1</sub></p>
-                <p class="text-2xl text-center font-bold mt-5 mb-4">
-                    {% if last_values.P_1 %}
-                        {{ last_values.P_1 }}
-                    {% else %}
-                        0
-                    {% endif %}            
-                </p>
-            </div>
-            <div class="bg-white rounded p-4">
-                <p class="text-slate-500 ml-1 mb-3">Pressure (differential) [Pa] - P<sub>2</sub></p>
-                <p class="text-2xl text-center font-bold mt-5">
-                    {% if last_values.P_2 %}
-                        {{ last_values.P_2 }}
-                    {% else %}
-                        0
-                    {% endif %} 
-                </p>
-            </div>
-            <div class="bg-white rounded p-4">
-                <p class="text-slate-500 ml-1 mb-3">Pressure (differential) [Pa] - P<sub>3</sub></p>
-                <p class="text-2xl text-center font-bold mt-5">
-                    {% if last_values.P_3 %}
-                        {{ last_values.P_3 }}
-                    {% else %}
-                        0
-                    {% endif %} 
-                </p>
-            </div>
-            <div class="bg-white rounded p-4">
-                <p class="text-slate-500 ml-1 mb-3">Strain gauge 1 [N]</p>
-                <p class="text-2xl text-center font-bold mt-7">
-                    {% if last_values.Strain_0 %}
-                        {{ last_values.Strain_0 }}
-                    {% else %}
-                        0
-                    {% endif %} 
-                </p>
-            </div>
-            <div class="bg-white rounded p-4"> 
-                <p class="text-slate-500 ml-1 mb-3">Strain gauge 2 [N]</p>
-                <p class="text-2xl text-center font-bold mt-7">
-                    {% if last_values.Strain_1 %}
-                        {{ last_values.Strain_1 }}
-                    {% else %}
-                        0
-                    {% endif %} 
-                </p>
-            </div>
+    <div class="key-parameter-grid">
+        <div class="key-parameter-card">
+            <p class="key-parameter-label">Pressure (static) [Pa] - P<sub>0</sub></p>
+            <p class="key-parameter-value">
+                {% if last_values.P_0 %}
+                    {{ last_values.P_0 }}
+                {% else %}
+                    0
+                {% endif %}
+            </p>
+        </div>
+        <div class="key-parameter-card">
+            <p class="key-parameter-label">Pressure (differential) [Pa] - P<sub>1</sub></p>
+            <p class="key-parameter-value">
+                {% if last_values.P_1 %}
+                    {{ last_values.P_1 }}
+                {% else %}
+                    0
+                {% endif %}            
+            </p>
+        </div>
+        <div class="key-parameter-card">
+            <p class="key-parameter-label">Pressure (differential) [Pa] - P<sub>2</sub></p>
+            <p class="key-parameter-value">
+                {% if last_values.P_2 %}
+                    {{ last_values.P_2 }}
+                {% else %}
+                    0
+                {% endif %} 
+            </p>
+        </div>
+        <div class="key-parameter-card">
+            <p class="key-parameter-label">Pressure (differential) [Pa] - P<sub>3</sub></p>
+            <p class="key-parameter-value">
+                {% if last_values.P_3 %}
+                    {{ last_values.P_3 }}
+                {% else %}
+                    0
+                {% endif %} 
+            </p>
+        </div>
+        <div class="key-parameter-card">
+            <p class="key-parameter-label">Strain gauge 1 [N]</p>
+            <p class="key-parameter-value">
+                {% if last_values.Strain_0 %}
+                    {{ last_values.Strain_0 }}
+                {% else %}
+                    0
+                {% endif %} 
+            </p>
+        </div>
+        <div class="key-parameter-card"> 
+            <p class="key-parameter-label">Strain gauge 2 [N]</p>
+            <p class="key-parameter-value">
+                {% if last_values.Strain_1 %}
+                    {{ last_values.Strain_1 }}
+                {% else %}
+                    0
+                {% endif %} 
+            </p>
+        </div>
+    </div>
         </div>
 
-        <div class="grid grid-cols-4 gap-4 ml-4 mr-4 mb-4">
-            <div class="bg-white rounded p-4">
-                <p class="text-slate-500 ml-1 mb-3">Flow velocity [m/s]></p>
-                <p class="text-2xl text-center font-bold mt-10 mb-4">
-                    0
-                </p>
+        <div class="calculated-measurement-grid">
+            <div class="calculated-measurement-card">
+                <p class="calculated-measurement-label">Flow velocity [m/s]</p>
+                <p class="calculated-measurement-value">0</p>
             </div>
-            <div class="bg-white rounded p-4">
-                <p class="text-slate-500 ml-1 mb-3">Yaw angle [&#176;]</p>
-                <p class="text-2xl text-center font-bold mt-10">
-                    0
-                </p>
+            <div class="calculated-measurement-card">
+                <p class="calculated-measurement-label">Yaw angle [&#176;]</p>
+                <p class="calculated-measurement-value">0</p>
             </div>
-            <div class="bg-white rounded p-4">
-                <p class="text-slate-500 ml-1 mb-3">Mass flow rate [kg/s]></p>
-                <p class="text-2xl text-center font-bold mt-10">
-                    0
-                </p>
+            <div class="calculated-measurement-card">
+                <p class="calculated-measurement-label">Mass flow rate [kg/s]</p>
+                <p class="calculated-measurement-value">0</p>
             </div>
-            <div class="bg-white rounded p-4">
-                <p class="text-slate-500 ml-1 mb-3">Density [kg/m^3]></p>
-                <p class="text-2xl text-center font-bold mt-10">
-                    0
-                </p>
+            <div class="calculated-measurement-card">
+                <p class="calculated-measurement-label">Density [kg/m^3]</p>
+                <p class="calculated-measurement-value">0</p>
             </div>
-        </div>
+        </div>        
     </div>
 
     </div>
