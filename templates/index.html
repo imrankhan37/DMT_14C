@@ -481,6 +481,47 @@ canvas {
     height: 100%;
 }
 
+.export-csv-card {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 10px; /* Add margin around the card */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-right: 25px;
+    margin-left: 15px;
+    margin-bottom: 100px;
+}
+
+.export-csv-title {
+    margin-bottom: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+}
+
+.export-csv-form {
+    display: flex;
+    align-items: center;
+}
+
+.file-path-input {
+    flex: 1;
+    color: #333;
+}
+
+.export-csv-button {
+    background-color: #60A5FA;
+    color: #fff;
+    border-radius: 8px;
+    padding: 10px;
+    width: 7em;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+
+
 
 
 
@@ -891,14 +932,17 @@ canvas {
     </div>
 
            
-        <!-- Export CSV button -->
-        <div class="bg-white rounded p-3">
-            <p class="text-slate-500 ml-1 mb-3"></p>
-            <form action="{{ url_for('export_csv') }}" method="POST" class="text-center" style="display: flex; align-items: center;">
-                <input type="text" name="file_path" placeholder="File Path" style="flex: 1;">
-                <button class="bg-green-400 hover:bg-green-500 rounded p-4 mt-4 text-lg text-center font-bold" style="width: 7em; {% if not export_csv_enabled %}background-color: green;{% endif %}" {% if not export_csv_enabled %}disabled{% endif %}>Export To CSV</button>
-            </form>
-        </div>
+<!-- Export CSV button -->
+<div class="export-csv-card">
+    <p class="export-csv-title">Export CSV</p>
+    <form action="{{ url_for('export_csv') }}" method="POST" class="export-csv-form">
+        <input type="text" name="file_path" placeholder="File Path" class="file-path-input">
+        <button class="export-csv-button" {% if not export_csv_enabled %}disabled{% endif %}>
+            Export To CSV
+        </button>
+    </form>
+</div>
+
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
