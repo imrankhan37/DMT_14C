@@ -5,112 +5,269 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="{{ url_for('static', filename='dist/css/output.css') }}" rel="stylesheet">
-</head>
 
-<body class="bg-slate-100">
+    <style>
+        :root {
+            --primary-color: #191970;
+            --secondary-color: #1E90FF;
+            --background-color: #000000;
+            --text-color: #FFFFFF;
+        }
 
-    <div class="bg-blue-900 p-3">
-        <p class="text-slate-50 p-4 text-3xl text-center font-bold mt-4 mb-4">DMT 14C: Aerodynamic probe and data acquisition software</p>
-        <div>
-            <button class="bg-blue-800 text-slate-50 rounded p-3 border-2 ml-4 mt-4" onclick="window.location.href='/'">&#8249; Back to main page</button>
-        </div>
-    </div>
+        body {
+            background-image: url('https://cdn.midjourney.com/0c222994-7c72-4aee-b8ca-b6b6c7d3951c/0_3.png');
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
 
-    <div class="bg-white rounded p-3 ml-4 mr-4 mb-4">
-        <div class="flex justify-between items-center">
-            <form onsubmit="saveProfileData(event)" id="profileForm">
-                <p class="text-xl font-bold mt-4 mb-3">Name your profile:</p>
-                <input type="text" id="profileName" name="name" class="ml-4 mb-4 border-2 p-3" size="100" oninput="toggleSubmitButton()">
-    
-
-                <p class="text-xl font-bold mt-4 mb-3">Fan motor:</p> 
-
-                <div class="grid grid-cols-5 gap-2 mb-2">
-                    <input type="text" id="duty_cycle" name="duty_cycle" class="ml-4 mb-4 border-2 p-3" size="100" placeholder="Duty cycle [%]">
-                    <input type="text" id="current" name="current" class="ml-4 mb-4 border-2 p-3" size="100" placeholder="Current [A]">
-                    <input type="text" id="speed" name="speed" class="ml-4 mb-4 border-2 p-3" size="100" placeholder="Input speed [rpm]">
-                    <input type="text" id="ramp_down_speed" name="ramp_down_speed" class="ml-4 mb-4 border-2 p-3" size="100" placeholder="Ramp down speed [rpm]">
-                    <input type="text" id="ramp_up_speed" name="ramp_up_speed" class="ml-4 mb-4 border-2 p-3" size="100" placeholder="Ramp up speed [rpm]">
-                </div>
-
-                <p class="text-xl font-bold mt-4 mb-3">Linear actuator:</p> 
-
-                <div class="grid grid-cols-5 gap-2 mb-2">
-                    <input type="text" id="linear_actuator" name="linear_actuator" class="ml-4 mb-4 border-2 p-3" size="100" placeholder="Actuator position [mm]">
-                </div>
-
-                <p class="text-xl font-bold mt-4 mb-3">Rotary motor:</p> 
-
-                <div class="grid grid-cols-5 gap-2 mb-2">
-                    <input type="text" id="rotary_motor" name="rotary_motor" class="ml-4 mb-4 border-2 p-3" size="100" placeholder="Rotary position [°]">
-                </div>
-
-                <p class="text-xl font-bold mt-4 mb-3">Other parameters:</p> 
-
-                <div class="grid grid-cols-5 gap-2 mb-2">
-                    <input type="text" id="vesc_port" name="vesc_port" class="ml-4 mb-4 border-2 p-3" size="100" placeholder="VESC Port">
-                    <input type="text" id="arduino_port" name="arduino_port" class="ml-4 mb-4 border-2 p-3" size="100" placeholder="Arduino Port">
-                </div>
-                <div class="text-left ml-4">
-                    <input type="submit" value="Submit values" id="submitButton" class="bg-green-500 hover:bg-green-600 text-xl font-bold rounded p-3 mt-5" onclick="saveProfileData(event)" disabled>
-                </div>
-            </form>
-
-        </div>
-    </div>
-    <script>
-function saveProfileData(event) {
-    event.preventDefault();
-
-    const profileNameInput = document.getElementById('profileName');
-    const profileName = profileNameInput.value.trim();
-
-    if (profileName !== '') {
-        const profileData = {
-            name: profileName,
-            duty_cycle: document.getElementById('duty_cycle').value,
-            current: document.getElementById('current').value,
-            speed: document.getElementById('speed').value,
-            ramp_down_speed: document.getElementById('ramp_down_speed').value,
-            ramp_up_speed: document.getElementById('ramp_up_speed').value,
-            linear_actuator: document.getElementById('linear_actuator').value,
-            rotary_motor: document.getElementById('rotary_motor').value,
-            vesc_port: document.getElementById('vesc_port').value,
-            arduino_port: document.getElementById('arduino_port').value
-        };
-
-        fetch('/save_profile', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(profileData),
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById('profileForm').reset();
-                window.location.href = '/';
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
+        .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
     }
+
+    .section {
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 5px;
+        padding: 20px;
+        margin-bottom: 20px;
+        width: 100%;
+    }
+
+    .title {
+        font-size: 24px;
+        font-weight: bold;
+        text-align: center;
+        margin: 20px 0;
+    }
+
+    .form-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
 }
 
-function toggleSubmitButton() {
-        const profileNameInput = document.getElementById('profileName');
-        const submitButton = document.getElementById('submitButton');
 
-        if (profileNameInput.value.trim() !== '') {
-            submitButton.disabled = false;
-        } else {
-            submitButton.disabled = true;
-        }
+.form-group {
+    margin-bottom: 30px;
+    width: calc(33% - 20px); /* Adjust this as per your requirements, 20px is for gap */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.1);
+    transition: box-shadow 0.3s, background-color 0.3s;
+    box-sizing: border-box;
+}
+
+
+.form-group:hover {
+    box-shadow: 0 0 10px rgba(255, 255, 255, 1);
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    
+}
+
+    .form-group label {
+        text-align: center;
+        margin-bottom: 5px;
     }
-</script>
+
+    .form-group .input-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+
+    .form-group .input-group input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            width: calc(100% - 10px);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            transition: box-shadow 0.3s, background-color 0.3s;
+            text-align: center; /* Center the text */
+            font-weight: bold; /* Make the text bold */
+        }
+
+        .form-group .input-group input:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .form-input-full {
+        width: 100%;
+        margin-bottom: 30px;
+}
+
+        .form-group .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            text-align: center; /* Center the text */
+            font-weight: bold; /* Make the text bold */
+        }
+
+        .button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            transition: box-shadow 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .button:hover {
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .button:active {
+            box-shadow: 0 0 50px rgba(255, 255, 255, 0.3);
+        }
+
+        #profileName {
+    color: #000000; /* Set the font color to black */
+}
+
+.form-group label[for="profileName"] {
+    text-align: center;
+    font-weight: bold;
+}
+
+body {
+    font-family: 'Verdnana', sans-serif;
+    }
+
+    h1 {
+    font-family: 'Verdana', sans-serif;
+    }
+
+    p {
+    font-family:'Verdana', sans-serif;
+    }
+
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="title">INPUT PARAMETERS</h1>
+        <button class="button" onclick="window.location.href='/'">&#8249; Back to main page</button>
+
+        <form onsubmit="saveProfileData(event)" id="profileForm" class = "form-grid">
+            <div class="form-input form-input-full">
+                <label for="profileName">Name your profile:</label>
+            <input type="text" id="profileName" name="name" placeholder="Enter profile name" value="Default Profile" style="text-align: left; font-weight: bold; width: 80%; padding-left: 10px" >
+            </div>
+
+            <div class="form-group">
+                <label>Motor Settings:</label>
+                <div class="input-group">
+                    <div class="input-title">Duty cycle [%]</div>
+                    <input type="text" id="duty_cycle" name="duty_cycle" placeholder="Enter duty cycle" value="50">
+                    <div class="input-title">Current [A]</div>
+                    <input type="text" id="current" name="current" placeholder="Enter current" value="5">
+                    <div class="input-title">Input speed [rpm]</div>
+                    <input type="text" id="speed" name="speed" placeholder="Enter input speed" value="1000">
+                    <div class="input-title">Ramp down speed [rpm]</div>
+                    <input type="text" id="ramp_down_speed" name="ramp_down_speed" placeholder="Enter ramp down speed" value="500">
+                    <div class="input-title">Ramp up speed [rpm]</div>
+                    <input type="text" id="ramp_up_speed" name="ramp_up_speed" placeholder="Enter ramp up speed" value="2000">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Actuator Settings:</label>
+                <div class="input-group">
+                    <div class="input-title">Actuator position [mm]</div>
+                    <input type="text" id="linear_actuator" name="linear_actuator" placeholder="Enter actuator position" value="50">
+                    <div class="input-title">Rotary motor position [°]</div>
+                    <input type="text" id="rotary_motor" name="rotary_motor" placeholder="Enter rotary motor position" value="90">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Port Settings:</label>
+                <div class="input-group">
+                    <div class="input-title">VESC Port Number</div>
+                    <input type="text" id="vesc_port" name="vesc_port" placeholder="Enter VESC port number" value="COM3">
+                    <div class="input-title">Arduino Port</div>
+                    <input type="text" id="arduino_port" name="arduino_port" placeholder="Enter Arduino port" value="COM4">
+                </div>
+            </div>
+                <button type="submit" class="button">Submit values</button>
+        </form>
+    </div>
+
+    <script>
+        function saveProfileData(event) {
+            event.preventDefault();
+
+            const profileNameInput = document.getElementById('profileName');
+            const profileName = profileNameInput.value.trim();
+
+            if (profileName !== '') {
+                const profileData = {
+                    name: profileName,
+                    duty_cycle: document.getElementById('duty_cycle').value,
+                    current: document.getElementById('current').value,
+                    speed: document.getElementById('speed').value,
+                    ramp_down_speed: document.getElementById('ramp_down_speed').value,
+                    ramp_up_speed: document.getElementById('ramp_up_speed').value,
+                    linear_actuator: document.getElementById('linear_actuator').value,
+                    rotary_motor: document.getElementById('rotary_motor').value,
+                    vesc_port: document.getElementById('vesc_port').value,
+                    arduino_port: document.getElementById('arduino_port').value
+                };
+
+                fetch('/save_profile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(profileData),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('profileForm').reset();
+                        window.location.href = '/';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+        }
+        
+    </script>
 </body>
 </html>
-
-
