@@ -5,7 +5,13 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="{{url_for('static',filename='dist/css/output.css')}}" rel="stylesheet">
+        <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        <script type="text/javascript" src="http://pubnub.github.io/eon/lib/eon.js"></script>
+
         <style>
 
         html {
@@ -488,6 +494,7 @@ canvas {
 
         </style>
     </head>
+    
     <body class="main-body">
         <div class="title-card">
             <h1 class="title-header">DMT 14C: Aerodynamic probe and data acquisition software</h1>
@@ -645,68 +652,68 @@ canvas {
         <div>
     <p class="section-title">Key parameters</p>
 
-    <div class="key-parameter-grid">
-        <div class="key-parameter-card">
-            <p class="key-parameter-label">Pressure (Static) - P<sub>0</sub></p>
-            <p class="key-parameter-value">
-                {% if last_values.P_0 %}
-                    {{ last_values.P_0 }}Pa
-                {% else %}
-                    0Pa
-                {% endif %}
-            </p>
+        <div class="grid grid-cols-6 gap-4 ml-4 mr-4 mb-4">
+            <div class="bg-white rounded p-4">
+                <p class="text-slate-500 ml-1 mb-3">Pressure (static) [Pa] - P<sub>0</sub></p>
+                <p class="text-2xl text-center font-bold mt-10">
+                    {% if last_values.P_0 %}
+                        {{ last_values.P_0 }}
+                    {% else %}
+                        0
+                    {% endif %}
+                </p>
+            </div>
+            <div class="bg-white rounded p-4">
+                <p class="text-slate-500 ml-1 mb-3">Pressure (differential) [Pa] - P<sub>1</sub></p>
+                <p class="text-2xl text-center font-bold mt-5 mb-4">
+                    {% if last_values.P_1 %}
+                        {{ last_values.P_1 }}
+                    {% else %}
+                        0
+                    {% endif %}            
+                </p>
+            </div>
+            <div class="bg-white rounded p-4">
+                <p class="text-slate-500 ml-1 mb-3">Pressure (differential) [Pa] - P<sub>2</sub></p>
+                <p class="text-2xl text-center font-bold mt-5">
+                    {% if last_values.P_2 %}
+                        {{ last_values.P_2 }}
+                    {% else %}
+                        0
+                    {% endif %} 
+                </p>
+            </div>
+            <div class="bg-white rounded p-4">
+                <p class="text-slate-500 ml-1 mb-3">Pressure (differential) [Pa] - P<sub>3</sub></p>
+                <p class="text-2xl text-center font-bold mt-5">
+                    {% if last_values.P_3 %}
+                        {{ last_values.P_3 }}
+                    {% else %}
+                        0
+                    {% endif %} 
+                </p>
+            </div>
+            <div class="bg-white rounded p-4">
+                <p class="text-slate-500 ml-1 mb-3">Strain gauge 1 [N]</p>
+                <p class="text-2xl text-center font-bold mt-7">
+                    {% if last_values.Strain_0 %}
+                        {{ last_values.Strain_0 }}
+                    {% else %}
+                        0
+                    {% endif %} 
+                </p>
+            </div>
+            <div class="bg-white rounded p-4"> 
+                <p class="text-slate-500 ml-1 mb-3">Strain gauge 2 [N]</p>
+                <p class="text-2xl text-center font-bold mt-7">
+                    {% if last_values.Strain_1 %}
+                        {{ last_values.Strain_1 }}
+                    {% else %}
+                        0
+                    {% endif %} 
+                </p>
+            </div>
         </div>
-        <div class="key-parameter-card">
-            <p class="key-parameter-label">Pressure (Differential) - P<sub>1</sub></p>
-            <p class="key-parameter-value">
-                {% if last_values.P_1 %}
-                    {{ last_values.P_1 }}Pa
-                {% else %}
-                    0Pa
-                {% endif %}            
-            </p>
-        </div>
-        <div class="key-parameter-card">
-            <p class="key-parameter-label">Pressure (Differential) - P<sub>2</sub></p>
-            <p class="key-parameter-value">
-                {% if last_values.P_2 %}
-                    {{ last_values.P_2 }}Pa
-                {% else %}
-                    0Pa
-                {% endif %} 
-            </p>
-        </div>
-        <div class="key-parameter-card">
-            <p class="key-parameter-label">Pressure (Differential) - P<sub>3</sub></p>
-            <p class="key-parameter-value">
-                {% if last_values.P_3 %}
-                    {{ last_values.P_3 }}Pa
-                {% else %}
-                    0Pa
-                {% endif %} 
-            </p>
-        </div>
-        <div class="key-parameter-card">
-            <p class="key-parameter-label">Strain Gauge 1</p>
-            <p class="key-parameter-value">
-                {% if last_values.Strain_0 %}
-                    {{ last_values.Strain_0 }}N
-                {% else %}
-                    0N
-                {% endif %} 
-            </p>
-        </div>
-        <div class="key-parameter-card"> 
-            <p class="key-parameter-label">Strain Gauge 2</p>
-            <p class="key-parameter-value">
-                {% if last_values.Strain_1 %}
-                    {{ last_values.Strain_1 }}
-                {% else %}
-                    0N
-                {% endif %} 
-            </p>
-        </div>
-    </div>
 
         </div>
 
@@ -941,7 +948,31 @@ canvas {
         });
 
     </script>
-        
+
+
+    <h1>Sensor data</h1>
+    <div class="sensor1"></div>
+    <script>
+        function requestData() 
+        {
+            var requests = $.get('/data');
+            requests.done(function (data) {
+                var result = data;
+                var temp = result[1]
+                $(".sensor1").text("");
+                $(".sensor1").text("Data : "+ Math.round(data[1]));
+                console.log(result)
+                setTimeout(requestData, 1000);
+            });
+        }
+
+        $(document).ready(function() {
+            requestData();
+        });
+    </script>
+
+
+
 </body>
 
 
