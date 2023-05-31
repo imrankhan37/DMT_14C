@@ -438,14 +438,25 @@
 .graph-container {
     display: flex;
     justify-content: space-between;
+    flex-wrap: wrap;
+    margin-left: -10px; /* Adjust the value as desired */
 }
 
 .graph-card {
-    flex: 1;
+    margin-bottom: 10px;
     background-color: #fff;
     border-radius: 8px;
     padding: 20px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-right: 10px; /* Add a slight gap between the graph cards */
+}
+
+.graph-card:last-child {
+    margin-right: 0; /* Remove the margin from the last graph card */
+}
+
+.graph-card:first-child {
+    margin-left: 0; /* Remove the margin from the last graph card */
 }
 
 .graph-title {
@@ -771,7 +782,6 @@ canvas {
                     });
 
                   </script>
-            </div> 
 
             <div class="graph-card">
                 <h3 class="graph-title">Thrust [N]</h3>
@@ -818,7 +828,6 @@ canvas {
                     }
                     });
                   </script>
-            </div>
 
             <div class="graph-card">
                 <h3 class="graph-title">Motor temperature [°C]</h3>
@@ -863,13 +872,10 @@ canvas {
                   </script>
             </div>
         </div>
+    </div> 
 
-        <div class="grid grid-cols-3 gap-4 ml-4 mr-4 mb-4">
-            <div class="bg-white rounded p-3"></div>
-            <div class="bg-white rounded p-3"></div>
-            <div class="bg-white rounded p-3"></div>
-        </div>
     </div>
+
            
         <!-- Export CSV button -->
         <div class="bg-white rounded p-3">
