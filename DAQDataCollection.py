@@ -256,3 +256,5 @@ def main(voltage_device='Voltage_DAQ', temperature_device='Temp_Device', strain_
         json_strain_gauge_two_data = strain_gauge_two_data.to_json(orient='values')
 
         return json_p_zero_data, json_p_one_data, json_p_two_data, json_p_three_data, json_strain_gauge_one_data, json_strain_gauge_two_data
+
+main()
