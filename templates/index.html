@@ -645,61 +645,31 @@ canvas {
             <div class="bg-white rounded p-4">
                 <p class="text-slate-500 ml-1 mb-3">Pressure (static) [Pa] - P<sub>0</sub></p>
                 <p class="text-2xl text-center font-bold mt-10">
-                    {% if last_values.P_0 %}
-                        {{ last_values.P_0 }}
-                    {% else %}
-                        0
-                    {% endif %}
                 </p>
             </div>
             <div class="bg-white rounded p-4">
                 <p class="text-slate-500 ml-1 mb-3">Pressure (differential) [Pa] - P<sub>1</sub></p>
-                <p class="text-2xl text-center font-bold mt-5 mb-4">
-                    {% if last_values.P_1 %}
-                        {{ last_values.P_1 }}
-                    {% else %}
-                        0
-                    {% endif %}            
+                <p class="text-2xl text-center font-bold mt-5 mb-4">      
                 </p>
             </div>
             <div class="bg-white rounded p-4">
                 <p class="text-slate-500 ml-1 mb-3">Pressure (differential) [Pa] - P<sub>2</sub></p>
                 <p class="text-2xl text-center font-bold mt-5">
-                    {% if last_values.P_2 %}
-                        {{ last_values.P_2 }}
-                    {% else %}
-                        0
-                    {% endif %} 
                 </p>
             </div>
             <div class="bg-white rounded p-4">
                 <p class="text-slate-500 ml-1 mb-3">Pressure (differential) [Pa] - P<sub>3</sub></p>
                 <p class="text-2xl text-center font-bold mt-5">
-                    {% if last_values.P_3 %}
-                        {{ last_values.P_3 }}
-                    {% else %}
-                        0
-                    {% endif %} 
                 </p>
             </div>
             <div class="bg-white rounded p-4">
                 <p class="text-slate-500 ml-1 mb-3">Strain gauge 1 [N]</p>
                 <p class="text-2xl text-center font-bold mt-7">
-                    {% if last_values.Strain_0 %}
-                        {{ last_values.Strain_0 }}
-                    {% else %}
-                        0
-                    {% endif %} 
                 </p>
             </div>
             <div class="bg-white rounded p-4"> 
                 <p class="text-slate-500 ml-1 mb-3">Strain gauge 2 [N]</p>
                 <p class="text-2xl text-center font-bold mt-7">
-                    {% if last_values.Strain_1 %}
-                        {{ last_values.Strain_1 }}
-                    {% else %}
-                        0
-                    {% endif %} 
                 </p>
             </div>
         </div>
