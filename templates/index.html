@@ -12,15 +12,16 @@
             height: 100%;
         }
 
-            body {
-                background-image: url('https://cdn.midjourney.com/0c222994-7c72-4aee-b8ca-b6b6c7d3951c/0_3.png');
-                background-repeat: no-repeat;
-                background-size: cover;
-                color: var(--text-color);
-                font-family: Arial, sans-serif;
-                margin: 0;
-                padding: 0;
-            }
+        body {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #525f7f;
+  text-align: left;
+  background-color: #1e1e2f;
+}
 
             :root {
         --primary-color: #191970;
@@ -130,45 +131,66 @@
     }
 
     .parameter-card {
-        grid-column: span 4;
+        grid-column: span 7;
         background-color: rgba(255, 255, 255, 0.1);  /* Set this to your preferred value */
         border-radius: 8px;
         padding: 10px;
         transition: box-shadow 0.3s ease-in-out;
         color: #f9f9f9; /* Black text */
+        box-shadow: 0 0 10px rgb(255, 255, 255); /* Add a default box-shadow */
+
     }
+
+    .actuator-card {
+    border-radius: 8px;
+    grid-column: span 3;
+    background-color: rgba(255, 255, 255, 0.1);  /* Set this to your preferred value */
+    padding: 10px;
+    transition: box-shadow 0.3s ease-in-out;
+    color: #f9f9f9; /* White text */
+    box-shadow: 0 0 10px rgb(255, 255, 255); /* Add a default box-shadow */
+
+
+}
 
     .parameter-card:hover {
         box-shadow: 0 0 20px rgb(255, 255, 255);
     }
 
     .parameter-title {
+        margin-top: 5px;
         margin-left: 5px;
-        margin-top: 10px;
-        margin-bottom: 15px;
         text-align: center;
-        font-size: 25px;
-        font-weight: bold;
+        font-size: 15px;
         text-transform: uppercase;
     }
 
+    .actuator-header {
+    margin-left: 5px;
+    margin-top: 7px;
+    margin-bottom: 5px;
+    text-align: center;
+    font-size: 15px;
+    text-transform: uppercase;
+}
     .parameter-details-grid {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 10px;
-        margin-bottom: 10px;
-    }
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 2px; /* Adjust the gap value to make the parameter values closer together */
+    margin-bottom: 10px;
+}
+
 
     .param-description {
         font-size: 20px;
-        margin-top: 15px;
+        margin-top: 30px;
         text-align: center;
         font-weight: bold;
         text-transform: uppercase;
     }
     .param-subdescription {
-    font-size: 10px;
-    margin-top: 15px;
+    font-size: 15px;
+    margin-top: 25px;
     text-align: center;
 }
 
@@ -177,33 +199,17 @@
         margin-top: 5px;
         font-weight: bold;
         text-align: center;
+        text-transform: uppercase;
     }
 
-    .actuator-card {
-    background-color: rgba(255, 255, 255, 0.1);  /* This matches the parameter-card background */
-    border-radius: 8px;
-    grid-column: span 2;
-    padding: 10px;
-    transition: box-shadow 0.3s ease-in-out;
-    color: #f9f9f9; /* White text */
-}
 
 .actuator-card:hover {
     box-shadow: 0 0 20px rgb(255, 255, 255);  /* This matches the parameter-card hover effect */
 }
 
-.actuator-header {
-    margin-left: 5px;
-    margin-top: 20px;
-    margin-bottom: 5px;
-    text-align: center;
-    font-size: 18px;
-    font-weight: bold;
-    text-transform: uppercase;
-}
 
 .actuator-position-title {
-    font-size: 13px;
+    font-size: 15px;
     margin-top: 30px;
     text-align: center;
     text-transform: uppercase;
@@ -240,6 +246,9 @@
     border-radius: 8px;
     grid-column: span 2;
     padding: 10px;
+    box-shadow: 0 0 10px rgb(255, 255, 255);  /* This matches the parameter-card hover effect */
+
+
 }
 
 .reset-header {
@@ -274,13 +283,18 @@
 .control-card {
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-    padding: 10px;
-    grid-column: span 2;
+    padding: 20px;
+    grid-column: span 1;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    transition: box-shadow 0.3s ease-in-out;
+}
+
+.control-card:hover {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
 }
 
 .control-header {
-    margin-left: 5px;
-    margin-top: 30px;
+    margin-top: 10px;
     margin-bottom: 15px;
     color: #f9f9f9; /* White text */
     text-align: center;
@@ -290,34 +304,36 @@
 }
 
 .control-form {
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* margin-top: 20px; */
 }
 
-.control-button-start, .control-button-stop {
+.control-button-start,
+.control-button-stop {
     border-radius: 8px;
-    padding: 20px 30px; /* Padding around the button */
-    font-size: 1.2rem; /* Text size */
-    font-weight: bold; /* Bold text */
-    color: #000000; /* White text */
+    padding: 15px 30px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #ffffff;
     transition: background-color 0.3s ease-in-out;
-    width: 5em;
-    text-align: center;
 }
 
 .control-button-start {
-    background-color: #32CD32; /* Green background */
+    background-color: #32CD32;
 }
 
 .control-button-start:hover {
-    background-color: #228B22; /* Darker green on hover */
+    background-color: #228B22;
 }
 
 .control-button-stop {
-    background-color: #FF0000; /* Red background */
+    background-color: #FF0000;
 }
 
 .control-button-stop:hover {
-    background-color: #B22222; /* Darker red on hover */
+    background-color: #B22222;
 }
 
 .key-parameter-card {
@@ -334,10 +350,10 @@
 }
 
 .section-title {
-    margin-left: 5px;
+    margin-left: 10px;
     margin-top: 10px;
     margin-bottom: 15px;
-    text-align: center;
+    text-align: left;
     font-size: 20px;
     font-weight: bold;
     text-transform: uppercase;
@@ -349,7 +365,6 @@
     grid-template-rows: auto;
     gap: 10px;
     margin-bottom: 10px;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
 
@@ -385,7 +400,6 @@
     grid-template-rows: auto;
     gap: 10px;
     margin-bottom: 10px;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
 .calculated-measurement-grid:focus-within {
@@ -411,6 +425,41 @@
     font-weight: bold;
     text-align: center;
 }
+
+.position-container {
+    display: flex;
+}
+
+.position-item {
+    flex: 1;
+    margin-right: 10px; /* Adjust the spacing between the items as needed */
+}
+
+.graph-container {
+    display: flex;
+    justify-content: space-between;
+}
+
+.graph-card {
+    flex: 1;
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.graph-title {
+    margin-bottom: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+}
+
+canvas {
+    width: 100%;
+    height: 100%;
+}
+
 
 
 
@@ -450,62 +499,63 @@
                         </select><br>
                     </form>
                 </div>
+
     
                 <div class="motor-param-grid">
                     <!-- Fan motor parameters -->
                     <div class="parameter-card">
-                        <p class="parameter-title">Fan motor</p>
+                        <p class="parameter-title">FAN MOTOR INPUTS</p>
                         <div class="parameter-details-grid">
-                            <p class="param-subdescription text-center">Duty cycle [%]</p>
-                            <p class="param-subdescription text-center">Current [A]</p>
-                            <p class="param-subdescription text-center">Input speed [rpm]</p>
-                            <p class="param-subdescription text-center">Ramp down speed [rpm]</p>
-                            <p class="param-subdescription text-center">Ramp up speed [rpm]</p>
+                            <p class="param-subdescription text-center">Duty cycle</p>
+                            <p class="param-subdescription text-center">Current</p>
+                            <p class="param-subdescription text-center">Input speed</p>
+                            <p class="param-subdescription text-center">Ramp down speed</p>
+                            <p class="param-subdescription text-center">Ramp up speed</p>
                         </div>
                         <div class="grid grid-cols-5 gap-2 mb-2">
     
                     <div>
                         <p class="param-value">
                             {% if input_motor_data and input_motor_data.duty_cycle %}
-                                {{ input_motor_data.duty_cycle }}
+                                {{ input_motor_data.duty_cycle }}%
                             {% else %}
-                                0
+                                0%
                             {% endif %}
                         </p>
                     </div>
                     <div>
                         <p class="param-value">
                             {% if input_motor_data and input_motor_data.current %}
-                                {{ input_motor_data.current }}
+                                {{ input_motor_data.current }}A
                             {% else %}
-                                0
+                                0A
                             {% endif %}
                         </p>
                     </div>
                     <div>
                         <p class="param-value">
                             {% if input_motor_data and input_motor_data.speed %}
-                                {{ input_motor_data.speed }}
+                                {{ input_motor_data.speed }}rpm
                             {% else %}
-                                0
+                                0rpm
                             {% endif %}
                         </p>
                     </div>
                     <div>
                         <p class="param-value">
                             {% if input_motor_data and input_motor_data.ramp_down_speed %}
-                                {{ input_motor_data.ramp_down_speed }}
+                                {{ input_motor_data.ramp_down_speed }}rpm
                             {% else %}
-                                0
+                                0rpm
                             {% endif %}
                         </p>
                     </div>
                     <div>
                         <p class="param-value">
                             {% if input_motor_data and input_motor_data.ramp_up_speed %}
-                                {{ input_motor_data.ramp_up_speed }}
+                                {{ input_motor_data.ramp_up_speed }}rpm
                             {% else %}
-                                0
+                                0rpm
                             {% endif %}
                         </p>
                     </div>
@@ -513,32 +563,38 @@
             </div>
             <!--Linear actuator-->
             <div class="actuator-card">
-                <p class="actuator-header">Linear actuator</p>
-                <p class="actuator-position-title">Actuator position [mm]</p>
-                <div>
-                    <p class="actuator-position-value">
-                        {% if input_motor_data.linear_actuator %}
-                            {{ input_motor_data.linear_actuator}}
-                        {% else %}
-                            0
-                        {% endif %}
-                    </p>
+                <p class="actuator-header">ACTUATOR INPUTS</p>
+                
+                <div class="position-container">
+                    <div class="position-item">
+                        <p class="actuator-position-title">Linear</p>
+                        <div>
+                            <p class="actuator-position-value">
+                                {% if input_motor_data.linear_actuator %}
+                                    {{ input_motor_data.linear_actuator }}mm
+                                {% else %}
+                                    0mm
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="position-item">
+                        <p class="actuator-position-title">Rotary</p>
+                        <div>
+                            <p class="actuator-position-value">
+                                {% if input_motor_data and input_motor_data.rotary_motor %}
+                                    {{ input_motor_data.rotary_motor }}°
+                                {% else %}
+                                    0°
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <!--Rotary motor-->
-            <div class="actuator-card">
-                <p class="actuator-header">Rotary motor</p>
-                <p class="actuator-position-title">Rotary position [°]</p>
-                <div>
-                    <p class="actuator-position-value">
-                        {% if input_motor_data and input_motor_data.rotary_motor %}
-                            {{ input_motor_data.rotary_motor }}
-                        {% else %}
-                            0
-                        {% endif %}
-                    </p>
-                </div>
-            </div>
+            
+    
 
             <!--Reset button-->
             <div class="reset-card">
@@ -569,62 +625,62 @@
 
     <div class="key-parameter-grid">
         <div class="key-parameter-card">
-            <p class="key-parameter-label">Pressure (static) [Pa] - P<sub>0</sub></p>
+            <p class="key-parameter-label">Pressure (Static) - P<sub>0</sub></p>
             <p class="key-parameter-value">
                 {% if last_values.P_0 %}
-                    {{ last_values.P_0 }}
+                    {{ last_values.P_0 }}Pa
                 {% else %}
-                    0
+                    0Pa
                 {% endif %}
             </p>
         </div>
         <div class="key-parameter-card">
-            <p class="key-parameter-label">Pressure (differential) [Pa] - P<sub>1</sub></p>
+            <p class="key-parameter-label">Pressure (Differential) - P<sub>1</sub></p>
             <p class="key-parameter-value">
                 {% if last_values.P_1 %}
-                    {{ last_values.P_1 }}
+                    {{ last_values.P_1 }}Pa
                 {% else %}
-                    0
+                    0Pa
                 {% endif %}            
             </p>
         </div>
         <div class="key-parameter-card">
-            <p class="key-parameter-label">Pressure (differential) [Pa] - P<sub>2</sub></p>
+            <p class="key-parameter-label">Pressure (Differential) - P<sub>2</sub></p>
             <p class="key-parameter-value">
                 {% if last_values.P_2 %}
-                    {{ last_values.P_2 }}
+                    {{ last_values.P_2 }}Pa
                 {% else %}
-                    0
+                    0Pa
                 {% endif %} 
             </p>
         </div>
         <div class="key-parameter-card">
-            <p class="key-parameter-label">Pressure (differential) [Pa] - P<sub>3</sub></p>
+            <p class="key-parameter-label">Pressure (Differential) - P<sub>3</sub></p>
             <p class="key-parameter-value">
                 {% if last_values.P_3 %}
-                    {{ last_values.P_3 }}
+                    {{ last_values.P_3 }}Pa
                 {% else %}
-                    0
+                    0Pa
                 {% endif %} 
             </p>
         </div>
         <div class="key-parameter-card">
-            <p class="key-parameter-label">Strain gauge 1 [N]</p>
+            <p class="key-parameter-label">Strain Gauge 1</p>
             <p class="key-parameter-value">
                 {% if last_values.Strain_0 %}
-                    {{ last_values.Strain_0 }}
+                    {{ last_values.Strain_0 }}N
                 {% else %}
-                    0
+                    0N
                 {% endif %} 
             </p>
         </div>
         <div class="key-parameter-card"> 
-            <p class="key-parameter-label">Strain gauge 2 [N]</p>
+            <p class="key-parameter-label">Strain Gauge 2</p>
             <p class="key-parameter-value">
                 {% if last_values.Strain_1 %}
                     {{ last_values.Strain_1 }}
                 {% else %}
-                    0
+                    0N
                 {% endif %} 
             </p>
         </div>
@@ -656,12 +712,12 @@
     </div>
         <p class="text-xl font-bold ml-6 mt-5 mb-3">Graphs</p>
 
-        <div class="grid grid-cols-3 gap-4 ml-4 mr-4 mb-4">
-            <div class="bg-white rounded p-3">
-                <p class="text-slate-500 ml-1 mb-3">Pressure (static & stagnation) [Pa]</p>
-                <div>
-                    <canvas id="pressureChart" width="1500" height="1000"></canvas>
-                </div>
+        <div class="graph-container">
+            <div class="graph-container">
+                <div class="graph-card">
+                    <h3 class="graph-title">Pressure (static & stagnation) [Pa]</h3>
+                    <canvas id="pressureChart" width="600" height="300"></canvas>
+                </div>  
                   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                   <script>
                     var ctx1 = document.getElementById('pressureChart').getContext('2d');
@@ -717,11 +773,10 @@
                   </script>
             </div> 
 
-            <div class="bg-white rounded p-3">
-                <p class="text-slate-500 ml-1 mb-3">Thrust [N]</p>
-                <div>
-                    <canvas id="thrustChart" width="1500" height="1000"></canvas>
-                </div>
+            <div class="graph-card">
+                <h3 class="graph-title">Thrust [N]</h3>
+                <canvas id="thrustChart" width="600" height="300"></canvas>
+            </div>
                   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                   <script>
                     var ctx3 = document.getElementById('thrustChart').getContext('2d');
@@ -765,11 +820,11 @@
                   </script>
             </div>
 
-            <div class="bg-white rounded p-3">
-                <p class="text-slate-500 ml-1 mb-3">Motor temperature [&#176;C]</p>
-                <div>
-                    <canvas id="motortempChart" width="1500" height="1000"></canvas>
-                  </div>
+            <div class="graph-card">
+                <h3 class="graph-title">Motor temperature [°C]</h3>
+                <canvas id="motortempChart" width="600" height="300"></canvas>
+            </div>
+        </div>
                   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
                   <script>
                     var ctx3 = document.getElementById('motortempChart').getContext('2d');
