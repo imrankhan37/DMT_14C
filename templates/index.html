@@ -1013,259 +1013,324 @@ circle {
     <div class="key-parameter-grid">
         <div class="key-parameter-card">
             <p class="key-parameter-label">Pressure (Static) - P<sub>0</sub> [Pa]</p>
-            <p class="key-parameter-value">
-                <div class="P_0"></div>
-                <script>
-                    var p_zero_data = [];
-                    var p_one_data = [];
-                    var p_two_data = [];
-                    var p_three_data = [];
-                    var gauge_one_data = [];
-                    var pressurechart;
-                    var strainchart;
-                    var stopFlag = false;
+            <div class="key-parameter-value P_0"></div>
+            <script>
+                var p_zero_data = [];
+                var p_one_data = [];
+                var p_two_data = [];
+                var p_three_data = [];
+                var gauge_one_data = [];
+                var gauge_two_data = [];
+                var pressurechart;
+                var strainchart;
+                var stopFlag = false;
 
-                    function request_p_zero_data() {
-                        if (stopFlag) return;
+                function request_p_zero_data() {
+                    if (stopFlag) return;
 
-                        // Calls the function from python
-                        var requests = $.get('/generate_p_zero_data');
-                        requests.done(function (generate_p_zero_data) {
-                            var p_zero_result = generate_p_zero_data;
-                            var temp = p_zero_result[1]
-                            var time = p_zero_result[0]
-                            $(".P_0").text("");
-                            $(".P_0").text(generate_p_zero_data[1]);
+                    // Calls the function from python
+                    var requests = $.get('/generate_p_zero_data');
+                    requests.done(function (generate_p_zero_data) {
+                        var p_zero_result = generate_p_zero_data;
+                        var temp = p_zero_result[1]
+                        var time = p_zero_result[0]
+                        $(".P_0").text("");
+                        $(".P_0").text(generate_p_zero_data[1]);
 
-                            p_zero_data.push(generate_p_zero_data[1]);
+                        p_zero_data.push(generate_p_zero_data[1]);
 
-                            pressurechart.series[0].setData(p_zero_data);
-                            
-                            // Set delay for calling the function again
-                            setTimeout(request_p_zero_data, 1000);
-                        });
-                    }
+                        pressurechart.series[0].setData(p_zero_data);
+                        
+                        // Set delay for calling the function again
+                        setTimeout(request_p_zero_data, 1000);
+                    });
+                }
 
-                    function request_p_one_data() {
-                        if (stopFlag) return;
-                        var requests = $.get('/generate_p_one_data');
-                        requests.done(function (generate_p_one_data) {
-                            var p_one_result = generate_p_one_data;
-                            var temp = p_one_result[1]
-                            $(".P_1").text("");
-                            $(".P_1").text(generate_p_one_data[1]);
+                function request_p_one_data() {
+                    if (stopFlag) return;
+                    var requests = $.get('/generate_p_one_data');
+                    requests.done(function (generate_p_one_data) {
+                        var p_one_result = generate_p_one_data;
+                        var temp = p_one_result[1]
+                        $(".P_1").text("");
+                        $(".P_1").text(generate_p_one_data[1]);
 
-                            p_one_data.push(generate_p_one_data[1]);
+                        p_one_data.push(generate_p_one_data[1]);
 
-                            pressurechart.series[1].setData(p_one_data);
+                        pressurechart.series[1].setData(p_one_data);
 
-                            setTimeout(request_p_one_data, 1000);
-                        });
-                    }
+                        setTimeout(request_p_one_data, 1000);
+                    });
+                }
 
-                    function request_p_two_data() {
-                        if (stopFlag) return;
-                        var requests = $.get('/generate_p_two_data');
-                        requests.done(function (generate_p_two_data) {
-                            var p_two_result = generate_p_two_data;
-                            var temp = p_two_result[1]
-                            $(".P_2").text("");
-                            $(".P_2").text(generate_p_two_data[1]);
+                function request_p_two_data() {
+                    if (stopFlag) return;
+                    var requests = $.get('/generate_p_two_data');
+                    requests.done(function (generate_p_two_data) {
+                        var p_two_result = generate_p_two_data;
+                        var temp = p_two_result[1]
+                        $(".P_2").text("");
+                        $(".P_2").text(generate_p_two_data[1]);
 
-                            p_two_data.push(generate_p_two_data[1]);
+                        p_two_data.push(generate_p_two_data[1]);
 
-                            pressurechart.series[2].setData(p_two_data);
+                        pressurechart.series[2].setData(p_two_data);
 
-                            setTimeout(request_p_two_data, 1000);
-                        });
-                    }
+                        setTimeout(request_p_two_data, 1000);
+                    });
+                }
 
-                    function request_p_three_data() {
-                        if (stopFlag) return;
-                        var requests = $.get('/generate_p_three_data');
-                        requests.done(function (generate_p_three_data) {
-                            var p_three_result = generate_p_three_data;
-                            var temp = p_three_result[1]
-                            $(".P_3").text("");
-                            $(".P_3").text(generate_p_three_data[1]);
+                function request_p_three_data() {
+                    if (stopFlag) return;
+                    var requests = $.get('/generate_p_three_data');
+                    requests.done(function (generate_p_three_data) {
+                        var p_three_result = generate_p_three_data;
+                        var temp = p_three_result[1]
+                        $(".P_3").text("");
+                        $(".P_3").text(generate_p_three_data[1]);
 
-                            p_three_data.push(generate_p_three_data[1]);
+                        p_three_data.push(generate_p_three_data[1]);
 
-                            pressurechart.series[3].setData(p_three_data);
+                        pressurechart.series[3].setData(p_three_data);
 
-                            setTimeout(request_p_three_data, 1000);
-                        });
-                    }
+                        setTimeout(request_p_three_data, 1000);
+                    });
+                }
 
-                    function request_gauge_one_data() 
-                    {
-                        var requests = $.get('/generate_gauge_one_data');
-                        requests.done(function (generate_gauge_one_data) {
-                            var gauge_one_result = generate_gauge_one_data;
-                            var temp = gauge_one_result[1]
-                            $(".Gauge_1").text("");
-                            $(".Gauge_1").text(generate_gauge_one_data[1]);
+                function request_gauge_one_data() {
+                    if (stopFlag) return;
+                    var requests = $.get('/generate_gauge_one_data');
+                    requests.done(function (generate_gauge_one_data) {
+                        var gauge_one_result = generate_gauge_one_data;
+                        var temp = gauge_one_result[1]
+                        $(".Gauge_1").text("");
+                        $(".Gauge_1").text(generate_gauge_one_data[1]);
 
-                            gauge_one_data.push(generate_gauge_one_data[1]);
+                        gauge_one_data.push(generate_gauge_one_data[1]);
 
-                            thrustchart.series[0].setData(gauge_one_data);
+                        thrustchart.series[0].setData(gauge_one_data);
 
-                            setTimeout(request_gauge_one_data, 1000);
-                        });
-                    }
+                        setTimeout(request_gauge_one_data, 1000);
+                    });
+                }
 
-                    function request_gauge_two_data() 
-                    {
-                        var requests = $.get('/generate_gauge_two_data');
-                        requests.done(function (generate_gauge_two_data) {
-                            var gauge_two_result = generate_gauge_two_data;
-                            var temp = gauge_two_result[1]
-                            $(".Gauge_2").text("");
-                            $(".Gauge_2").text(generate_gauge_two_data[1]);
+                function request_gauge_two_data() {
+                    if (stopFlag) return;
+                    var requests = $.get('/generate_gauge_two_data');
+                    requests.done(function (generate_gauge_two_data) {
+                        var gauge_two_result = generate_gauge_two_data;
+                        var temp = gauge_two_result[1]
+                        $(".Gauge_2").text("");
+                        $(".Gauge_2").text(generate_gauge_two_data[1]);
 
-                            gauge_two_data.push(generate_gauge_two_data[1]);
+                        gauge_two_data.push(generate_gauge_two_data[1]);
 
-                            thrustchart.series[0].setData(gauge_two_data);
+                        thrustchart.series[1].setData(gauge_two_data);
 
-                            setTimeout(request_gauge_two_data, 1000);
-                        });
-                    }
+                        setTimeout(request_gauge_two_data, 1000);
+                    });
+                }
 
-                    // Functions that displays zero until the start button is pressed
-                    function p_zero_displayZero() {
-                        $(".P_0").text(0);
-                    }
-                    
-                    function p_one_displayZero() {
-                        $(".P_1").text(0);
-                    };
+                // Functions that displays zero until the start button is pressed
+                function p_zero_displayZero() {
+                    $(".P_0").text(0);
+                }
+                
+                function p_one_displayZero() {
+                    $(".P_1").text(0);
+                };
 
-                    function p_two_displayZero() {
-                        $(".P_2").text(0);
-                    };
+                function p_two_displayZero() {
+                    $(".P_2").text(0);
+                };
 
-                    function p_three_displayZero() {
-                        $(".P_3").text(0);
-                    };
+                function p_three_displayZero() {
+                    $(".P_3").text(0);
+                };
 
-                    function gauge_one_displayZero() {
-                        $(".Gauge_1").text(0);
-                    };
+                function gauge_one_displayZero() {
+                    $(".Gauge_1").text(0);
+                };
 
-                    function gauge_two_displayZero() {
-                        $(".Gauge_2").text(0);
-                    };
+                function gauge_two_displayZero() {
+                    $(".Gauge_2").text(0);
+                };
 
-                    // Function that only calls the python scripts when the start button is pressed
-                    $(document).ready(function() {
-                        p_zero_displayZero();
-                        p_one_displayZero();
-                        p_two_displayZero();
-                        p_three_displayZero();
-                        gauge_one_displayZero();
-                        gauge_two_displayZero();
+                // Function that only calls the python scripts when the start button is pressed
+                $(document).ready(function() {
+                    p_zero_displayZero();
+                    p_one_displayZero();
+                    p_two_displayZero();
+                    p_three_displayZero();
+                    gauge_one_displayZero();
+                    gauge_two_displayZero();
 
-                        pressurechart = Highcharts.chart('pressureChart', {
-                            chart: {
-                                renderTo: 'pressureChart',
-                                type: 'line'
-                            },
+                    pressurechart = Highcharts.chart('pressureChart', {
+                        chart: {
+                            renderTo: 'pressureChart',
+                            type: 'line',
+                            backgroundColor: 'rgba(0,0,0,0)'
+                        },
+                        title: {
+                            text: 'Pressure (static & stagnation) [Pa]',
+                            style: {
+                                    color: 'white'
+                                }
+                        },
+                        xAxis: {
                             title: {
-                                text: 'P_0 data'
+                                text: 'Time [s]',
+                                style: {
+                                    color: 'white'
+                                }
                             },
-                            series: [{
-                                name: 'P_0',
-                                data: p_zero_data
-                            }, {
-                                name: 'P_1',
-                                data: p_one_data
-                            }, {
-                                name: 'P_2',
-                                data: p_two_data
-                            }, {
-                                name: 'P_3',
-                                data: p_three_data 
-                            }]
-                        });
-
-                        thrustchart = Highcharts.chart('thrustChart', {
-                            chart: {
-                                renderTo: 'thrustChart',
-                                type: 'line'
+                            labels: {
+                                style: {
+                                    color: 'white'
+                                }
                             },
+                            gridLineColor: 'white',
+                            tickColor: 'white'
+                        },
+                        yAxis: {
                             title: {
-                                text: 'Thrust data'
+                                text: 'Pressure [Pa]',
+                                style: {
+                                    color: 'white'
+                                }
                             },
-                            series: [{
-                                name: 'Strain gauge 1',
-                                data: gauge_one_data
-                            }]
-                        });
-
-                        $('#startButton').click(function() {
-                            request_p_zero_data();
-                            request_p_one_data();
-                            request_p_two_data();
-                            request_p_three_data();
-                            request_gauge_one_data();
-                            request_gauge_two_data();
-                        });
-                        $('#stopButton').click(function() {
-                            stopFlag = true;
-                        });
+                            labels: {
+                                style: {
+                                    color: 'white'
+                                }
+                            },
+                            gridLineColor: 'white',
+                        },
+                        legend: {
+                            itemStyle: {
+                                color: 'white'
+                            }
+                        },
+                        credits: {
+                            enabled: false
+                        },
+                        exporting: {
+                            enabled: false
+                        },
+                        series: [{
+                            name: 'P_0',
+                            data: p_zero_data
+                        }, {
+                            name: 'P_1',
+                            data: p_one_data,
+                            color: 'red'
+                        }, {
+                            name: 'P_2',
+                            data: p_two_data,
+                            color:'orange'
+                        }, {
+                            name: 'P_3',
+                            data: p_three_data,
+                            color: 'green'
+                        }]
                     });
 
-                </script>
-            </p>
+                    thrustchart = Highcharts.chart('thrustChart', {
+                        chart: {
+                            renderTo: 'thrustChart',
+                            type: 'line',
+                            backgroundColor: 'rgba(0,0,0,0)'
+                        },
+                        title: {
+                            text: 'Thrust [N]',
+                            style: {
+                                    color: 'white'
+                                }
+                        },
+                        xAxis: {
+                            title: {
+                                text: 'Time [s]',
+                                style: {
+                                    color: 'white'
+                                }
+                            },
+                            labels: {
+                                style: {
+                                    color: 'white'
+                                }
+                            },
+                            gridLineColor: 'white',
+                            tickColor: 'white'
+                        },
+                        yAxis: {
+                            title: {
+                                text: 'Thrust [N]',
+                                style: {
+                                    color: 'white'
+                                }
+                            },
+                            labels: {
+                                style: {
+                                    color: 'white'
+                                }
+                            },
+                            gridLineColor: 'white',
+                        },
+                        legend: {
+                            itemStyle: {
+                                color: 'white'
+                            }
+                        },
+                        credits: {
+                            enabled: false
+                        },
+                        exporting: {
+                            enabled: false
+                        },
+                        series: [{
+                            name: 'Strain gauge 1',
+                            data: gauge_one_data
+                        }, {
+                            name: 'Strain gauge 2',
+                            data: gauge_two_data,
+                            color: 'red'
+                        }]
+                    });
+
+                    $('#startButton').click(function() {
+                        request_p_zero_data();
+                        request_p_one_data();
+                        request_p_two_data();
+                        request_p_three_data();
+                        request_gauge_one_data();
+                        request_gauge_two_data();
+                    });
+                    $('#stopButton').click(function() {
+                        stopFlag = true;
+                    });
+                });
+
+            </script>
         </div>
         <div class="key-parameter-card">
             <p class="key-parameter-label">Pressure (Differential) - P<sub>1</sub> [Pa]</p>
-            <p class="key-parameter-value">
-                <div class="P_1"></div>        
-            </p>
+            <div class="key-parameter-value P_1"></div>        
         </div>
         <div class="key-parameter-card">
             <p class="key-parameter-label">Pressure (Differential) - P<sub>2</sub> [Pa]</p>
-            <p class="key-parameter-value">
-                <div class="P_2"></div>
-            </p>
+            <div class="key-parameter-value P_2"></div>
         </div>
         <div class="key-parameter-card">
             <p class="key-parameter-label">Pressure (Differential) - P<sub>3</sub> [Pa]</p>
-            <p class="key-parameter-value">
-                <div class="P_3"></div>
-            </p>
+            <div class="key-parameter-value P_3"></div>
         </div>
         <div class="key-parameter-card">
             <p class="key-parameter-label">Strain Gauge 1 [N]</p>
-            <p class="key-parameter-value">
-                <div class="Gauge_1"></div>
-            </p>
+            <div class="key-parameter-value Gauge_1"></div>
         </div>
         <div class="key-parameter-card"> 
             <p class="key-parameter-label">Strain Gauge 2 [N]</p>
-            <p class="key-parameter-value">
-                <div class="Gauge_2"></div>
-                <script>
-
-                    function request_gauge_two_data() 
-                    {
-                        var requests = $.get('/generate_gauge_two_data');
-                        requests.done(function (generate_gauge_two_data) {
-                            var gauge_two_result = generate_gauge_two_data;
-                            var temp = gauge_two_result[1]
-                            $(".Gauge_2").text("");
-                            $(".Gauge_2").text(generate_gauge_two_data[1]);
-                            setTimeout(request_gauge_two_data, 1000);
-                        });
-                    }
-
-                    function gauge_two_displayZero() {
-                        $(".Gauge_2").text(0);
-                    };
-
-                </script> 
-            </p>
+            <div class="key-parameter-value Gauge_2"></div>
         </div>
     </div>
 
@@ -1461,16 +1526,12 @@ circle {
         <div class="graph-container">
             <div class="canvas-container">
                 <div class="graph-card">
-                    <h3 class="graph-title">Pressure (static & stagnation) [Pa]</h3>
                     <div id="pressureChart" style="width: 550px; height: 300px;"></div>
                 </div>  
             </div>             
         <div class="graph-card">
-            <h3 class="graph-title">Thrust [N]</h3>
             <div id="thrustChart" style="width: 550px; height: 300px;"></div>
         </div>
-        
-       
         
         <div class="graph-card">
             <h3 class="graph-title">Motor temperature [°C]</h3>
