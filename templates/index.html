@@ -8,20 +8,26 @@
     
         <style>
 
+            @import url("https://fonts.googleapis.com/css?family=Lato:300");
+            *, *::before, *::after {
+            box-sizing: border-box;
+            }
+
         html {
             height: 100%;
+            background: linear-gradient(45deg, #1c4872, #000000);
+
         }
 
         body {
-  margin: 0;
-  font-family: "Poppins", sans-serif;
-  font-size: 0.875rem;
-  font-weight: 400;
-  line-height: 1.5;
-  color: #525f7f;
-  text-align: left;
-  background: linear-gradient(45deg, #15222e, #8100E0);
-  height: 100vh;
+            margin: 0;
+            background: linear-gradient(45deg, #1c4872, #000000);
+            font-family: "Lato";
+            font-size: 0.875rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #30467e;
+            text-align: left;
 }
 
             :root {
@@ -34,7 +40,7 @@
     .main-body {
         background-color: var(--background-color);
         color: var(--text-color);
-        font-family: Arial, sans-serif;
+        font-family: "Lato";
         margin: 0;
         padding: 0;
     }
@@ -132,7 +138,7 @@
     }
 
     .parameter-card {
-        grid-column: span 7;
+        grid-column: span 6;
         background-color: rgba(255, 255, 255, 0.1);  /* Set this to your preferred value */
         border-radius: 8px;
         padding: 10px;
@@ -254,7 +260,7 @@
 
 .reset-header {
     margin-left: 5px;
-    margin-top: 30px;
+    margin-top: 20px;
     margin-bottom: 15px;
     color: #f9f9f9; /* White text */
     text-align: center;
@@ -278,7 +284,10 @@
 }
 
 .reset-button:hover {
-    background-color: #eead0e; /* Darker yellow on hover */
+    background-color: #f3af04; /* Darker yellow on hover */
+    box-shadow: 0 0 10px #f3af04;
+
+
 }
 
 .control-card {
@@ -286,7 +295,7 @@
     border-radius: 8px;
     padding: 20px;
     grid-column: span 1;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 10px rgb(255, 255, 255);  /* This matches the parameter-card hover effect */
     transition: box-shadow 0.3s ease-in-out;
 }
 
@@ -439,52 +448,71 @@
     flex: 1;
     margin-right: 10px; /* Adjust the spacing between the items as needed */
 }
-
 .graph-container {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    margin-left: -10px; /* Adjust the value as desired */
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-left: 10px;
+  margin-right: 10px;
 }
 
 .graph-card {
-    margin-bottom: 10px;
-    background-color: #fff;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    margin-right: 10px; /* Add a slight gap between the graph cards */
-}
-
-.graph-card:last-child {
-    margin-right: 0; /* Remove the margin from the last graph card */
+  margin-bottom: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-right: 15px;
+  margin-left: 15px;
 }
 
 .graph-title {
-    margin-bottom: 10px;
-    font-size: 16px;
-    font-weight: bold;
-    color: #333;
+  margin-bottom: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #ffffff;
 }
-
-.graph-card:first-child {
-    margin-left: 40px; /* Add a left margin to the first graph card */
-}
-
-.graph-card:last-child {
-    margin-right: 30px; /* Add a right margin to the last graph card */
-}
-
 
 .canvas-container {
-    margin-left: -15px; /* Adjust the value as desired */
-    margin-right: -15px;
+  position: relative;
 }
 
 canvas {
-    width: 100%;
-    height: 100%;
+  width: 100%;
+  height: 100%;
 }
+
+.chart-text {
+  fill: #ffffff;
+  font-size: 12px;
+}
+
+.chart-grid line {
+  stroke: rgba(255, 255, 255, 0.654);
+}
+
+.chart-points circle {
+  fill: #ffffff;
+  stroke: #ffffff;
+  stroke-width: 2;
+  animation: glowing 2s infinite;
+}
+
+@keyframes glowing {
+  0% {
+    fill-opacity: 1;
+    r: 4;
+  }
+  50% {
+    fill-opacity: 0.5;
+    r: 8;
+  }
+  100% {
+    fill-opacity: 1;
+    r: 4;
+  }
+}
+
 
 .export-csv-card {
     background-color: #fff;
@@ -524,17 +552,13 @@ canvas {
     font-weight: bold;
     cursor: pointer;
 }
-body {
-  background: linear-gradient(45deg, #15222e, #8100E0);
-  height: 100vh;
-}
 
 .wrapper {
-  display: table;
+  display: flex;
   margin: 0 auto;
-  background: rgba(21, 34, 46, 0.25);
+  background: rgba(21, 34, 46, 0.091);
   padding: 35px 40px 40px;
-  border-radius: 6px;
+  border-radius: 20px;
   box-shadow: 0 0 1px 0 rgba(255, 255, 255, 0.32), 0 1px 9px -1px #15222e;
 }
 
@@ -556,15 +580,16 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   background: #e7e7e7;
   box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.09), 0 0 35px 5px rgba(255, 255, 255, 0.29);
-  width: 200px;
-  height: 100px;
-  border-radius: 100px 100px 0 0;
+  width: 400px; /* Adjust the width as desired */
+  height: 200px; /* Adjust the height as desired */
+  border-radius: 200px 200px 0 0; /* Adjust the border radius accordingly */
   position: relative;
   overflow: hidden;
   /* safari fix */
   -webkit-transform-style: flat;
   -webkit-transform: translateZ(0px);
 }
+
 .gauge.min-scaled {
   transform: scale(0.5);
 }
@@ -575,121 +600,231 @@ body {
   width: 60%;
   height: 60%;
   background: #15222E;
-  border-radius: 100px 100px 0 0;
+  border-radius: 200px 200px 0 0; /* Adjust the border radius accordingly */
   position: absolute;
   box-shadow: 0 -13px 15px -10px rgba(0, 0, 0, 0.28);
   right: 21%;
   bottom: 0;
   color: #fff;
 }
+
 .gauge-center::before {
-  content: 'BMI';
-  font-size: 1.5em;
+  content: 'Motor Speed';
+  font-size: 2em; /* Adjust the font size as desired */
   width: 100%;
-  padding: 10px 0 0 0;
+  padding: 50px 0 0 0; /* Adjust the padding as desired */
   text-align: center;
   float: left;
   -webkit-font-smoothing: antialiased;
 }
+
 .gauge-center::after {
   content: '';
   width: 100%;
   float: left;
-  opacitY: .6;
+  opacity: 0.6; /* Fix the typo from "opacitY" to "opacity" */
   text-align: center;
 }
 
 .needle {
-  width: 78px;
-  height: 7px;
+  width: 160px; /* Adjust the width as desired */
+  height: 14px; /* Adjust the height as desired */
   background: #15222E;
-  border-bottom-left-radius: 100%;
-  border-bottom-right-radius: 5px;
-  border-top-left-radius: 100%;
-  border-top-right-radius: 5px;
+  border-bottom-left-radius: 200px; /* Adjust the border radius accordingly */
+  border-bottom-right-radius: 10px; /* Adjust the border radius accordingly */
+  border-top-left-radius: 200px; /* Adjust the border radius accordingly */
+  border-top-right-radius: 10px; /* Adjust the border radius accordingly */
   position: absolute;
-  bottom: 4px;
-  left: 20px;
-  transform-origin: 100% 4px;
+  bottom: 8px; /* Adjust the position as desired */
+  left: 40px; /* Adjust the position as desired */
+  transform-origin: 100% 8px;
   animation: speed 5s infinite;
-  box-shadow: 0 2px 2px 1px rgba(0, 0, 0, 0.38);
+  box-shadow: 0 4px 4px 2px rgba(0, 0, 0, 0.38);
 }
 
 .slice-colors .st {
   position: absolute;
   bottom: 0;
-  width: 60px;
+  width: 140px; /* Adjust the width as desired */
   height: 0;
-  border-bottom: 80px solid #000;
-  border-left: 12px solid transparent;
-  border-right: 12px solid transparent;
+  border-bottom: 160px solid #000; /* Adjust the border width and color as desired */
+  border-left: 24px solid transparent; /* Adjust the border width and color as desired */
+  border-right: 24px solid transparent; /* Adjust the border width and color as desired */
 }
+
 .slice-colors .st.slice-item:nth-child(1) {
   border-bottom-color: #1eaa59;
   left: -2px;
+  border-left-width: 24px; /* Adjust the border width as desired */
+  border-right-width: 24px; /* Adjust the border width as desired */
 }
+
 .slice-colors .st.slice-item:nth-child(2) {
   border-bottom-color: #9baa1e;
   transform: rotate(135deg);
   transform-origin: right;
-  top: 12px;
-  left: -65px;
+  top: 20px; /* Adjust the position as desired */
+  left: -90px; /* Adjust the position as desired */
+  border-left-width: 24px; /* Adjust the border width as desired */
+  border-right-width: 24px; /* Adjust the border width as desired */
 }
+
 .slice-colors .st.slice-item:nth-child(3) {
   border-bottom-color: #f1c40f;
-  transform: rotate(179deg);
+  transform: rotate(165deg);
   transform-origin: right;
-  top: -20px;
-  left: -62px;
-  border-bottom-width: 90px;
-  border-left-width: 45px;
-  border-right-width: 45px;
-  width: 18px;
+  top: -25px; /* Adjust the position as desired */
+  left: 15px; /* Adjust the position as desired */
+  border-bottom-width: 200px; /* Adjust the border width as desired */
+  border-left-width: 24px; /* Adjust the border width as desired */
+  border-right-width: 24px; /* Adjust the border width as desired */
+  width: 140px; /* Adjust the width as desired */
 }
+
 .slice-colors .st.slice-item:nth-child(4) {
   border-bottom-color: #e67e22;
   transform: rotate(219deg);
   transform-origin: right;
-  top: -23px;
-  left: 43px;
+  top: -23px; /* Adjust the position as desired */
+  left: 86px; /* Adjust the position as desired */
+  border-left-width: 24px; /* Adjust the border width as desired */
+  border-right-width: 24px; /* Adjust the border width as desired */
 }
+
 .slice-colors .st.slice-item:nth-child(5) {
   border-bottom-color: #E84C3D;
   transform: rotate(240deg);
   transform-origin: right;
-  right: 52px;
+  right: 104px; /* Adjust the position as desired */
+  border-left-width: 24px; /* Adjust the border width as desired */
+  border-right-width: 24px; /* Adjust the border width as desired */
 }
 
-@-webkit-keyframes speed {
-  0% {
-    transform: rotate(0);
-  }
-  40% {
-    transform: rotate(180deg);
-  }
-  55% {
-    transform: rotate(170deg);
-  }
-  75% {
-    transform: rotate(180deg);
-  }
-}
-@-webkit-keyframes simplePulse {
-  from {
-    opacity: .4;
-  }
-  to {
-    opacity: .98;
-  }
+.scale {
+  position: absolute;
+  width: 20px; /* Adjust the width as desired */
+  height: 20px; /* Adjust the height as desired */
+  background-color: #000;
+  bottom: 0;
+  left: calc(50% - 10px); /* Adjust the position as desired */
 }
 
+.scale-label {
+  position: absolute;
+  font-size: 25px; /* Adjust the font size as desired */
+  color: #ffffff;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* .scale-label:nth-child(1) {
+  top: 170px; /* Adjust the position as desired
+  left: calc(50% - 10px); /* Adjust the position as desired
+  transform: rotate(-90deg);
+}
+
+.scale-label:nth-child(2) {
+  top: 20px; /* Adjust the position as desired 
+  left: calc(50% - 70px); /* Adjust the position as desired 
+  transform: rotate(-45deg);
+} */
+
+.scale-label:nth-child(3) {
+  top: 170px; /* Adjust the position as desired */
+  left: calc(50% - 190px); /* Adjust the position as desired */
+  transform: rotate(0deg);
+}
+
+.scale-label:nth-child(4) {
+  top: 32px; /* Adjust the position as desired */
+  left: calc(50% - 135px); /* Adjust the position as desired */
+  transform: rotate(-37.5deg);
+}
+
+.scale-label:nth-child(5) {
+  top: 5px; /* Adjust the position as desired */
+  left: calc(50% - 30px); /* Adjust the position as desired */
+  transform: rotate(0deg);
+}
+
+.scale-label:nth-child(6) {
+  top: 37px; /* Adjust the position as desired */
+  left: calc(50% + 77px); /* Adjust the position as desired */
+  transform: rotate(35deg);
+}
+
+.scale-label:nth-child(7) {
+  top: 165px; /* Adjust the position as desired */
+  left: calc(50% + 120px); /* Adjust the position as desired */
+  transform: rotate(0deg);
+}
+
+.wrap-circles {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 1rem;
+  background: #00000000;
+}
+
+circle {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  margin: 0.5rem;
+  border-radius: 50%;
+  background: #ffcdb200;
+  overflow: hidden;
+}
+
+.circle {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  margin: 0.5rem;
+  border-radius: 50%;
+  background: #fcfcfc11;
+  overflow: hidden;
+  background-image: conic-gradient(#ff0000 0 50%, transparent 0);
+
+}
+
+.circle .inner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 115px;
+  height: 115px;
+  background: #000000;
+  border-radius: 50%;
+  font-size: 1.85em;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.75);
+}
 
 
+.duty-cycle-gauge .progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(to right, #1eaa59, #e84c3d);
+  transition: width 0.5s ease-in-out;
+}
 
-
-
-
-
+.duty-cycle-title {
+  position: absolute;
+  left: 20%;
+  transform: translate(-15%, -50%);
+  font-size: 1.5em; /* Adjust the font size as desired */
+  color: #fff; /* Adjust the color as desired */
+}
 
         </style>
     </head>
@@ -831,7 +966,6 @@ body {
                 </form>
             </div>
 
-            </div>
             <div class="control-card">
                 <p class="control-header">System control</p>
                 <div class="grid grid-cols-2 gap-4 control-form">
@@ -842,7 +976,8 @@ body {
                         <button type="submit" name="button" value="stop_button" class="control-button-stop">Stop</button>
                     </form>
                 </div>
-            </div>            
+            </div>  
+        </div>          
         </div>
     </div>
 
@@ -916,20 +1051,38 @@ body {
         </div>
 
         
-        <h1 class="wrapper-header">CSS Gauge<span class="heart"><3</span></h1>
         <div class="wrapper">
-        <div class="gauge">
+          <div class="gauge">
             <div class="slice-colors">
-            <div class="st slice-item"></div>
-            <div class="st slice-item"></div>
-            <div class="st slice-item"></div>
-            <div class="st slice-item"></div>
-            <div class="st slice-item"></div>
+              <div class="st slice-item"></div>
+              <div class="st slice-item"></div>
+              <div class="st slice-item"></div>
+              <div class="st slice-item"></div>
+              <div class="st slice-item"></div>
             </div>
+            <div class="scale"></div>
+            <div class="scale-label">0</div>
+            <div class="scale-label">2,500</div>
+            <div class="scale-label">5,000</div>
+            <div class="scale-label">7,500</div>
+            <div class="scale-label">10,000</div>
             <div class="needle"></div>
             <div class="gauge-center"></div>
+          </div>
+        
+          <div class="duty-cycle-title">Duty Cycle</div>
+          <div class="wrap-circles">
+            <div class="circle per-0">
+              <div class="inner">50%</div>
+            </div>
+            <div class="duty-cycle-gauge">
+              <div class="progress-bar"></div>
+            </div>
+          </div>
+          
+          
         </div>
-        </div>
+        
 
         <div class="calculated-measurement-grid">
             <div class="calculated-measurement-card">
@@ -958,7 +1111,7 @@ body {
             <div class="canvas-container">
                 <div class="graph-card">
                     <h3 class="graph-title">Pressure (static & stagnation) [Pa]</h3>
-                    <canvas id="pressureChart" width="600" height="300"></canvas>
+                    <canvas id="pressureChart" width="750" height="300"></canvas>
                 </div>  
             </div>
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -973,101 +1126,146 @@ body {
                 var json_p_three_data = [0, 150, 50, 200, 100, 250, 300];
         
                 new Chart(ctx1, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'P_0',
-                            data: json_p_zero_data,
-                            borderWidth: 1,
-                        }, {
-                            label: 'P_1',
-                            data: json_p_one_data,
-                            borderWidth: 1,
-                        }, {
-                            label: 'P_2',
-                            data: json_p_two_data,
-                            borderWidth: 1,
-                        }, {
-                            label: 'P_3',
-                            data: json_p_three_data,
-                            borderWidth: 1,
-                        }]
-                    },
-                    options: {
-                        scales: {
-                            x: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Time [s]',
-                                },
-                            },
-                            y: {
-                                beginAtZero: false,
-                                title: {
-                                    display: true,
-                                    text: 'Pressure [Pa]',
-                                }
-                            },
-                        }
-                    }
-                });
-            </script>        
+  type: 'line',
+  data: {
+    labels: labels,
+    datasets: [{
+      label: 'P_0',
+      data: json_p_zero_data,
+      borderWidth: 3,
+    
+    }, {
+      label: 'P_1',
+      data: json_p_one_data,
+      borderWidth: 3,
+    }, {
+      label: 'P_2',
+      data: json_p_two_data,
+      borderWidth: 3,
+    }, {
+      label: 'P_3',
+      data: json_p_three_data,
+      borderWidth: 3,
+    }]
+  },
+  options: {
+    scales: {
+      x: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Time [s]',
+          color: '#ffffff',
+        },
+        ticks: {
+          color: '#ffffff',
+        },
+        grid: {
+            color: '#ffffff',
+        }
+    },
+      y: {
+        beginAtZero: false,
+        title: {
+          display: true,
+          text: 'Pressure [Pa]',
+          color: '#ffffff',
+        },
+        ticks: {
+          color: '#ffffff',
+        },
+
+        grid : {
+          color: '#ffffff',
+        }
+      },
+    },
+    plugins: {
+      legend: {
+        labels: {
+          color: '#ffffff',
+        },
+      },
+    },
+  },
+});
+
+</script>        
 
                 
 
         <div class="graph-card">
             <h3 class="graph-title">Thrust [N]</h3>
-            <canvas id="thrustChart" width="600" height="300"></canvas>
+            <canvas id="thrustChart" width="750" height="300"></canvas>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
             var ctx2 = document.getElementById('thrustChart').getContext('2d');
         
-            // Generate fake data
-            var labels = [1, 2, 3, 4, 5, 6, 7];
-            var json_strain_gauge_zero_data = [0, 50, 100, 150, 200, 250, 300];
-            var json_strain_gauge_one_data = [0, 300, 250, 200, 150, 100, 50];
-        
+        // Generate fake data
+        var labels = [1, 2, 3, 4, 5, 6, 7, 8 , 9];
+        var json_strain_gauge_zero_data = [0, 300, 300, 0, 0, 300, 0, 300, 0];
+        var json_strain_gauge_one_data = [300, 0, 300, 0, 300, 0, 300];
+
             new Chart(ctx2, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Strain Gauge 1',
-                        data: json_strain_gauge_zero_data,
-                        borderWidth: 1,
-                    }, {
-                        label: 'Strain Gauge 2',
-                        data: json_strain_gauge_one_data,
-                        borderWidth: 1,
-                    }]
-                },
-                options: {
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Time [s]',
-                            },
-                        },
-                        y: {
-                            beginAtZero: false,
-                            title: {
-                                display: true,
-                                text: 'Thrust [N]',
-                            }
-                        },
-                    }
-                }
-            });
+  type: 'line',
+  data: {
+    labels: labels,
+    datasets: [{
+      label: 'Strain Gauge 1',
+      data: json_strain_gauge_zero_data,
+      borderWidth: 3,
+    }, {
+      label: 'Strain Gauge 2',
+      data: json_strain_gauge_one_data,
+      borderWidth: 3,
+    }]
+  },
+  options: {
+    scales: {
+      x: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Time [s]',
+          color: '#ffffff',
+        },
+        ticks: {
+          color: '#ffffff',
+        },
+        grid: {
+          color: '#ffffff',
+        }
+      },
+      y: {
+        beginAtZero: false,
+        title: {
+          display: true,
+          text: 'Thrust [N]',
+          color: '#ffffff',
+        },
+        ticks: {
+          color: '#ffffff',
+        },
+        grid: {
+          color: '#ffffff',
+        }
+      },
+    },
+    plugins: {
+      legend: {
+        labels: {
+          color: '#ffffff',
+        },
+      },
+    },
+  },
+});
         </script>
         
         <div class="graph-card">
             <h3 class="graph-title">Motor temperature [°C]</h3>
-            <canvas id="motortempChart" width="600" height="300"></canvas>
+            <canvas id="motortempChart" width="750" height="300"></canvas>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
@@ -1077,35 +1275,57 @@ body {
             var labels = [1, 2, 3, 4, 5, 6, 7];
             var json_motor_temp_data = [30, 35, 40, 45, 42, 38, 36];
         
-            new Chart(ctx3, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Motor temperature',
-                        data: json_motor_temp_data,
-                        borderWidth: 1,
-                    }]
-                },
-                options: {
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Time [s]',
-                            },
-                        },
-                        y: {
-                            beginAtZero: false,
-                            title: {
-                                display: true,
-                                text: 'Temperature [°C]',
-                            }
-                        },
-                    }
-                }
-            });
+          new Chart(ctx3, {
+  type: 'line',
+  data: {
+    labels: labels,
+    datasets: [{
+      label: 'Motor temperature',
+      data: json_motor_temp_data,
+      borderWidth: 3,
+    }]
+  },
+  options: {
+    scales: {
+      x: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Time [s]',
+          color: '#ffffff',
+        },
+        ticks: {
+          color: '#ffffff',
+        },
+        grid: {
+          color: '#ffffff',
+        }
+      },
+      y: {
+        beginAtZero: false,
+        title: {
+          display: true,
+          text: 'Temperature [°C]',
+          color: '#ffffff',
+        },
+        ticks: {
+          color: '#ffffff',
+        },
+        grid: {
+          color: '#ffffff',
+        }
+      },
+    },
+    plugins: {
+      legend: {
+        labels: {
+          color: '#ffffff',
+        },
+      },
+    },
+  },
+});
+
         </script>
         </div>
         </div>
