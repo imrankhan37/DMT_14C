@@ -1,15 +1,16 @@
-from flask import Flask, render_template, request, session, redirect, url_for, jsonify, Response, stream_template, stream_with_context
+from flask import Flask, render_template, request, session, redirect, url_for, jsonify, Response, stream_template, stream_with_context, make_response
 from motor_vesc import VESC
 from actuator import ArduinoControl
 import threading
 import nidaqmx
-import time 
+from time import time
 import numpy as np
 import datetime
 import pandas as pd
 import os
 import tkinter as tk
 import json
+import random
 
 voltage_task = None
 temperature_task = None
@@ -587,11 +588,11 @@ def main():
 #     return render_template('index.html')
 
 
-@app.route('/data', methods=['GET', 'POST'])
-def data():
-    temp = random.randrange(1, 100)
-    data = [time() * 1000, temp]
-    response = make_response(json.dumps(data))
+@app.route('/generate_p_zero_data', methods=['GET', 'POST'])
+def generate_p_zero_data():
+    temp_p_zero = random.randrange(1, 100)
+    temp_p_zero_data = [time() * 1000, temp_p_zero]
+    response = make_response(json.dumps(temp_p_zero_data))
     response.content_type = 'application/json'
     return response
 
@@ -775,9 +776,5 @@ def stop_actuators():
     return "Actuators stopped successfully!"
 
 
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
 if __name__ == '__main__':
     app.run(debug=True)
