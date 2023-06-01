@@ -587,6 +587,14 @@ def main():
 #     return render_template('index.html')
 
 
+@app.route('/data', methods=['GET', 'POST'])
+def data():
+    temp = random.randrange(1, 100)
+    data = [time() * 1000, temp]
+    response = make_response(json.dumps(data))
+    response.content_type = 'application/json'
+    return response
+
 @app.route('/start_all', methods=['POST'])
 def start_all():
     global experiment_running
@@ -767,5 +775,9 @@ def stop_actuators():
     return "Actuators stopped successfully!"
 
 
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 if __name__ == '__main__':
     app.run(debug=True)

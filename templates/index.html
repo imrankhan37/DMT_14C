@@ -993,8 +993,11 @@ circle {
 
     <div>
         <div>
-    <p class="section-title">Key parameters</p>
+            <button class="bg-white text-black" id="startButton">Temp start button</button>
+        </div>
+        <p class="section-title">Key parameters</p>
 
+<<<<<<< Updated upstream
     <div class="key-parameter-grid">
         <div class="key-parameter-card">
             <p class="key-parameter-label">Pressure (Static) - P<sub>0</sub></p>
@@ -1005,6 +1008,65 @@ circle {
                     0Pa
                 {% endif %}
             </p>
+=======
+        <div class="grid grid-cols-6 gap-4 ml-4 mr-4 mb-4">
+            <div class="bg-black rounded p-4">
+                <p class="text-slate-500 ml-1 mb-3">Pressure (static) [Pa] - P<sub>0</sub></p>
+                <div class="P_0"></div>
+                <script>
+            
+                    function request_p_zero_data() 
+                    {
+                        var requests = $.get('/generate_p_zero_data');
+                        requests.done(function (generate_p_zero_data) {
+                            var p_zero_result = generate_p_zero_data;
+                            var temp = p_zero_result[1]
+                            $(".P_0").text("");
+                            $(".P_0").text(genera te_p_zero_data[1]);
+                            console.log(p_zero_result)
+                            setTimeout(request_p_zero_data, 1000);
+                        });
+                    }
+
+                    function displayZero() {
+                        $(".P_0").text(0);
+                    }
+            
+                    $(document).ready(function() {
+                        displayZero();
+                        $('#startButton').click(function() {
+                            request_p_zero_data();
+                        });
+                    });
+                </script>
+                </p>
+            </div>
+            <div class="bg-white rounded p-4">
+                <p class="text-slate-500 ml-1 mb-3">Pressure (differential) [Pa] - P<sub>1</sub></p>
+                <p class="text-2xl text-center font-bold mt-5 mb-4">      
+                </p>
+            </div>
+            <div class="bg-white rounded p-4">
+                <p class="text-slate-500 ml-1 mb-3">Pressure (differential) [Pa] - P<sub>2</sub></p>
+                <p class="text-2xl text-center font-bold mt-5">
+                </p>
+            </div>
+            <div class="bg-white rounded p-4">
+                <p class="text-slate-500 ml-1 mb-3">Pressure (differential) [Pa] - P<sub>3</sub></p>
+                <p class="text-2xl text-center font-bold mt-5">
+                </p>
+            </div>
+            <div class="bg-white rounded p-4">
+                <p class="text-slate-500 ml-1 mb-3">Strain gauge 1 [N]</p>
+                <p class="text-2xl text-center font-bold mt-7">
+                </p>
+            </div>
+            <div class="bg-white rounded p-4"> 
+                <p class="text-slate-500 ml-1 mb-3">Strain gauge 2 [N]</p>
+                <p class="text-2xl text-center font-bold mt-7">
+                </p>
+            </div>
+>>>>>>> Stashed changes
         </div>
         <div class="key-parameter-card">
             <p class="key-parameter-label">Pressure (Differential) - P<sub>1</sub></p>
@@ -1525,7 +1587,13 @@ circle {
         });
 
     </script>
+<<<<<<< Updated upstream
         
+=======
+
+
+ 
+>>>>>>> Stashed changes
 </body>
 
 
