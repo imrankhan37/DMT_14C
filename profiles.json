@@ -1,1 +1,1 @@
-[{"name": "test20", "duty_cycle": "0.8", "current": "2", "speed": "50", "ramp_down_speed": "0", "ramp_up_speed": "50", "linear_actuator": "100", "rotary_motor": "10", "vesc_port": "COM4", "arduino_port": "COM3"}]
+[{"name": "Default Profile", "duty_cycle": "50", "current": "5", "speed": "1000", "ramp_down_speed": "500", "ramp_up_speed": "2000", "linear_actuator": "50", "rotary_motor": "90", "vesc_port": "COM3", "arduino_port": "COM4"}]

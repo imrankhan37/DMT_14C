@@ -590,9 +590,51 @@ def main():
 
 @app.route('/generate_p_zero_data', methods=['GET', 'POST'])
 def generate_p_zero_data():
-    temp_p_zero = random.randrange(1, 100)
+    # Generate temporary data
+    temp_p_zero = random.randrange(1, 1000)
+    # Put the data in a list
     temp_p_zero_data = [time() * 1000, temp_p_zero]
     response = make_response(json.dumps(temp_p_zero_data))
+    response.content_type = 'application/json'
+    return response
+
+@app.route('/generate_p_one_data', methods=['GET', 'POST'])
+def generate_p_one_data():
+    temp_p_one = random.randrange(1, 1000)
+    temp_p_one_data = [time() * 1000, temp_p_one]
+    response = make_response(json.dumps(temp_p_one_data))
+    response.content_type = 'application/json'
+    return response
+
+@app.route('/generate_p_two_data', methods=['GET', 'POST'])
+def generate_p_two_data():
+    temp_p_two = random.randrange(1, 1000)
+    temp_p_two_data = [time() * 1000, temp_p_two]
+    response = make_response(json.dumps(temp_p_two_data))
+    response.content_type = 'application/json'
+    return response
+
+@app.route('/generate_p_three_data', methods=['GET', 'POST'])
+def generate_p_three_data():
+    temp_p_three = random.randrange(1, 1000)
+    temp_p_three_data = [time() * 1000, temp_p_three]
+    response = make_response(json.dumps(temp_p_three_data))
+    response.content_type = 'application/json'
+    return response
+
+@app.route('/generate_gauge_one_data', methods=['GET', 'POST'])
+def generate_gauge_one_data():
+    temp_gauge_one = random.randrange(1, 10)
+    temp_gauge_one_data = [time() * 1000, temp_gauge_one]
+    response = make_response(json.dumps(temp_gauge_one_data))
+    response.content_type = 'application/json'
+    return response
+
+@app.route('/generate_gauge_two_data', methods=['GET', 'POST'])
+def generate_gauge_two_data():
+    temp_gauge_two = random.randrange(1, 10)
+    temp_gauge_two_data = [time() * 1000, temp_gauge_two]
+    response = make_response(json.dumps(temp_gauge_two_data))
     response.content_type = 'application/json'
     return response
 

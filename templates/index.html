@@ -999,7 +999,7 @@ circle {
 
     <div>
         <div>
-            <button class="bg-white text-black" id="startButton">Temp start button</button>
+            <button class="bg-green-500 text-white" id="startButton">Temp start button</button>
         </div>
         <p class="section-title">Key parameters</p>
 
@@ -1012,6 +1012,7 @@ circle {
             
                     function request_p_zero_data() 
                     {
+                        // Calls the function from python
                         var requests = $.get('/generate_p_zero_data');
                         requests.done(function (generate_p_zero_data) {
                             var p_zero_result = generate_p_zero_data;
@@ -1019,71 +1020,165 @@ circle {
                             $(".P_0").text("");
                             $(".P_0").text(generate_p_zero_data[1] + " Pa");
                             console.log(p_zero_result)
+                            // Set delay for calling the function again
                             setTimeout(request_p_zero_data, 1000);
                         });
                     }
 
-                    function displayZero() {
+                    // Function that displays zero until the start button is pressed
+                    function p_zero_displayZero() {
                         $(".P_0").text(0 + " Pa");
                     }
             
+                    // Function that only calls the python scripts when the start button is pressed
                     $(document).ready(function() {
-                        displayZero();
+                        p_zero_displayZero();
+                        p_one_displayZero();
+                        p_two_displayZero();
+                        p_three_displayZero();
+                        gauge_one_displayZero();
+                        gauge_two_displayZero();
                         $('#startButton').click(function() {
                             request_p_zero_data();
+                            request_p_one_data();
+                            request_p_two_data();
+                            request_p_three_data();
+                            request_gauge_one_data();
+                            request_gauge_two_data();
                         });
                     });
+
                 </script>
             </p>
         </div>
         <div class="key-parameter-card">
             <p class="key-parameter-label">Pressure (Differential) - P<sub>1</sub></p>
             <p class="key-parameter-value">
-                {% if last_values.P_1 %}
-                    {{ last_values.P_1 }}Pa
-                {% else %}
-                    0Pa
-                {% endif %}            
+                <div class="P_1"></div>
+                <script>
+
+                    function request_p_one_data() 
+                    {
+                        var requests = $.get('/generate_p_one_data');
+                        requests.done(function (generate_p_one_data) {
+                            var p_one_result = generate_p_one_data;
+                            var temp = p_one_result[1]
+                            $(".P_1").text("");
+                            $(".P_1").text(generate_p_one_data[1] + " Pa");
+                            console.log(p_one_result)
+                            setTimeout(request_p_one_data, 1000);
+                        });
+                    }
+
+                    function p_one_displayZero() {
+                        $(".P_1").text(0 + " Pa");
+                    };
+
+                </script>          
             </p>
         </div>
         <div class="key-parameter-card">
             <p class="key-parameter-label">Pressure (Differential) - P<sub>2</sub></p>
             <p class="key-parameter-value">
-                {% if last_values.P_2 %}
-                    {{ last_values.P_2 }}Pa
-                {% else %}
-                    0Pa
-                {% endif %} 
+                <div class="P_2"></div>
+                <script>
+
+                    function request_p_two_data() 
+                    {
+                        var requests = $.get('/generate_p_two_data');
+                        requests.done(function (generate_p_two_data) {
+                            var p_two_result = generate_p_two_data;
+                            var temp = p_two_result[1]
+                            $(".P_2").text("");
+                            $(".P_2").text(generate_p_two_data[1] + " Pa");
+                            console.log(p_two_result)
+                            setTimeout(request_p_two_data, 1000);
+                        });
+                    }
+
+                    function p_two_displayZero() {
+                        $(".P_2").text(0 + " Pa");
+                    };
+
+                </script>
             </p>
         </div>
         <div class="key-parameter-card">
             <p class="key-parameter-label">Pressure (Differential) - P<sub>3</sub></p>
             <p class="key-parameter-value">
-                {% if last_values.P_3 %}
-                    {{ last_values.P_3 }}Pa
-                {% else %}
-                    0Pa
-                {% endif %} 
+                <div class="P_3"></div>
+                <script>
+
+                    function request_p_three_data() 
+                    {
+                        var requests = $.get('/generate_p_three_data');
+                        requests.done(function (generate_p_three_data) {
+                            var p_three_result = generate_p_three_data;
+                            var temp = p_three_result[1]
+                            $(".P_3").text("");
+                            $(".P_3").text(generate_p_three_data[1] + " Pa");
+                            console.log(p_three_result)
+                            setTimeout(request_p_three_data, 1000);
+                        });
+                    }
+
+                    function p_three_displayZero() {
+                        $(".P_3").text(0 + " Pa");
+                    };
+
+                </script>
             </p>
         </div>
         <div class="key-parameter-card">
             <p class="key-parameter-label">Strain Gauge 1</p>
             <p class="key-parameter-value">
-                {% if last_values.Strain_0 %}
-                    {{ last_values.Strain_0 }}N
-                {% else %}
-                    0N
-                {% endif %} 
+                <div class="Gauge_1"></div>
+                <script>
+
+                    function request_gauge_one_data() 
+                    {
+                        var requests = $.get('/generate_gauge_one_data');
+                        requests.done(function (generate_gauge_one_data) {
+                            var gauge_one_result = generate_gauge_one_data;
+                            var temp = gauge_one_result[1]
+                            $(".Gauge_1").text("");
+                            $(".Gauge_1").text(generate_gauge_one_data[1] + " N");
+                            console.log(gauge_one_result)
+                            setTimeout(request_gauge_one_data, 1000);
+                        });
+                    }
+
+                    function gauge_one_displayZero() {
+                        $(".Gauge_1").text(0 + " N");
+                    };
+
+                </script>
             </p>
         </div>
         <div class="key-parameter-card"> 
             <p class="key-parameter-label">Strain Gauge 2</p>
             <p class="key-parameter-value">
-                {% if last_values.Strain_1 %}
-                    {{ last_values.Strain_1 }}
-                {% else %}
-                    0N
-                {% endif %} 
+                <div class="Gauge_2"></div>
+                <script>
+
+                    function request_gauge_two_data() 
+                    {
+                        var requests = $.get('/generate_gauge_two_data');
+                        requests.done(function (generate_gauge_two_data) {
+                            var gauge_two_result = generate_gauge_two_data;
+                            var temp = gauge_two_result[1]
+                            $(".Gauge_2").text("");
+                            $(".Gauge_2").text(generate_gauge_two_data[1] + " N");
+                            console.log(gauge_two_result)
+                            setTimeout(request_gauge_two_data, 1000);
+                        });
+                    }
+
+                    function gauge_two_displayZero() {
+                        $(".Gauge_2").text(0 + " N");
+                    };
+
+                </script> 
             </p>
         </div>
     </div>
