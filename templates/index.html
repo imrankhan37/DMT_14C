@@ -1005,7 +1005,7 @@ circle {
 
     <div class="key-parameter-grid">
         <div class="key-parameter-card">
-            <p class="key-parameter-label">Pressure (Static) - P<sub>0</sub></p>
+            <p class="key-parameter-label">Pressure (Static) - P<sub>0</sub> [Pa]</p>
             <p class="key-parameter-value">
                 <div class="P_0"></div>
                 <script>
@@ -1018,7 +1018,7 @@ circle {
                             var p_zero_result = generate_p_zero_data;
                             var temp = p_zero_result[1]
                             $(".P_0").text("");
-                            $(".P_0").text(generate_p_zero_data[1] + " Pa");
+                            $(".P_0").text(generate_p_zero_data[1]);
                             console.log(p_zero_result)
                             // Set delay for calling the function again
                             setTimeout(request_p_zero_data, 1000);
@@ -1027,7 +1027,7 @@ circle {
 
                     // Function that displays zero until the start button is pressed
                     function p_zero_displayZero() {
-                        $(".P_0").text(0 + " Pa");
+                        $(".P_0").text(0);
                     }
             
                     // Function that only calls the python scripts when the start button is pressed
@@ -1052,7 +1052,7 @@ circle {
             </p>
         </div>
         <div class="key-parameter-card">
-            <p class="key-parameter-label">Pressure (Differential) - P<sub>1</sub></p>
+            <p class="key-parameter-label">Pressure (Differential) - P<sub>1</sub> [Pa]</p>
             <p class="key-parameter-value">
                 <div class="P_1"></div>
                 <script>
@@ -1064,21 +1064,21 @@ circle {
                             var p_one_result = generate_p_one_data;
                             var temp = p_one_result[1]
                             $(".P_1").text("");
-                            $(".P_1").text(generate_p_one_data[1] + " Pa");
+                            $(".P_1").text(generate_p_one_data[1]);
                             console.log(p_one_result)
                             setTimeout(request_p_one_data, 1000);
                         });
                     }
 
                     function p_one_displayZero() {
-                        $(".P_1").text(0 + " Pa");
+                        $(".P_1").text(0);
                     };
 
                 </script>          
             </p>
         </div>
         <div class="key-parameter-card">
-            <p class="key-parameter-label">Pressure (Differential) - P<sub>2</sub></p>
+            <p class="key-parameter-label">Pressure (Differential) - P<sub>2</sub> [Pa]</p>
             <p class="key-parameter-value">
                 <div class="P_2"></div>
                 <script>
@@ -1090,21 +1090,21 @@ circle {
                             var p_two_result = generate_p_two_data;
                             var temp = p_two_result[1]
                             $(".P_2").text("");
-                            $(".P_2").text(generate_p_two_data[1] + " Pa");
+                            $(".P_2").text(generate_p_two_data[1]);
                             console.log(p_two_result)
                             setTimeout(request_p_two_data, 1000);
                         });
                     }
 
                     function p_two_displayZero() {
-                        $(".P_2").text(0 + " Pa");
+                        $(".P_2").text(0);
                     };
 
                 </script>
             </p>
         </div>
         <div class="key-parameter-card">
-            <p class="key-parameter-label">Pressure (Differential) - P<sub>3</sub></p>
+            <p class="key-parameter-label">Pressure (Differential) - P<sub>3</sub> [Pa]</p>
             <p class="key-parameter-value">
                 <div class="P_3"></div>
                 <script>
@@ -1116,21 +1116,21 @@ circle {
                             var p_three_result = generate_p_three_data;
                             var temp = p_three_result[1]
                             $(".P_3").text("");
-                            $(".P_3").text(generate_p_three_data[1] + " Pa");
+                            $(".P_3").text(generate_p_three_data[1]);
                             console.log(p_three_result)
                             setTimeout(request_p_three_data, 1000);
                         });
                     }
 
                     function p_three_displayZero() {
-                        $(".P_3").text(0 + " Pa");
+                        $(".P_3").text(0);
                     };
 
                 </script>
             </p>
         </div>
         <div class="key-parameter-card">
-            <p class="key-parameter-label">Strain Gauge 1</p>
+            <p class="key-parameter-label">Strain Gauge 1 [N]</p>
             <p class="key-parameter-value">
                 <div class="Gauge_1"></div>
                 <script>
@@ -1142,21 +1142,21 @@ circle {
                             var gauge_one_result = generate_gauge_one_data;
                             var temp = gauge_one_result[1]
                             $(".Gauge_1").text("");
-                            $(".Gauge_1").text(generate_gauge_one_data[1] + " N");
+                            $(".Gauge_1").text(generate_gauge_one_data[1]);
                             console.log(gauge_one_result)
                             setTimeout(request_gauge_one_data, 1000);
                         });
                     }
 
                     function gauge_one_displayZero() {
-                        $(".Gauge_1").text(0 + " N");
+                        $(".Gauge_1").text(0);
                     };
 
                 </script>
             </p>
         </div>
         <div class="key-parameter-card"> 
-            <p class="key-parameter-label">Strain Gauge 2</p>
+            <p class="key-parameter-label">Strain Gauge 2 [N]</p>
             <p class="key-parameter-value">
                 <div class="Gauge_2"></div>
                 <script>
@@ -1168,14 +1168,14 @@ circle {
                             var gauge_two_result = generate_gauge_two_data;
                             var temp = gauge_two_result[1]
                             $(".Gauge_2").text("");
-                            $(".Gauge_2").text(generate_gauge_two_data[1] + " N");
+                            $(".Gauge_2").text(generate_gauge_two_data[1]);
                             console.log(gauge_two_result)
                             setTimeout(request_gauge_two_data, 1000);
                         });
                     }
 
                     function gauge_two_displayZero() {
-                        $(".Gauge_2").text(0 + " N");
+                        $(".Gauge_2").text(0);
                     };
 
                 </script> 
