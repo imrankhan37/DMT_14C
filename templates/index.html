@@ -28,6 +28,8 @@
             line-height: 1.5;
             color: #30467e;
             text-align: left;
+            margin-right: 10px;
+            margin-left: 10px;
 }
 
             :root {
@@ -43,6 +45,8 @@
         font-family: "Lato";
         margin: 0;
         padding: 0;
+        margin-right: 15px;
+        margin-left: 15px;
     }
 
     .title-card {
@@ -448,22 +452,25 @@
     flex: 1;
     margin-right: 10px; /* Adjust the spacing between the items as needed */
 }
+
 .graph-container {
   display: flex;
   justify-content: space-between;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   margin-left: 10px;
-  margin-right: 10px;
+  margin-right: 20px;
 }
 
 .graph-card {
+    flex: 0 0 calc(33.33% - 40px); /* Adjusted width calculation */
   margin-bottom: 10px;
   background-color: rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  margin-right: 15px;
-  margin-left: 15px;
+  margin-right: 10px;
+  margin-left: 10px
+
 }
 
 .graph-title {
@@ -583,6 +590,7 @@ canvas {
   width: 400px; /* Adjust the width as desired */
   height: 200px; /* Adjust the height as desired */
   border-radius: 200px 200px 0 0; /* Adjust the border radius accordingly */
+  margin-top: 80px;
   position: relative;
   overflow: hidden;
   /* safari fix */
@@ -612,7 +620,7 @@ canvas {
   content: 'Motor Speed';
   font-size: 2em; /* Adjust the font size as desired */
   width: 100%;
-  padding: 50px 0 0 0; /* Adjust the padding as desired */
+  padding: 60px 0 0 0; /* Adjust the padding as desired */
   text-align: center;
   float: left;
   -webkit-font-smoothing: antialiased;
@@ -764,8 +772,9 @@ canvas {
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  padding: 2rem 1rem;
+  padding: 3rem 1rem;
   background: #00000000;
+  margin-right: 30px;
 }
 
 circle {
@@ -820,8 +829,9 @@ circle {
 
 .duty-cycle-title {
   position: absolute;
-  left: 20%;
-  transform: translate(-15%, -50%);
+  left: 25%;
+  margin-top: 25px;
+  transform: translate(-15%, 20%);
   font-size: 1.5em; /* Adjust the font size as desired */
   color: #fff; /* Adjust the color as desired */
 }
@@ -830,7 +840,7 @@ circle {
     </head>
     <body class="main-body">
         <div class="title-card">
-            <h1 class="title-header">DMT 14C: Aerodynamic probe and data acquisition software</h1>
+            <h1 class="title-header">DMT 14C: DUCTED FAN MOTOR, AERODYNAMIC PROBE CONTROL AND DATA ACQUISITION INTERFACE</h1>
             <p class="sub-header">Software navigation</p>  
             <div class="navigation-grid">
                 <button class="navigation-button" onclick="window.location.href='/software_manual'">How To Use</button>
@@ -1079,6 +1089,138 @@ circle {
               <div class="progress-bar"></div>
             </div>
           </div>
+
+          <!-- <div class = "graph-container"> -->
+          <div class="graph-card">
+            <h3 class="graph-title">Motor temperature [°C]</h3>
+            <canvas id="motorTempChart" width="650" height="300"></canvas>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            var ctx3 = document.getElementById('motorTempChart').getContext('2d');
+    
+            // Generate fake data
+            var labels = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+            var json_motor_temp_data = [30, 35, 40, 45, 42, 38, 36, 28, 25, 20];
+    
+            new Chart(ctx3, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Motor temperature',
+                        data: json_motor_temp_data,
+                        borderWidth: 3,
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Time [s]',
+                                color: '#ffffff',
+                            },
+                            ticks: {
+                                color: '#ffffff',
+                            },
+                            grid: {
+                                color: '#ffffff',
+                            }
+                        },
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: 'Temperature [°C]',
+                                color: '#ffffff',
+                            },
+                            ticks: {
+                                color: '#ffffff',
+                            },
+                            grid: {
+                                color: '#ffffff',
+                            }
+                        },
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#ffffff',
+                            },
+                        },
+                    },
+                },
+            });
+        </script>
+
+    <div class="graph-card">
+        <h3 class="graph-title">Motor Duty Cycle</h3>
+        <canvas id="motorDutyCycleChart" width="650" height="300"></canvas>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        var ctx4 = document.getElementById('motorDutyCycleChart').getContext('2d');
+
+        // Generate fake data
+        var labels = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        var json_motor_duty_cycle_data = [0, 10, 10, 20, 20, 30, 30, 30, 40, 40, 40];
+
+        new Chart(ctx4, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Motor Duty Cycle',
+                    data: json_motor_duty_cycle_data,
+                    borderWidth: 3,
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Time [s]',
+                            color: '#ffffff',
+                        },
+                        ticks: {
+                            color: '#ffffff',
+                        },
+                        grid: {
+                            color: '#ffffff',
+                        }
+                    },
+                    y: {
+                        beginAtZero: false,
+                        title: {
+                            display: true,
+                            text: 'Duty Cycle',
+                            color: '#ffffff',
+                        },
+                        ticks: {
+                            color: '#ffffff',
+                        },
+                        grid: {
+                            color: '#ffffff',
+                        }
+                    },
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#ffffff',
+                        },
+                    },
+                },
+            },
+        });
+    </script>
+</div>
+
+          
           
           
         </div>
@@ -1111,7 +1253,7 @@ circle {
             <div class="canvas-container">
                 <div class="graph-card">
                     <h3 class="graph-title">Pressure (static & stagnation) [Pa]</h3>
-                    <canvas id="pressureChart" width="750" height="300"></canvas>
+                    <canvas id="pressureChart" width="650" height="300"></canvas>
                 </div>  
             </div>
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -1196,7 +1338,7 @@ circle {
 
         <div class="graph-card">
             <h3 class="graph-title">Thrust [N]</h3>
-            <canvas id="thrustChart" width="750" height="300"></canvas>
+            <canvas id="thrustChart" width="650" height="300"></canvas>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
@@ -1265,7 +1407,7 @@ circle {
         
         <div class="graph-card">
             <h3 class="graph-title">Motor temperature [°C]</h3>
-            <canvas id="motortempChart" width="750" height="300"></canvas>
+            <canvas id="motortempChart" width="650" height="300"></canvas>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
@@ -1327,9 +1469,7 @@ circle {
 });
 
         </script>
-        </div>
-        </div>
-        
+        </div>        
 
            
 <!-- Export CSV button -->

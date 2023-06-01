@@ -6,6 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="{{ url_for('static', filename='dist/css/output.css') }}" rel="stylesheet">
     <style>
+
+@import url("https://fonts.googleapis.com/css?family=Lato:300");
+            *, *::before, *::after {
+            box-sizing: border-box;
+            }
+            
         :root {
             --primary-color: #191970;
             --secondary-color: #1E90FF;
@@ -14,20 +20,23 @@
         }
 
         body {
-            background: linear-gradient(45deg, #1c4872, #000000);
+            background: linear-gradient(0deg, #1c4872, #000000);
             color: var(--text-color);
-            font-family: Arial, sans-serif;
+            background-repeat: no-repeat;
+            font-family: "Lato", sans-serif;
             margin: 0;
             padding: 0;
+            margin-left: 10px;
+            margin-right: 10px;
         }
 
 
     h1 {
-    font-family: 'Verdana', sans-serif;
+    font-family: 'Lato';
     }
 
     p {
-    font-family:'Verdana', sans-serif;
+    font-family:'Lato';
     }
 
 
@@ -94,7 +103,7 @@
 .saved-profile {
   background-color: #FFFFFF;
   border-radius: 12px;
-  padding: 12px;
+  padding: 10px;
   box-shadow: 0 0 0 2px #1E90FF; /* Add an outline glow */
   transition: box-shadow 0.3s, background-color 0.3s;
   color: #000000; /* Set the text color to black */
@@ -183,7 +192,7 @@
                 <div class="profile-header">
                     <span class="profile-name">{{ profile.name }}</span>
                     <div class="button-group">
-                        <button class="expand-button" onclick="toggleProfileDetails(this)">
+                        <button class="expand-button" onclick="toggleProfileDetails(event)">
                             &#9660;
                         </button>
                         <button class="delete-button" onclick="deleteProfile('{{ profile.name }}')">
@@ -209,13 +218,27 @@
     </div>
 
     <script>
-        function toggleProfileDetails(button) {
-            const profileDetails = button.parentNode.parentNode.querySelector('.profile-details');
-            const expandButton = button.querySelector('.expand-button');
-            profileDetails.style.display = profileDetails.style.display === 'none' ? 'block' : 'none';
-            expandButton.innerHTML = profileDetails.style.display === 'none' ? '&#9660;' : '&#9650;';
-        }
+        let expandedProfile = null;
 
+function toggleProfileDetails(event) {
+    const button = event.target;
+    const profile = button.parentNode.parentNode;
+    const profileDetails = profile.querySelector('.profile-details');
+    const expandButton = profile.querySelector('.expand-button');
+
+    if (expandedProfile !== null && expandedProfile !== profile) {
+        // Collapse the previously expanded profile
+        const previousProfileDetails = expandedProfile.querySelector('.profile-details');
+        const previousExpandButton = expandedProfile.querySelector('.expand-button');  // Get the expand button of the previously expanded profile
+        previousProfileDetails.style.display = 'none';
+        previousExpandButton.innerHTML = '&#9660;';
+    }
+
+    profileDetails.style.display = profileDetails.style.display === 'none' ? 'block' : 'none';
+    expandButton.innerHTML = profileDetails.style.display === 'none' ? '&#9660;' : '&#9650;';
+
+    expandedProfile = profile;
+}
         function deleteProfile(profileName) {
         const confirmation = confirm(`Are you sure you want to delete profile "${profileName}"?`);
         if (confirmation) {
