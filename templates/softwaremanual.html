@@ -3,7 +3,7 @@
 <head>
     <title>Data acquisition</title>
     <meta charset="UTF-8">
-    <meta name ="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="{{url_for('static',filename='dist/css/output.css')}}" rel="stylesheet">
 </head>
 
@@ -24,64 +24,192 @@
     }
 
     .container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-}
-
-.section {
-    background-color: rgba(255, 255, 255, 0.2);
-    border-radius: 5px;
-    padding: 20px;
-    margin-bottom: 20px;
-    width: 100%;
-}
-
-.title {
-    font-size: 24px;
-    font-weight: bold;
-    text-align: center;
-    margin: 20px 0;
-}
-
-.image-left {
-        float: left;
-        margin-left: 20px;
-        max-width: 400px; /* Adjust the width as needed */
-
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
     }
 
+    .section {
+        background-color: rgba(255, 255, 255, 0.2);
+        border-radius: 5px;
+        padding: 20px;
+        margin-bottom: 20px;
+        width: 100%;
+        cursor: pointer;
+        transition: all 0.7s ease-out;
+    }
+
+    .section.active {
+        flex: 3;
+    }
+
+    .title {
+        font-size: 24px;
+        font-weight: bold;
+        text-align: center;
+        margin: 20px 0;
+    }
+
+    .probe-title {
+        font-size: 24px;
+        font-weight: bold;
+        text-align: right;
+        margin: 10px 0;
+    }
+
+    .image-right {
+        float: right;
+        margin-left: 30px;
+        max-width: 400px; /* Adjust the width as needed */
+    }
+
+    .instructions {
+        display: grid;
+        grid-gap: 20px;
+        padding: 20px;
+    }
+
+    .instruction-card {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        width: 50%;
+        transition: all 1.5s ease;
+        overflow: hidden;
+        max-height: 100px;
+    }
+
+    .instruction-card.active {
+        max-height: 1000px;
+    }
+
+    .section-title {
+        color: var(--text-color);
+        font-size: 25px;
+        font-weight: bold;
+        text-align: center;
+        margin: 30px 0;
+    }
+
+    .title-card {
+        background-color: rgba(255, 255, 255, 0.1);
+        padding: 10px;
+        border-radius: 10px;
+        margin: 10px 0;
+    }
+
+    .list-decimal {
+        list-style-type: decimal;
+        margin-left: 20px;
+    }
+
+    .list-decimal li {
+        margin-bottom: 10px;
+    }
+
+    .button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            transition: box-shadow 0.3s;
+            margin-bottom: 20px;
+        }
 </style>
 
 <body class="section">
-    <div class="bg-red-500 p-3">
-        <div class="grid grid-cols-1 gap-1 ml-4 mr-4 mt-4 mb-4">
-            <h1 class="title">DMT 14C: Aerodyanmic probe and data acquisition software - How to use</h1>
+    <div class="title-card">
+        <h1 class="title">DMT 14C: Aerodyanmic probe and data acquisition software - How to use</h1>
+    </div>
+
+    <button class="button" onclick="window.location.href='/'">&#8249; Back to main page</button>
+
+    <!-- i want to add an image-->
+    <h1 class="probe-title">Below is a diagram of the probe head</h1>
+
+    <img src="https://images2.imgbox.com/e8/5f/k1BVNt5M_o.png" alt="Image description" class="image-right">
+
+    <div class="instructions">
+        <div class="instruction-card">
+            <h2 class="section-title">Setup</h2>
+            <ol class="list-decimal">
+                <li>Create your first profile in the 'Input Parameters' section by giving it a name and clicking the submit button. If no name is provided, it will be given the default name: "Profile x - DD/MM/YYYY at HR/MIN/SEC".</li>
+                <li>Once created, the most recently added profile will appear in the 'Current Profile' dropdown on the main page.</li>
+            </ol>
+        </div>
+
+        <div class="instruction-card">
+            <h2 class="section-title">Inputting Parameters</h2>
+            <ol class="list-decimal">
+                <li>In the 'Input Parameters' section, enter all the selected values for the fan motor, linear actuator, and rotary motor.</li>
+                <li>Switch back to the main page to view all the entered values in the corresponding sections.</li>
+            </ol>
+        </div>
+
+        <div class="instruction-card">
+            <h2 class="section-title">Calibration</h2>
+            <ol class="list-decimal">
+                <li>Click the 'Calibrate' button to calibrate the load cells. The calibration offsets will be displayed.</li>
+            </ol>
+        </div>
+
+        <div class="instruction-card">
+            <h2 class="section-title">Start Experiment</h2>
+            <ol class="list-decimal">
+                <li>Once satisfied with the setup and parameter inputs, click the 'Start' button to begin the experiment.</li>
+                <li>The relevant output parameters and charts will be displayed below.</li>
+            </ol>
+        </div>
+
+        <div class="instruction-card">
+            <h2 class="section-title">Stop Experiment</h2>
+            <ol class="list-decimal">
+                <li>To stop collecting data at any time, click the 'Stop' button.</li>
+            </ol>
+        </div>
+
+        <div class="instruction-card">
+            <h2 class="section-title">Exporting Data</h2>
+            <ol class="list-decimal">
+                <li>If you wish to export all your values to a CSV file, click the 'Export CSV' button.</li>
+            </ol>
+        </div>
+
+        <div class="instruction-card">
+            <h2 class="section-title">Test Profiles</h2>
+            <ol class="list-decimal">
+                <li>In the 'Test Profiles' section, you can create and manage test profiles for different scenarios.</li>
+            </ol>
+        </div>
+
+        <div class="instruction-card">
+            <h2 class="section-title">System Limits</h2>
+            <ol class="list-decimal">
+                <li>Ensure that all input parameters are within the specified system limits to maintain safety and prevent damage.</li>
+            </ol>
         </div>
     </div>
-    <button class="bg-red-500 rounded p-3 border-2 ml-4 mt-4" onclick="window.location.href='/'">&#8249; Back to main page</button>
-    <h1 class="text-2xl font-bold ml-4 mt-4 mb-2">Below is a step-by-step guide on how to use the software</h1>
-    <ol class="list-decimal list-inside ml-4 mr-4 mt-3 text-lg">
-        <li>In the 'Input Parameters' subpage, create your first profile by giving it a name and click the submit button. If you choose to not give it any name, it will be given the default name: "Profile x - DD/MM/YYYY at HR/MIN/SEC".</li>
-        <li>If you go back to the main page, the profile you have most recently created should show up under the 'Current Profile' dropdown.</li>
-        <li>Go back to the 'Input Parameters' subpage and enter all your selected values for the fan motor, linear actuator, and rotary motor.</li>
-        <li>Go back to the main page again, you should see all your entered values.</li>
-        <li>Click the start button once you are happy with everything.</li>
-        <li>All the relevant output parameters and charts will show up below.</li>
-        <li>Click the stop button at any time when you wish to stop collecting data.</li>
-        <li>Should you wish to export all your values to a CSV file, click the 'Export CSV' button. </li>
 
-    </ol>
+    <script>
+        const instructionCards = document.querySelectorAll('.instruction-card');
 
-        <!-- i want to add an image-->
-        <h1 class="text-2xl font-bold ml-4 mt-4 mb-2">Below is a diagram of the probe head</h1>
-        
-        <img src="https://images2.imgbox.com/e8/5f/k1BVNt5M_o.png" alt="Image description" class="image-left">
-
+        instructionCards.forEach((card) => {
+            card.addEventListener('click', () => {
+                card.classList.toggle('active');
+            });
+        });
+    </script>
 </body>
+</html>
