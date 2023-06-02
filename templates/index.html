@@ -865,6 +865,17 @@ circle {
   color: #fff; /* Adjust the color as desired */
 }
 
+.offsets {
+    text-align: center;
+}
+
+.offsets p {
+    font-size: 15px;
+    margin-top: 10px;
+    margin-bottom: 5px;
+
+}
+
         </style>
     </head>
     <body class="main-body">
@@ -1006,7 +1017,7 @@ circle {
                 
                 <p class="calibration-header">Load Cell Calibration</p>
                 <form action = "{{url_for('calibrate_load_cells')}}" method="POST" class="reset-form">
-                    <button class="reset-button">Calibrate</button>
+                    <button class="reset-button" onclick="calibrateLoadCells(event)">Calibrate</button>
                 </form>
 
             </div>
@@ -1014,30 +1025,9 @@ circle {
                 <!-- Calibration Values Card -->
                 <div class="calibration-values-card">
                     <div class = "calibration-header"> Strain Gauge Offsets </div>
-                    <div id="offsets"></div>
+                    <div class = "offsets" id="offsets"></div>
                 </div>
 
-                <script>
-                    // Make an AJAX request to the server
-                    fetch('/calibrate_load_cells', {
-                        method: 'POST'
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        // Update the offsets element
-                        const offsets = data.offsets;
-                        const offset1 = offsets.strain_gauge_offset_1.toFixed(2);
-                        const offset2 = offsets.strain_gauge_offset_2.toFixed(2);
-                        const offsetsHtml = `
-                            <p>Strain Gauge Offset 1: <span id="offset1">${offset1}</span></p>
-                            <p>Strain Gauge Offset 2: <span id="offset2">${offset2}</span></p>
-                        `;
-                        document.getElementById('offsets').innerHTML = offsetsHtml;
-                    })
-                    .catch(error => {
-                        console.log('Error:', error);
-                    });
-                </script>
 
             <div class="control-card">
                 <p class="control-header">System control</p>
@@ -1649,6 +1639,34 @@ circle {
         .catch(error => {
             console.error('Error:', error);
         });
+
+    function calibrateLoadCells(event) {
+
+        event.preventDefault(); // Prevent the default form submission behavior
+
+        // Make an AJAX request to the server
+        fetch('/calibrate_load_cells', {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Update the offsets element
+            const offsets = data.offsets;
+            const offset1 = offsets.strain_gauge_offset_1.toFixed(2);
+            const offset2 = offsets.strain_gauge_offset_2.toFixed(2);
+            const offsetsHtml = `
+                <p>Strain Gauge Offset 1:</p>
+                <p><span id="offset1">${offset1}</p>
+                <p>Strain Gauge Offset 2: </p>
+                 <p>  <span id="offset2">${offset2}</span></p>
+            `;
+            document.getElementById('offsets').innerHTML = offsetsHtml;
+        })
+        .catch(error => {
+            console.log('Error:', error);
+        });
+    }
+</script>
 
     </script>
         

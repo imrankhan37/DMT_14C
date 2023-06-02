@@ -622,9 +622,13 @@ def calibrate_load_cells():
     session['strain_gauge_offset_1'] = averages[0]
     session['strain_gauge_offset_2'] = averages[1]
 
-    # Return a response indicating success
-    return 'Load cells calibrated successfully'
-
+    # Return the calibrated offsets as JSON
+    return jsonify({
+        'offsets': {
+            'strain_gauge_offset_1': averages[0],
+            'strain_gauge_offset_2': averages[1]
+        }
+    })
 
 # @app.route('/final_speed_submit', methods=['POST'])
 # def final_speed_submission():
