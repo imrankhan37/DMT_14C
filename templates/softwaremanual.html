@@ -19,13 +19,17 @@
         background: linear-gradient(45deg, #1c4872, #000000);
         color: var(--text-color);
         font-family: Arial, sans-serif;
-        margin: 0;
+        margin-left: 10px;
+        margin-right: 10px;
         padding: 0;
+        transition: box-shadow 0.5s;
     }
 
     .container {
         max-width: 800px;
         margin: 0 auto;
+        margin-left: 10px;
+        margin-right: 10px;
         padding: 20px;
         box-sizing: border-box;
         display: flex;
@@ -79,11 +83,16 @@
         background-color: rgba(255, 255, 255, 0.1);
         border-radius: 8px;
         padding: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         width: 50%;
-        transition: all 1.5s ease;
+        transition: all 1s ease;
         overflow: hidden;
         max-height: 100px;
+        box-shadow: 0 0 5px rgb(255, 255, 255); /* Add a default box-shadow */
+
+    }
+
+    .instruction-card:hover {
+        box-shadow: 0 0 20px rgb(255, 255, 255);
     }
 
     .instruction-card.active {
@@ -108,15 +117,18 @@
     .list-decimal {
         list-style-type: decimal;
         margin-left: 20px;
+        font-family: 'Lato', sans-serif;
     }
 
     .list-decimal li {
         margin-bottom: 10px;
+        margin-left: 20px;
+        margin-right: 20px;
+        text-align: center;
     }
 
     .button {
             display: block;
-            margin: 20px auto;
             padding: 10px 20px;
             background-color: var(--secondary-color);
             color: var(--text-color);
@@ -127,11 +139,30 @@
             transition: box-shadow 0.3s;
             margin-bottom: 20px;
         }
+
+        
+    .instruction-card::before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        left: -10px;
+        right: -10px;
+        bottom: -10px;
+        background-color: rgba(255, 255, 255, 0.4);
+        border-radius: 20px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.5s ease;
+        z-index: -1;
+        
+    }
+
+
 </style>
 
 <body class="section">
     <div class="title-card">
-        <h1 class="title">DMT 14C: Aerodyanmic probe and data acquisition software - How to use</h1>
+        <h1 class="title">HOW TO USE & SETUP THE OPERATING SYSTEM</h1>
     </div>
 
     <button class="button" onclick="window.location.href='/'">&#8249; Back to main page</button>
