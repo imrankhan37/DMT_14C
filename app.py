@@ -436,12 +436,12 @@ def main():
     voltage_channels = ['ai1', 'ai2', 'ai3', 'ai4']
     temperature_channels = ['ai1']
     strain_channels = ['ai1', 'ai2']
-    voltage_sampling_rate = 100
-    voltage_samples = 100
-    temperature_sampling_rate = 100
-    temperature_samples = 100
-    strain_sampling_rate = 100
-    strain_samples = 100
+    voltage_sampling_rate = 300
+    voltage_samples = 20
+    temperature_sampling_rate = 300
+    temperature_samples = 20
+    strain_sampling_rate = 300
+    strain_samples = 20
 
     # Create empty pandas dataframe to store data
     data_df = pd.DataFrame(columns=['Voltage Measurement {}'.format(i) for i in range(len(voltage_channels))] +
@@ -588,55 +588,116 @@ def main():
 #     return render_template('index.html')
 
 
-@app.route('/generate_p_zero_data', methods=['GET', 'POST'])
-def generate_p_zero_data():
-    # Generate temporary data
-    temp_p_zero = random.randrange(1, 1000)
-    # Put the data in a list
-    temp_p_zero_data = [time() * 1000, temp_p_zero]
-    response = make_response(json.dumps(temp_p_zero_data))
+# @app.route('/generate_p_zero_data', methods=['GET', 'POST'])
+# def generate_p_zero_data():
+#     # Generate temporary data
+#     temp_p_zero = random.randrange(1, 1000)
+#     # Put the data in a list
+#     temp_p_zero_data = [time() * 1000, temp_p_zero]
+#     response = make_response(json.dumps(temp_p_zero_data))
+#     response.content_type = 'application/json'
+#     return response
+
+@app.route('/generate_all_data', methods=['GET', 'POST'])
+def generate_all_data():
+
+    results = {}
+
+    # Get the p_zero_data from the session
+    temp_p_zero_data = session.get('json_p_zero_data', [])
+    temp_p_one_data = session.get('json_p_one_data', [])
+    temp_p_two_data = session.get('json_p_two_data', [])
+    temp_p_three_data = session.get('json_p_three_data', [])
+    temp_strain_gauge_zero_data = session.get('json_strain_gauge_zero_data', [])
+    temp_strain_gauge_one_data = session.get('json_strain_gauge_one_data', [])
+
+
+    if temp_p_zero_data:
+        # Convert it back to a list
+        temp_p_zero_data = json.loads(temp_p_zero_data)
+        # Get the last value and the corresponding time
+        temp_p_zero = temp_p_zero_data[-1]
+        temp_time = session.get('time_data', [])
+        if temp_time:
+            temp_time = json.loads(temp_time)[-1] * 1000
+        else:
+            temp_time = time() * 1000
+
+        results['p_zero'] = [temp_time, temp_p_zero]
+
+    if temp_p_one_data:
+        # Convert it back to a list
+        temp_p_one_data = json.loads(temp_p_one_data)
+        # Get the last value and the corresponding time
+        temp_p_one = temp_p_one_data[-1]
+        temp_time = session.get('time_data', [])
+        if temp_time:
+            temp_time = json.loads(temp_time)[-1] * 1000
+        else:
+            temp_time = time() * 1000
+
+        results['p_one'] = [temp_time, temp_p_one]
+
+    if temp_p_two_data:
+        # Convert it back to a list
+        temp_p_two_data = json.loads(temp_p_two_data)
+        # Get the last value and the corresponding time
+        temp_p_two = temp_p_two_data[-1]
+        temp_time = session.get('time_data', [])
+        if temp_time:
+            temp_time = json.loads(temp_time)[-1] * 1000
+        else:
+            temp_time = time() * 1000
+
+        results['p_two'] = [temp_time, temp_p_two]   
+
+    if temp_p_three_data:
+        # Convert it back to a list
+        temp_p_three_data = json.loads(temp_p_three_data)
+        # Get the last value and the corresponding time
+        temp_p_three = temp_p_three_data[-1]
+        temp_time = session.get('time_data', [])
+        if temp_time:
+            temp_time = json.loads(temp_time)[-1] * 1000
+        else:
+            temp_time = time() * 1000
+
+        results['p_three'] = [temp_time, temp_p_three]
+
+    if temp_strain_gauge_zero_data:
+        # Convert it back to a list
+        temp_strain_gauge_zero_data = json.loads(temp_strain_gauge_zero_data)
+        # Get the last value and the corresponding time
+        temp_strain_gauge_zero = temp_strain_gauge_zero_data[-1]
+        temp_time = session.get('time_data', [])
+        if temp_time:
+            temp_time = json.loads(temp_time)[-1] * 1000
+        else:
+            temp_time = time() * 1000
+
+        results['strain_gauge_zero'] = [temp_time, temp_strain_gauge_zero]
+
+    if temp_strain_gauge_one_data:
+        # Convert it back to a list
+        temp_strain_gauge_one_data = json.loads(temp_strain_gauge_one_data)
+        # Get the last value and the corresponding time
+        temp_strain_gauge_one = temp_strain_gauge_one_data[-1]
+        temp_time = session.get('time_data', [])
+        if temp_time:
+            temp_time = json.loads(temp_time)[-1] * 1000
+        else:
+            temp_time = time() * 1000
+
+        results['strain_gauge_one'] = [temp_time, temp_strain_gauge_one]
+
+    if not results:
+        return make_response('n/a', 204)
+    
+    response = make_response(json.dumps(results))
     response.content_type = 'application/json'
     return response
 
-@app.route('/generate_p_one_data', methods=['GET', 'POST'])
-def generate_p_one_data():
-    temp_p_one = random.randrange(1, 1000)
-    temp_p_one_data = [time() * 1000, temp_p_one]
-    response = make_response(json.dumps(temp_p_one_data))
-    response.content_type = 'application/json'
-    return response
 
-@app.route('/generate_p_two_data', methods=['GET', 'POST'])
-def generate_p_two_data():
-    temp_p_two = random.randrange(1, 1000)
-    temp_p_two_data = [time() * 1000, temp_p_two]
-    response = make_response(json.dumps(temp_p_two_data))
-    response.content_type = 'application/json'
-    return response
-
-@app.route('/generate_p_three_data', methods=['GET', 'POST'])
-def generate_p_three_data():
-    temp_p_three = random.randrange(1, 1000)
-    temp_p_three_data = [time() * 1000, temp_p_three]
-    response = make_response(json.dumps(temp_p_three_data))
-    response.content_type = 'application/json'
-    return response
-
-@app.route('/generate_gauge_one_data', methods=['GET', 'POST'])
-def generate_gauge_one_data():
-    temp_gauge_one = random.randrange(1, 10)
-    temp_gauge_one_data = [time() * 1000, temp_gauge_one]
-    response = make_response(json.dumps(temp_gauge_one_data))
-    response.content_type = 'application/json'
-    return response
-
-@app.route('/generate_gauge_two_data', methods=['GET', 'POST'])
-def generate_gauge_two_data():
-    temp_gauge_two = random.randrange(1, 10)
-    temp_gauge_two_data = [time() * 1000, temp_gauge_two]
-    response = make_response(json.dumps(temp_gauge_two_data))
-    response.content_type = 'application/json'
-    return response
 
 @app.route('/start_all', methods=['POST'])
 def start_all():
@@ -819,4 +880,4 @@ def stop_actuators():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, threaded=True) 

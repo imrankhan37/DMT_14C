@@ -990,10 +990,10 @@ circle {
                 <p class="control-header">System control</p>
                 <div class="grid grid-cols-2 gap-4 control-form">
                     <form action="{{url_for('start_all')}}" method="POST">
-                        <button type="submit" name="button" value="start_button" class="control-button-start">Start</button>
+                        <button type="submit" name="button" value="start_button" class="control-button-start" id="startButton">Start</button>
                     </form>
                     <form action="{{url_for('stop')}}" method="POST">
-                        <button type="submit" name="button" value="stop_button" class="control-button-stop">Stop</button>
+                        <button type="submit" name="button" id="stopButton" value="stop_button" class="control-button-stop">Stop</button>
                     </form>
                 </div>
             </div>  
@@ -1002,12 +1002,13 @@ circle {
     </div>
 
     <div>
-        <div>
+
+        <!-- <div>
             <button class="bg-green-500 text-white" id="startButton">Temp start button</button>
         </div>
         <div>
             <button class="bg-red-500 text-white" id="stopButton">Temp stop button</button>
-        </div>
+        </div> -->
         <p class="section-title">Key parameters</p>
 
     <div class="key-parameter-grid">
@@ -1025,112 +1026,55 @@ circle {
                 var strainchart;
                 var stopFlag = false;
 
-                function request_p_zero_data() {
+                function request_all_data() {
                     if (stopFlag) return;
-
-                    // Calls the function from python
-                    var requests = $.get('/generate_p_zero_data');
-                    requests.done(function (generate_p_zero_data) {
-                        var p_zero_result = generate_p_zero_data;
-                        var temp = p_zero_result[1]
-                        var time = p_zero_result[0]
-                        $(".P_0").text("");
-                        $(".P_0").text(generate_p_zero_data[1]);
-
-                        p_zero_data.push(generate_p_zero_data[1]);
-
-                        pressurechart.series[0].setData(p_zero_data);
+                    var requests = $.get('/generate_all_data');
+                    requests.done(function (data) {
                         
-                        // Set delay for calling the function again
-                        setTimeout(request_p_zero_data, 1000);
-                    });
-                }
+                        console.log(data)
+                        var p_zero_result = data.p_zero;
+                        console.log(p_zero_result)
+                        $(".P_0").text("");
+                        $(".P_0").text(p_zero_result[1]);
+                        p_zero_data.push([p_zero_result[0], p_zero_result[1]])
+                        pressurechart.series[0].setData(p_zero_data);
 
-                function request_p_one_data() {
-                    if (stopFlag) return;
-                    var requests = $.get('/generate_p_one_data');
-                    requests.done(function (generate_p_one_data) {
-                        var p_one_result = generate_p_one_data;
-                        var temp = p_one_result[1]
+                        var p_one_result = data.p_one;
                         $(".P_1").text("");
-                        $(".P_1").text(generate_p_one_data[1]);
-
-                        p_one_data.push(generate_p_one_data[1]);
-
+                        $(".P_1").text(p_one_result[1]);
+                        p_one_data.push([p_one_result[0], p_one_result[1]])
                         pressurechart.series[1].setData(p_one_data);
 
-                        setTimeout(request_p_one_data, 1000);
-                    });
-                }
-
-                function request_p_two_data() {
-                    if (stopFlag) return;
-                    var requests = $.get('/generate_p_two_data');
-                    requests.done(function (generate_p_two_data) {
-                        var p_two_result = generate_p_two_data;
-                        var temp = p_two_result[1]
+                        var p_two_result = data.p_two;
                         $(".P_2").text("");
-                        $(".P_2").text(generate_p_two_data[1]);
-
-                        p_two_data.push(generate_p_two_data[1]);
-
+                        $(".P_2").text(p_two_data[1]);
+                        p_two_data.push([p_two_result[0], p_two_result[1]])
                         pressurechart.series[2].setData(p_two_data);
 
-                        setTimeout(request_p_two_data, 1000);
-                    });
-                }
-
-                function request_p_three_data() {
-                    if (stopFlag) return;
-                    var requests = $.get('/generate_p_three_data');
-                    requests.done(function (generate_p_three_data) {
-                        var p_three_result = generate_p_three_data;
-                        var temp = p_three_result[1]
+                        var p_three_result = data.p_three;
                         $(".P_3").text("");
-                        $(".P_3").text(generate_p_three_data[1]);
-
-                        p_three_data.push(generate_p_three_data[1]);
-
+                        $(".P_3").text(p_three_result[1]);
+                        p_three_data.push([p_three_result[0], p_three_result[1]])
                         pressurechart.series[3].setData(p_three_data);
 
-                        setTimeout(request_p_three_data, 1000);
-                    });
-                }
 
-                function request_gauge_one_data() {
-                    if (stopFlag) return;
-                    var requests = $.get('/generate_gauge_one_data');
-                    requests.done(function (generate_gauge_one_data) {
-                        var gauge_one_result = generate_gauge_one_data;
-                        var temp = gauge_one_result[1]
+                        var gauge_one_result = data.strain_gauge_zero;
                         $(".Gauge_1").text("");
-                        $(".Gauge_1").text(generate_gauge_one_data[1]);
-
-                        gauge_one_data.push(generate_gauge_one_data[1]);
-
+                        $(".Gauge_1").text(gauge_one_result[1]);
+                        gauge_one_data.push([gauge_one_result[0], gauge_one_result[1]])
                         thrustchart.series[0].setData(gauge_one_data);
 
-                        setTimeout(request_gauge_one_data, 1000);
-                    });
-                }
-
-                function request_gauge_two_data() {
-                    if (stopFlag) return;
-                    var requests = $.get('/generate_gauge_two_data');
-                    requests.done(function (generate_gauge_two_data) {
-                        var gauge_two_result = generate_gauge_two_data;
-                        var temp = gauge_two_result[1]
+                        var gauge_two_result = data.gauge_one;
                         $(".Gauge_2").text("");
-                        $(".Gauge_2").text(generate_gauge_two_data[1]);
-
-                        gauge_two_data.push(generate_gauge_two_data[1]);
-
+                        $(".Gauge_2").text(gauge_one_result[1]);
+                        gauge_two_data.push([gauge_two_result[0], gauge_two_result[1]])
                         thrustchart.series[1].setData(gauge_two_data);
 
-                        setTimeout(request_gauge_two_data, 1000);
+                        setTimeout(request_all_data, 1000);
                     });
-                }
 
+                }
+                
                 // Functions that displays zero until the start button is pressed
                 function p_zero_displayZero() {
                     $(".P_0").text(0);
@@ -1298,14 +1242,15 @@ circle {
                     });
 
                     $('#startButton').click(function() {
-                        request_p_zero_data();
-                        request_p_one_data();
-                        request_p_two_data();
-                        request_p_three_data();
-                        request_gauge_one_data();
-                        request_gauge_two_data();
+
+                        // Prevent the form from being submitted
+                        event.preventDefault();
+
+                        request_all_data()
+
                     });
                     $('#stopButton').click(function() {
+                        
                         stopFlag = true;
                     });
                 });
