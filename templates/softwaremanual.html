@@ -7,10 +7,62 @@
     <link href="{{url_for('static',filename='dist/css/output.css')}}" rel="stylesheet">
 </head>
 
-<body class="bg-slate-100">
+<style>
+    :root {
+        --primary-color: #191970;
+        --secondary-color: #1E90FF;
+        --background-color: #000000;
+        --text-color: #FFFFFF;
+    }
+
+    body {
+        background: linear-gradient(45deg, #1c4872, #000000);
+        color: var(--text-color);
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.section {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    padding: 20px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.title {
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    margin: 20px 0;
+}
+
+.image-left {
+        float: left;
+        margin-left: 20px;
+        max-width: 400px; /* Adjust the width as needed */
+
+    }
+
+</style>
+
+<body class="section">
     <div class="bg-red-500 p-3">
         <div class="grid grid-cols-1 gap-1 ml-4 mr-4 mt-4 mb-4">
-            <h1 class="bg-white rounded p-4 border-2 border-b-blue-700 text-3xl text-center font-bold">DMT 14C: Aerodyanmic probe and data acquisition software - How to use</h1>
+            <h1 class="title">DMT 14C: Aerodyanmic probe and data acquisition software - How to use</h1>
         </div>
     </div>
     <button class="bg-red-500 rounded p-3 border-2 ml-4 mt-4" onclick="window.location.href='/'">&#8249; Back to main page</button>
@@ -24,8 +76,12 @@
         <li>All the relevant output parameters and charts will show up below.</li>
         <li>Click the stop button at any time when you wish to stop collecting data.</li>
         <li>Should you wish to export all your values to a CSV file, click the 'Export CSV' button. </li>
+
+    </ol>
+
+        <!-- i want to add an image-->
+        <h1 class="text-2xl font-bold ml-4 mt-4 mb-2">Below is a diagram of the probe head</h1>
+        
+        <img src="https://images2.imgbox.com/e8/5f/k1BVNt5M_o.png" alt="Image description" class="image-left">
+
 </body>
-
-
-
-</html>
