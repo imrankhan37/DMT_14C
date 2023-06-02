@@ -412,10 +412,12 @@ def stop_button():
     #         return render_template('index.html')
     # return render_template('index.html', input_motor_data=input_motor_data)
 
+
 @app.route('/main', methods=['POST'])
 def main():
     global last_values
     global experiment_running
+
     global time_data
     global json_p_zero_data
     global json_p_one_data
@@ -424,6 +426,15 @@ def main():
     global json_strain_gauge_zero_data
     global json_strain_gauge_one_data
     global json_motor_temp_data
+
+    global strain_device
+    global strain_channels
+    global strain_sampling_rate
+    global strain_samples
+
+     # Retrieve the strain gauge offsets from the session
+    strain_gauge_offset_1 = session.get('strain_gauge_offset_1')
+    strain_gauge_offset_2 = session.get('strain_gauge_offset_2')
 
     # Check if the experiment is not running
     if experiment_running == False:
@@ -497,6 +508,10 @@ def main():
 
             # Convert the sample dictionary to a DataFrame
             sample_df = pd.DataFrame(sample)
+
+            # Apply offsets to each strain measurement column
+            sample_df['Strain Measurement 0'] = sample_df['Strain Measurement 0'].apply(lambda x: -1 * (x+strain_gauge_offset_1))
+            sample_df['Strain Measurement 1'] = sample_df['Strain Measurement 1'].apply(lambda x: x +strain_gauge_offset_2)
 
             print(sample_df)
 
@@ -579,6 +594,36 @@ def main():
 
     return last_values, time_data, json_p_zero_data, json_p_one_data, json_p_two_data, json_p_three_data, json_strain_gauge_zero_data, json_strain_gauge_one_data, json_motor_temp_data
 
+@app.route('/calibrate_load_cells', methods=['POST'])
+def calibrate_load_cells():
+
+    global strain_device
+    global strain_channels
+    global strain_sampling_rate
+    global strain_samples
+
+    strain_task = configureDAQ(device_name=strain_device, type='strain', channels=strain_channels,
+                               sampling_rate=strain_sampling_rate, samples_per_channel=strain_samples)
+    
+    data = readDAQData(strain_task, samples_per_channel=strain_samples, channels=strain_channels, type='strain')
+
+ # Calculate the average value for each load cell
+    averages = []
+    for channel in strain_channels:
+        if channel in data:
+            values = data[channel]
+            average = np.mean(values)
+            averages.append(average)
+
+    # Close the DAQ task
+    strain_task.close()
+
+    # Store the offsets in the session
+    session['strain_gauge_offset_1'] = averages[0]
+    session['strain_gauge_offset_2'] = averages[1]
+
+    # Return a response indicating success
+    return 'Load cells calibrated successfully'
 
 
 # @app.route('/final_speed_submit', methods=['POST'])
@@ -714,7 +759,7 @@ def start_all():
 
         # Disable the start button
         session['start_button_disabled'] = True
-
+        
         # Initialize the last_values dictionary
         last_values = {}
         while experiment_running == True:

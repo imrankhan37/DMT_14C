@@ -265,7 +265,7 @@
 .reset-card {
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-    grid-column: span 2;
+    grid-column: span 1;
     padding: 10px;
     box-shadow: 0 0 10px rgb(255, 255, 255);  /* This matches the parameter-card hover effect */
 
@@ -274,11 +274,22 @@
 
 .reset-header {
     margin-left: 5px;
-    margin-top: 20px;
+    margin-top: 5px;
     margin-bottom: 15px;
     color: #f9f9f9; /* White text */
     text-align: center;
-    font-size: 20px;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.calibration-header {
+    margin-left: 5px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    color: #f9f9f9; /* White text */
+    text-align: center;
+    font-size: 10px;
     font-weight: bold;
     text-transform: uppercase;
 }
@@ -290,7 +301,7 @@
 .reset-button {
     background-color: #ffd700; /* Yellow background */
     border-radius: 8px;
-    padding: 20px 30px; /* Padding around the button */
+    padding: 10px 20px; /* Padding around the button */
     font-size: 1.2rem; /* Text size */
     font-weight: bold; /* Bold text */
     color: #000000; /* White text */
@@ -319,7 +330,7 @@
 
 .control-header {
     margin-top: 10px;
-    margin-bottom: 15px;
+    margin-bottom: 5px;
     color: #f9f9f9; /* White text */
     text-align: center;
     font-size: 20px;
@@ -984,7 +995,41 @@ circle {
                 <form action="{{url_for('reset_session')}}" method="POST" class="reset-form">
                     <button class="reset-button">Reset</button>    
                 </form>
+                
+                <p class="calibration-header">Load Cell Calibration</p>
+                <form action = "{{url_for('calibrate_load_cells')}}" method="POST" class="reset-form">
+                    <button class="reset-button">Calibrate</button>
+                </form>
+
             </div>
+
+                <!-- Calibration Values Card -->
+                <div class="calibration-values-card">
+                    <div class = "calibration-header">Calibration Results</div>
+                    <div id="offsets"></div>
+                </div>
+
+                <script>
+                    // Make an AJAX request to the server
+                    fetch('/calibrate_load_cells', {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update the offsets element
+                        const offsets = data.offsets;
+                        const offset1 = offsets.strain_gauge_offset_1.toFixed(2);
+                        const offset2 = offsets.strain_gauge_offset_2.toFixed(2);
+                        const offsetsHtml = `
+                            <p>Strain Gauge Offset 1: <span id="offset1">${offset1}</span></p>
+                            <p>Strain Gauge Offset 2: <span id="offset2">${offset2}</span></p>
+                        `;
+                        document.getElementById('offsets').innerHTML = offsetsHtml;
+                    })
+                    .catch(error => {
+                        console.log('Error:', error);
+                    });
+                </script>
 
             <div class="control-card">
                 <p class="control-header">System control</p>
