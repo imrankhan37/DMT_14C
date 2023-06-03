@@ -99,6 +99,8 @@
         padding: 10px;
         cursor: pointer;
         transition: background-color 0.3s ease-in-out;
+        font-size: 15px;
+        font-weight: bold;
     }
 
     .navigation-button:hover {
@@ -858,9 +860,9 @@ circle {
 
 .duty-cycle-title {
   position: absolute;
-  left: 25%;
-  margin-top: 25px;
-  transform: translate(-15%, 20%);
+  left: 18%;
+  margin-top: 60px;
+  transform: translate(-15%, 40%);
   font-size: 1.5em; /* Adjust the font size as desired */
   color: #fff; /* Adjust the color as desired */
 }
@@ -875,6 +877,15 @@ circle {
     margin-bottom: 5px;
 
 }
+
+.dropdown-text {
+    color: #333;
+} 
+
+#currentProfileDropdown option:checked {
+  color: black;
+}
+
 
         </style>
     </head>
@@ -893,11 +904,17 @@ circle {
             <!--Input parameter cards and Fan motor parameters side by side-->
             <div class="input-and-parameter-grid">
                 <div class="profile-input-section">
+                    <div class="current-profile-container">
                     <p class="text-xl font-bold ml-4">Current profile</p>
-                    <select id="currentProfileDropdown" class="col-span-2 text-center bg-white border-2 rounded p-3 ml-4 mb-2" style="width: 30em">
-                        <option></option>
-                    </select><br>
-    
+                    <div id="currentProfileDisplay" class="current-profile-display"></div>
+                </div>
+                    <select id="currentProfileDropdown" class="col-span-2 text-center bg-white border-2 rounded p-3 ml-4 mb-2" style="width: 30em" style="width: 30em">
+                        <option selected style="color: black;"></option>
+                    </select>
+
+
+
+                    <br>
                     <p class="text-xl font-bold ml-4 mt-3">Inputted values</p>
                     <p class="ml-4 mb-3">Select fan motor profile:</p>
                     <form>
@@ -1621,25 +1638,48 @@ circle {
         setInterval(updateData, 5000); // Adjust the interval as needed
     
 
-        function receiveProfileNames(data) {
-        const dropdown = document.getElementById('currentProfileDropdown');
-        data.profiles.forEach(profile => {
-            const option = document.createElement('option');
-            option.value = profile.name;
-            option.textContent = profile.name;
-            dropdown.appendChild(option);
-        });
-    }
 
-    // Fetch the profiles data from the server
-    fetch('/get_profiles')
-        .then(response => response.json())
-        .then(data => {
-            receiveProfileNames(data);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
+// Fetch the profiles data from the server
+fetch('/get_profiles')
+  .then(response => response.json())
+  .then(data => {
+    receiveProfileNames(data);
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  });
+
+function receiveProfileNames(data) {
+  const dropdown = document.getElementById('currentProfileDropdown');
+
+  data.profiles.forEach(profile => {
+    const option = document.createElement('option');
+    option.value = profile.name;
+    option.textContent = profile.name;
+    option.style.color = 'black';
+    dropdown.appendChild(option);
+  });
+
+  // Attach event listener to the select element
+  dropdown.addEventListener('change', function() {
+    const selectedOption = dropdown.options[dropdown.selectedIndex];
+    dropdown.value = selectedOption.value;
+    selectedOption.textContent = selectedOption.textContent; // Update the display on the unexpanded dropdown box
+    dropdown.classList.remove('selected-option');
+    setTimeout(() => {
+      dropdown.classList.add('selected-option');
+    }, 0);
+  });
+
+  // Set initial color of the selected option
+  const selectedOption = dropdown.options[dropdown.selectedIndex];
+  selectedOption.style.color = 'black';
+
+  // Set initial value and display text of the dropdown box
+  dropdown.value = selectedOption.value;
+}
+
+
 
     function calibrateLoadCells(event) {
 
