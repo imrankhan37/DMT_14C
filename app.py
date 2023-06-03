@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, session, redirect, url_for, jsonify, Response, stream_template, stream_with_context, make_response
-from motor_vesc import VESC
-from actuator import ArduinoControl
+from archive.actuator import ArduinoControl
 import threading
 import nidaqmx
 from time import time
