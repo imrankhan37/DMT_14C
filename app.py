@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, session, redirect, url_for, jsonify, Response, stream_template, stream_with_context, make_response
-from motor_vesc import VESC
-from actuator import ArduinoControl
+# from motor_vesc import VESC
+# from actuator import ArduinoControl
 import threading
 import nidaqmx
 from time import time
@@ -112,7 +112,6 @@ initializeDAQTasks(
     strain_samples=100
 )
 
-
 # Read the data from the specified task
 def readDAQData(task, samples_per_channel, channels, type):
     try:
@@ -139,8 +138,6 @@ def readDAQData(task, samples_per_channel, channels, type):
     except nidaqmx.errors.DaqReadError as e:
         print("Error while reading DAQ data:", e)
         return None
-
-
 
 # This allows the app to start
 app = Flask(__name__, static_url_path='/static', template_folder='templates')
@@ -185,7 +182,6 @@ def get_profiles():
         profiles = json.load(file)
     return jsonify(profiles=profiles)
 
-
 @app.route('/saved_profiles')
 def saved_profiles():
     # Read the profiles from the JSON file
@@ -193,8 +189,6 @@ def saved_profiles():
         saved_profiles = json.load(file)
 
     return render_template('savedprofiles.html', profiles=saved_profiles)
-
-
 
 @app.route('/get_profile_names', methods=['GET'])
 def get_profile_names():
@@ -219,13 +213,9 @@ def delete_profile():
 
     return jsonify(success=True)
 
-
-
-
 @app.route('/', methods=['GET'])
 def index():
     input_motor_data = session.get('input_motor_data', {})
-    last_values = session.get('last_values', {})
     time_data = session.get('time_data')
     json_p_zero_data = session.get('json_p_zero_data')
     json_p_one_data = session.get('json_p_one_data')
@@ -235,8 +225,7 @@ def index():
     json_strain_gauge_one_data = session.get('json_strain_gauge_one_data')
     json_motor_temp_data = session.get('json_motor_temp_data')
 
-    return render_template('index.html', input_motor_data=input_motor_data, last_values=last_values, time_data=time_data, json_p_zero_data=json_p_zero_data, json_p_one_data=json_p_one_data, json_p_two_data=json_p_two_data, json_p_three_data=json_p_three_data, json_strain_gauge_zero_data=json_strain_gauge_zero_data, json_strain_gauge_one_data=json_strain_gauge_one_data, json_motor_temp_data=json_motor_temp_data, start_button_disabled=False)
-
+    return render_template('index.html', input_motor_data=input_motor_data, time_data=time_data, json_p_zero_data=json_p_zero_data, json_p_one_data=json_p_one_data, json_p_two_data=json_p_two_data, json_p_three_data=json_p_three_data, json_strain_gauge_zero_data=json_strain_gauge_zero_data, json_strain_gauge_one_data=json_strain_gauge_one_data, json_motor_temp_data=json_motor_temp_data, start_button_disabled=False)
 
 # Collects all input parameters and saves it in a dictionary
 @app.route('/motor_input_parameters', methods=['GET', 'POST'])
@@ -415,7 +404,6 @@ def stop_button():
 
 @app.route('/main', methods=['POST'])
 def main():
-    global last_values
     global experiment_running
 
     global time_data
@@ -447,12 +435,12 @@ def main():
     voltage_channels = ['ai1', 'ai2', 'ai3', 'ai4']
     temperature_channels = ['ai1']
     strain_channels = ['ai1', 'ai2']
-    voltage_sampling_rate = 300
-    voltage_samples = 20
-    temperature_sampling_rate = 300
-    temperature_samples = 20
-    strain_sampling_rate = 300
-    strain_samples = 20
+    voltage_sampling_rate = 1
+    voltage_samples = 1
+    temperature_sampling_rate = 1
+    temperature_samples = 1
+    strain_sampling_rate = 1
+    strain_samples = 1
 
     # Create empty pandas dataframe to store data
     data_df = pd.DataFrame(columns=['Voltage Measurement {}'.format(i) for i in range(len(voltage_channels))] +
@@ -519,11 +507,8 @@ def main():
             data_df = pd.concat([data_df, sample_df], ignore_index=True)
 
             # Update the last values dictionary
-            last_values = {}
             p_zero_data = sample_df[['Seconds', 'Voltage Measurement 0']]
             p_zero_data = p_zero_data.rename(columns={'Seconds': 'Seconds', 'Voltage Measurement 0': 'P_0'})
-            p_zero_data_last_value = p_zero_data.iloc[voltage_samples-1, 1]
-            last_values['P_0'] = p_zero_data_last_value
             time_data = p_zero_data['Seconds'].values.tolist()
             time_data = json.dumps(time_data) if time_data is not None else '[]'
             json_p_zero_data = p_zero_data['P_0'].values.tolist()
@@ -531,48 +516,35 @@ def main():
 
             p_one_data = sample_df[['Seconds', 'Voltage Measurement 1']]
             p_one_data = p_one_data.rename(columns={'Seconds': 'Seconds', 'Voltage Measurement 1': 'P_1'})
-            p_one_data_last_value = p_one_data.iloc[voltage_samples-1, 1]
-            last_values['P_1'] = p_one_data_last_value
             json_p_one_data = p_one_data['P_1'].values.tolist()
             json_p_one_data = json.dumps(json_p_one_data) if json_p_one_data is not None else '[]'
 
             p_two_data = sample_df[['Seconds', 'Voltage Measurement 2']]
             p_two_data = p_two_data.rename(columns={'Seconds': 'Seconds', 'Voltage Measurement 2': 'P_2'})
-            p_two_data_last_value = p_two_data.iloc[voltage_samples-1, 1]
-            last_values['P_2'] = p_two_data_last_value
             json_p_two_data = p_two_data['P_2'].values.tolist()
             json_p_two_data = json.dumps(json_p_two_data) if json_p_two_data is not None else '[]'
 
             p_three_data = sample_df[['Seconds', 'Voltage Measurement 3']]
             p_three_data = p_three_data.rename(columns={'Seconds': 'Seconds', 'Voltage Measurement 3': 'P_3'})
-            p_three_data_last_value = p_three_data.iloc[voltage_samples-1, 1]
-            last_values['P_3'] = p_three_data_last_value
             json_p_three_data = p_three_data['P_3'].values.tolist()
             json_p_three_data = json.dumps(json_p_three_data) if json_p_three_data is not None else '[]'
 
             motor_temp_data = sample_df[['Seconds', 'Temperature Measurement 0']]
             motor_temp_data = motor_temp_data.rename(columns={'Seconds': 'Seconds', 'Temperature Measurement 0': 'T_0'})
-            motor_temp_data_last_value = motor_temp_data.iloc[temperature_samples-1, 1]
-            last_values['T_0'] = motor_temp_data_last_value
             json_motor_temp_data = motor_temp_data['T_0'].values.tolist()
             json_motor_temp_data = json.dumps(json_motor_temp_data) if json_motor_temp_data is not None else '[]'
 
             strain_gauge_zero_data = sample_df[['Seconds', 'Strain Measurement 0']]
             strain_gauge_zero_data = strain_gauge_zero_data.rename(columns={'Seconds': 'Seconds', 'Strain Measurement 0': 'Strain_0'})
-            strain_gauge_zero_data_last_value = strain_gauge_zero_data.iloc[strain_samples-1, 1]
-            last_values['Strain_0'] = strain_gauge_zero_data_last_value
             json_strain_gauge_zero_data = strain_gauge_zero_data['Strain_0'].values.tolist()
             json_strain_gauge_zero_data = json.dumps(json_strain_gauge_zero_data) if json_strain_gauge_zero_data is not None else '[]'
 
             strain_gauge_one_data = sample_df[['Seconds', 'Strain Measurement 1']]
             strain_gauge_one_data = strain_gauge_one_data.rename(columns={'Seconds': 'Seconds', 'Strain Measurement 1': 'Strain_1'})
-            strain_gauge_one_data_last_value = strain_gauge_one_data.iloc[strain_samples-1, 1]
-            last_values['Strain_1'] = strain_gauge_one_data_last_value
             json_strain_gauge_one_data = strain_gauge_one_data['Strain_1'].values.tolist()
             json_strain_gauge_one_data = json.dumps(json_strain_gauge_one_data) if json_strain_gauge_one_data is not None else '[]'
 
             # Store the required dataframes in the session
-            session['last_values'] = last_values
             session['time_data'] = time_data
             session['json_p_zero_data'] = json_p_zero_data
             session['json_p_one_data'] = json_p_one_data
@@ -592,7 +564,7 @@ def main():
     temperature_task.close()
     strain_task.close()
 
-    return last_values, time_data, json_p_zero_data, json_p_one_data, json_p_two_data, json_p_three_data, json_strain_gauge_zero_data, json_strain_gauge_one_data, json_motor_temp_data
+    return time_data, json_p_zero_data, json_p_one_data, json_p_two_data, json_p_three_data, json_strain_gauge_zero_data, json_strain_gauge_one_data, json_motor_temp_data
 
 @app.route('/calibrate_load_cells', methods=['POST'])
 def calibrate_load_cells():
@@ -649,6 +621,13 @@ def calibrate_load_cells():
 
 @app.route('/generate_all_data', methods=['GET', 'POST'])
 def generate_all_data():
+
+    result = main()
+    if result is None:
+        return make_response('Error', 500)
+
+    # Call all the required values from the main function
+    time_data, json_p_zero_data, json_p_one_data, json_p_two_data, json_p_three_data, json_strain_gauge_zero_data, json_strain_gauge_one_data, json_motor_temp_data = result
 
     results = {}
 
@@ -743,53 +722,49 @@ def generate_all_data():
         return make_response('n/a', 204)
     
     response = make_response(json.dumps(results))
+    print(results)
     response.content_type = 'application/json'
     return response
 
 
 
-@app.route('/start_all', methods=['POST'])
-def start_all():
-    global experiment_running
+# @app.route('/start_all', methods=['POST'])
+# def start_all():
+#     global experiment_running
 
-    # Check if the experiment is already running
-    if experiment_running == False:
-        input_motor_data = session.get('input_motor_data', {})
-        global vesc
-        global arduino
+#     # Check if the experiment is already running
+#     if experiment_running == False:
+#         input_motor_data = session.get('input_motor_data', {})
+#         global vesc
+#         global arduino
 
-        # Set the experiment_running flag to True
-        experiment_running = True
+#         # Set the experiment_running flag to True
+#         experiment_running = True
 
-        # Disable the start button
-        session['start_button_disabled'] = True
+#         # Disable the start button
+#         session['start_button_disabled'] = True
         
-        # Initialize the last_values dictionary
-        last_values = {}
-        while experiment_running == True:
+#         # Initialize the last_values dictionary
+#         while experiment_running == True:
 
-            # Call the main function to start the data acquisition and get the updated last_values
-            last_values, time_data, json_p_zero_data, json_p_one_data, json_p_two_data, json_p_three_data, json_strain_gauge_zero_data, json_strain_gauge_one_data, json_motor_temp_data = main()
+#             # Call the main function to start the data acquisition and get the updated last_values
 
-            # Store the last values in the session
-            session['last_values'] = last_values
-            session['time_data'] = time_data
-            session['json_p_zero_data'] = json_p_zero_data
-            session['json_p_one_data'] = json_p_one_data
-            session['json_p_two_data'] = json_p_two_data
-            session['json_p_three_data'] = json_p_three_data
-            session['json_strain_gauge_zero_data'] = json_strain_gauge_zero_data
-            session['json_strain_gauge_one_data'] = json_strain_gauge_one_data
-            session['json_motor_temp_data'] = json_motor_temp_data
-            
-            # Update the last values dictionary for rounding and printing
-            for key in last_values:
-                last_values[key] = round(last_values[key], 2)
+#             time_data, json_p_zero_data, json_p_one_data, json_p_two_data, json_p_three_data, json_strain_gauge_zero_data, json_strain_gauge_one_data, json_motor_temp_data = main()
 
-            # Render the template with updated values
-            return render_template('index.html', input_motor_data=input_motor_data, last_values=last_values, time_data=time_data, json_p_zero_data=json_p_zero_data, json_p_one_data=json_p_one_data, json_p_two_data=json_p_two_data, json_p_three_data=json_p_three_data, json_strain_gauge_zero_data=json_strain_gauge_zero_data, json_strain_gauge_one_data=json_strain_gauge_one_data, json_motor_temp_data=json_motor_temp_data, start_button_disabled=session.get('start_button_disabled', False))
+#             # Store the last values in the session
+#             session['time_data'] = time_data
+#             session['json_p_zero_data'] = json_p_zero_data
+#             session['json_p_one_data'] = json_p_one_data
+#             session['json_p_two_data'] = json_p_two_data
+#             session['json_p_three_data'] = json_p_three_data
+#             session['json_strain_gauge_zero_data'] = json_strain_gauge_zero_data
+#             session['json_strain_gauge_one_data'] = json_strain_gauge_one_data
+#             session['json_motor_temp_data'] = json_motor_temp_data
 
-    return redirect(url_for('index'))
+#             # Render the template with updated values
+#             return render_template('index.html', input_motor_data=input_motor_data, last_values=last_values, time_data=time_data, json_p_zero_data=json_p_zero_data, json_p_one_data=json_p_one_data, json_p_two_data=json_p_two_data, json_p_three_data=json_p_three_data, json_strain_gauge_zero_data=json_strain_gauge_zero_data, json_strain_gauge_one_data=json_strain_gauge_one_data, json_motor_temp_data=json_motor_temp_data, start_button_disabled=session.get('start_button_disabled', False))
+
+#     return redirect(url_for('index'))
 
 def start_motor(vesc, speed, profile, current, duty_cycle):
     vesc.start_motor(speed, profile, current, duty_cycle)
@@ -848,22 +823,22 @@ data_df = pd.DataFrame()  # Create an empty dataframe to store the collected dat
 #                            json_strain_gauge_two_data=json_strain_gauge_two_data,
 #                            data_df=data_df)
 
-@app.route('/update_values', methods=['GET'])
-def update_values():
+# @app.route('/update_values', methods=['GET'])
+# def update_values():
 
-    global last_values
-    last_values = session.get('last_values', {})
+#     global last_values
+#     last_values = session.get('last_values', {})
     
-    # Perform any necessary processing on last_values here
+#     # Perform any necessary processing on last_values here
     
-    # Generate the HTML for last values
-    last_values_html = ''
-    for key, value in last_values.items():
-        last_values_html += f'<p>{key}: {value}</p>'
+#     # Generate the HTML for last values
+#     last_values_html = ''
+#     for key, value in last_values.items():
+#         last_values_html += f'<p>{key}: {value}</p>'
 
-    print('Updated values from update_values() {}'.format(last_values))
+#     print('Updated values from update_values() {}'.format(last_values))
 
-    return {'last_values_html': last_values_html}
+#     return {'last_values_html': last_values_html}
 
 
 @app.route('/export_csv', methods=['POST'])
