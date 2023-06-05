@@ -4,25 +4,27 @@ import time
 class ArduinoControl:
     def __init__(self, port):
         self.ser = serial.Serial(port=port, baudrate=9600, timeout=1)
+
+        if not self.ser.is_open:
+            self.ser.open()
+
         time.sleep(2)  # wait for Arduino to initialize
 
     def move_to(self, rotary_position):
-        # Convert position to a string with leading zeros and a newline character
         rotary_position_str = '{:04d}\n'.format(rotary_position)
-
-        # Send position to Arduino over the serial port
         self.ser.write(rotary_position_str.encode())
 
-        # Wait for response from Arduino
-        response = self.ser.readline().strip().decode()
+        while True:
+            if self.ser.in_waiting > 0:
+                response = self.ser.readline().strip().decode()
 
-        # Check for errors5
-        if response == 'OK':
-            print('Position set successfully')
-        elif response == 'ERROR':
-            raise ValueError('Error setting position')
-        else:
-            raise ValueError('Invalid response from Arduino')
+                if response == 'OK':
+                    print('Position set successfully')
+                    break
+                elif 'ERROR' in response:
+                    raise ValueError('Error setting position')
+                else:
+                    continue  # ignore any other responses
 
     def close(self):
         self.ser.close()
@@ -36,6 +38,10 @@ try:
 
     # Move the rotary actuator to the specified position
     arduino.move_to(rotary_pos)
+
+    go_back = int(input('Enter 0 to go back to the original position: '))
+    if go_back == 0:
+        arduino.move_to(0.00001)
 
 except ValueError as e:
     print('Error:', str(e))
