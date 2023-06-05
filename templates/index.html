@@ -1049,12 +1049,11 @@ circle {
             <div class="control-card">
                 <p class="control-header">System control</p>
                 <div class="grid grid-cols-2 gap-4 control-form">
-                    <form method="POST">
-                        <button type="submit" value="start_button" class="control-button-start" id="startButton">Start</button>
+                    <form action="{{url_for('start_all')}}" method="POST">
+                        <button type="submit" value="start_button" class="control-button-start">Start</button>
                     </form>
-                    <form method="POST">
-                        <!-- action="{{url_for('stop')}}"  -->
-                        <button type="submit" id="stopButton" value="stop_button" class="control-button-stop">Stop</button>
+                    <form action ="{{url_for('stop')}}" method="POST">
+                        <button type="submit" value="stop_button" class="control-button-stop">Stop</button>
                     </form>
                 </div>
             </div>  
@@ -1063,13 +1062,13 @@ circle {
     </div>
 
     <div>
-
+<!-- 
         <div>
             <button class="bg-green-500 text-white" id="startButton">Temp start button</button>
         </div>
         <div>
             <button class="bg-red-500 text-white" id="stopButton">Temp stop button</button>
-        </div>
+        </div> -->
         <p class="section-title">Key parameters</p>
 
     <div class="key-parameter-grid">
