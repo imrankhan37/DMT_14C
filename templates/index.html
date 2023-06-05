@@ -1049,7 +1049,7 @@ circle {
             <div class="control-card">
                 <p class="control-header">System control</p>
                 <div class="grid grid-cols-2 gap-4 control-form">
-                    <form action="{{url_for('read_pdiff_values')}}" method="POST">
+                    <form action="{{url_for('main')}}" method="POST">
                         <button type="submit" class="control-button-start">Start</button>
                     </form>
                     <form method="POST">
@@ -1089,7 +1089,7 @@ circle {
 
                 function request_all_data() {
                     if (stopFlag) return;
-                    var requests = $.get('/main_2');
+                    var requests = $.get('/start_butt');
                     requests.done(function (data) {
                         console.log(data);
                         

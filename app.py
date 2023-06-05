@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, session, redirect, url_for, jsonify, Response, stream_template, stream_with_context, make_response
 # from motor_vesc import VESC
 # from actuator import ArduinoControl
-import threading
 import nidaqmx
 from time import time
 import numpy as np
@@ -12,8 +11,9 @@ import tkinter as tk
 import json
 import random
 import serial
-import threading
 import logging
+from queue import Queue
+from threading import Thread
 
 voltage_task = None
 temperature_task = None
@@ -406,17 +406,20 @@ def stop_button():
 
 logging.basicConfig(level=logging.DEBUG)
 
-experiment_running = True
+experiment_running = False
+pdiff_queue = []
+pdiff1_recent = 0.0
+pdiff2_recent = 0.0
+pdiff3_recent = 0.0
 
-@app.route('/read_pdiff_values', methods=['GET', 'POST'])
 def read_pdiff_values():
     ser = serial.Serial('COM6', 9600)  # Replace 'COM6' with the appropriate serial port
-    global pdiff1_recent, pdiff2_recent, pdiff3_recent
+    global experiment_running, pdiff1_recent, pdiff2_recent, pdiff3_recent
 
-    # Initialise pressure values
-    pdiff1_recent = 0.0
-    pdiff2_recent = 0.0
-    pdiff3_recent = 0.0
+    # # Initialise pressure values
+    # pdiff1_recent = 0.0
+    # pdiff2_recent = 0.0
+    # pdiff3_recent = 0.0
 
     while experiment_running:
         line = ser.readline().decode().strip()  # Read a line from the serial port and decode it
@@ -432,14 +435,29 @@ def read_pdiff_values():
                 # logging.debug(f"read_pdiff_values - pdiff2_recent: {pdiff2_recent}")
                 # logging.debug(f"read_pdiff_values - pdiff3_recent: {pdiff3_recent}")
 
+                pdiff_queue.append((pdiff1_recent, pdiff2_recent, pdiff3_recent))
+
     ser.close()
-    return pdiff1_recent, pdiff2_recent, pdiff3_recent
+    # return pdiff1_recent, pdiff2_recent, pdiff3_recent
+
+@app.route('/start_experiment', methods=['GET', 'POST'])
+def start_experiment():
+    global experiment_running
+
+    if not experiment_running:
+        experiment_running = True
+        read_pdiff_values()
+    return "Started"
 
 @app.route('/main_2', methods=['GET', 'POST'])
 def main_2():
-    global experiment_running
+    logging.debug("main_2 triggered")
+    global pdiff1_recent, pdiff2_recent, pdiff3_recent
 
-    pdiff1_recent, pdiff2_recent, pdiff3_recent = read_pdiff_values()
+    if pdiff_queue:
+        pdiff1_recent, pdiff2_recent, pdiff3_recent = pdiff_queue.pop(0)
+
+    # pdiff1_recent, pdiff2_recent, pdiff3_recent = pdiff_queue.get()
 
     pdiff1_recent = pdiff1_recent if pdiff1_recent is not None else 0.0
     pdiff2_recent = pdiff2_recent if pdiff2_recent is not None else 0.0
@@ -454,11 +472,24 @@ def main_2():
     # print(pdiff3_recent)
 
     response = make_response(json.dumps([pdiff1_recent, pdiff2_recent, pdiff3_recent]))
-
     response.content_type = 'application/json'
     return response 
 
+@app.route('/start_butt', methods=['GET', 'POST'])
+def start_butt():
+    global experiment_running
+    experiment_running = True
 
+    # Start the data reading thread
+    thread = Thread(target=read_pdiff_values)
+    thread.start()
+    return "started"
+
+@app.route('/stop_butt', methods=['POST'])
+def stop_butt():
+    global experiment_running
+    experiment_running = False
+    return 'Experiment stopped'
 
 @app.route('/main', methods=['POST'])
 def main():
