@@ -14,6 +14,7 @@ import random
 import serial
 import logging
 from queue import Queue
+import threading
 from threading import Thread
 
 class ArduinoControl:
@@ -489,22 +490,20 @@ def stop_button():
     #         return render_template('index.html')
     # return render_template('index.html', input_motor_data=input_motor_data)
 
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG) # This allows for viewing of the logging statements
 
-experiment_running = False
-pdiff_queue = []
+experiment_running = False # Initialise experiment_running
+pdiff_queue = Queue() # Initialise the queue for the pdiff values
+
+# Initialise the pdiff values
 pdiff1_recent = 0.0
 pdiff2_recent = 0.0
 pdiff3_recent = 0.0
+data_lock = threading.Lock()
 
 def read_pdiff_values():
     ser = serial.Serial('COM6', 9600)  # Replace 'COM6' with the appropriate serial port
     global experiment_running, pdiff1_recent, pdiff2_recent, pdiff3_recent
-
-    # # Initialise pressure values
-    # pdiff1_recent = 0.0
-    # pdiff2_recent = 0.0
-    # pdiff3_recent = 0.0
 
     while experiment_running:
         line = ser.readline().decode().strip()  # Read a line from the serial port and decode it
@@ -515,66 +514,49 @@ def read_pdiff_values():
                 pdiff1_recent = float(values[0])  # Convert the first value to float
                 pdiff2_recent = float(values[1])  # Convert the second value to float
                 pdiff3_recent = float(values[2])  # Convert the third value to float
-
                 # logging.debug(f"read_pdiff_values - pdiff1_recent: {pdiff1_recent}")
                 # logging.debug(f"read_pdiff_values - pdiff2_recent: {pdiff2_recent}")
                 # logging.debug(f"read_pdiff_values - pdiff3_recent: {pdiff3_recent}")
-
-                pdiff_queue.append((pdiff1_recent, pdiff2_recent, pdiff3_recent))
-
+                pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent]) # Put the values in the queue
     ser.close()
-    # return pdiff1_recent, pdiff2_recent, pdiff3_recent
+    return pdiff1_recent, pdiff2_recent, pdiff3_recent
+
+def start_reading_pdiff_values():
+    global experiment_running
+    # Start the data reading thread (threading allows multiple tasks to run simultaneously)
+    thread = threading.Thread(target=read_pdiff_values)
+    thread.start()
+
+# This removes the delay between the front and backend by ensuring the pdiff values is synchronised between threads
+def get_recent_pdiff_values():
+    global pdiff1_recent, pdiff2_recent, pdiff3_recent
+    with data_lock:
+        return pdiff1_recent, pdiff2_recent, pdiff3_recent
 
 @app.route('/start_experiment', methods=['GET', 'POST'])
 def start_experiment():
     global experiment_running
-
     if not experiment_running:
         experiment_running = True
-        read_pdiff_values()
+        start_reading_pdiff_values()
     return "Started"
 
-@app.route('/main_2', methods=['GET', 'POST'])
-def main_2():
-    logging.debug("main_2 triggered")
-    global pdiff1_recent, pdiff2_recent, pdiff3_recent
-
-    if pdiff_queue:
-        pdiff1_recent, pdiff2_recent, pdiff3_recent = pdiff_queue.pop(0)
-
-    # pdiff1_recent, pdiff2_recent, pdiff3_recent = pdiff_queue.get()
-
-    pdiff1_recent = pdiff1_recent if pdiff1_recent is not None else 0.0
-    pdiff2_recent = pdiff2_recent if pdiff2_recent is not None else 0.0
-    pdiff3_recent = pdiff3_recent if pdiff3_recent is not None else 0.0
-
-    logging.debug(f"main_2 - pdiff1_recent: {pdiff1_recent}")
-    logging.debug(f"main_2 - pdiff2_recent: {pdiff2_recent}")
-    logging.debug(f"main_2 - pdiff3_recent: {pdiff3_recent}")
-
-    # print(pdiff1_recent)
-    # print(pdiff2_recent)
-    # print(pdiff3_recent)
-
-    response = make_response(json.dumps([pdiff1_recent, pdiff2_recent, pdiff3_recent]))
-    response.content_type = 'application/json'
-    return response 
-
-@app.route('/start_butt', methods=['GET', 'POST'])
-def start_butt():
-    global experiment_running
-    experiment_running = True
-
-    # Start the data reading thread
-    thread = Thread(target=read_pdiff_values)
-    thread.start()
-    return "started"
-
-@app.route('/stop_butt', methods=['POST'])
-def stop_butt():
+@app.route('/stop_experiment')
+def stop_experiment():
     global experiment_running
     experiment_running = False
     return 'Experiment stopped'
+
+@app.route('/data')
+def data():
+    global pdiff_queue
+    # Checks if the queue is empty
+    if not pdiff_queue.empty():
+        # Retrieves most recent values from the queue
+        pdiff = pdiff_queue.get()
+    else:
+        pdiff = get_recent_pdiff_values()
+    return jsonify(pdiff)
 
 @app.route('/main', methods=['POST'])
 def main():

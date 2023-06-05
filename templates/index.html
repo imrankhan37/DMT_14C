@@ -1049,7 +1049,7 @@ circle {
             <div class="control-card">
                 <p class="control-header">System control</p>
                 <div class="grid grid-cols-2 gap-4 control-form">
-                    <form action="{{url_for('start_all')}}" method="POST">
+                    <form action="{{url_for('main')}}" method="POST">
                         <button type="submit" value="start_button" class="control-button-start">Start</button>
                     </form>
                     <form action ="{{url_for('stop')}}" method="POST">
@@ -1062,13 +1062,13 @@ circle {
     </div>
 
     <div>
-<!-- 
+
         <div>
             <button class="bg-green-500 text-white" id="startButton">Temp start button</button>
         </div>
         <div>
             <button class="bg-red-500 text-white" id="stopButton">Temp stop button</button>
-        </div> -->
+        </div>
         <p class="section-title">Key parameters</p>
 
     <div class="key-parameter-grid">
@@ -1088,7 +1088,7 @@ circle {
 
                 function request_all_data() {
                     if (stopFlag) return;
-                    var requests = $.get('/start_butt');
+                    var requests = $.get('/data');
                     requests.done(function (data) {
                         console.log(data);
                         
@@ -1138,6 +1138,22 @@ circle {
 
                 }
                 
+                function start_experiment() {
+                    var request = $.post('/start_experiment');
+                    request.done(function (data) {
+                        console.log(data);
+                        request_all_data();
+                    });
+                }
+
+                function stop_experiment() {
+                    var request = $.post('/stop_experiment');
+                    request.done(function (data) {
+                        console.log(data);
+                        stopFlag = true;
+                    });
+                }
+
                 // Functions that displays zero until the start button is pressed
                 function p_zero_displayZero() {
                     $(".P_0").text(0);
@@ -1308,7 +1324,7 @@ circle {
                         // Prevent the form from being submitted
                         event.preventDefault();
 
-                        request_all_data()
+                        start_experiment()
 
                     });
                     $('#stopButton').click(function() {
