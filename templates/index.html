@@ -1049,7 +1049,7 @@ circle {
             <div class="control-card">
                 <p class="control-header">System control</p>
                 <div class="grid grid-cols-2 gap-4 control-form">
-                    <form action="{{url_for('start_all')}}" method="POST">
+                    <form action="{{url_for('read_pdiff_values')}}" method="POST">
                         <button type="submit" class="control-button-start">Start</button>
                     </form>
                     <form method="POST">
@@ -1077,61 +1077,64 @@ circle {
             <p class="key-parameter-label">Pressure (Static) - P<sub>0</sub> [Pa]</p>
             <div class="key-parameter-value P_0"></div>
             <script>
-                var p_zero_data = [];
+                // var p_zero_data = [];
                 var p_one_data = [];
                 var p_two_data = [];
                 var p_three_data = [];
-                var gauge_one_data = [];
-                var gauge_two_data = [];
+                // var gauge_one_data = [];
+                // var gauge_two_data = [];
                 var pressurechart;
                 var strainchart;
                 var stopFlag = false;
 
                 function request_all_data() {
                     if (stopFlag) return;
-                    var requests = $.get('/generate_all_data');
-                    requests.done(function (generate_all_data) {
+                    var requests = $.get('/main_2');
+                    requests.done(function (data) {
+                        console.log(data);
                         
-                        console.log(generate_all_data)
-                        var p_zero_result = generate_all_data.temp_p_zero;
-                        console.log(p_zero_result)
-                        $(".P_0").text("");
-                        $(".P_0").text(p_zero_result[1]);
-                        p_zero_data.push([p_zero_result[0], p_zero_result[1]])
-                        pressurechart.series[0].setData(p_zero_data);
+                        // console.log(generate_all_data)
+                        // var p_zero_result = generate_all_data.temp_p_zero;
+                        // console.log(p_zero_result)
+                        // $(".P_0").text("");
+                        // $(".P_0").text(p_zero_result[1]);
+                        // p_zero_data.push([p_zero_result[0], p_zero_result[1]])
+                        // pressurechart.series[0].setData(p_zero_data);
 
-                        var p_one_result = generate_all_data.temp_p_one;
+                        var pdiff1_recent = data[0];
+                        console.log(pdiff1_recent)
                         $(".P_1").text("");
-                        $(".P_1").text(p_one_result[1]);
-                        p_one_data.push([p_one_result[0], p_one_result[1]])
+                        $(".P_1").text(pdiff1_recent);
+                        p_one_data.push(pdiff1_recent)
                         pressurechart.series[1].setData(p_one_data);
 
-                        var p_two_result = generate_all_data.temp_p_two;
+                        var pdiff2_recent = data[1];
+                        console.log(pdiff2_recent)
                         $(".P_2").text("");
-                        $(".P_2").text(p_two_result[1]);
-                        p_two_data.push([p_two_result[0], p_two_result[1]])
+                        $(".P_2").text(pdiff2_recent);
+                        p_two_data.push(pdiff2_recent)
                         pressurechart.series[2].setData(p_two_data);
 
-                        var p_three_result = generate_all_data.temp_p_three;
+                        var pdiff3_recent = data[2];
+                        console.log(pdiff3_recent)
                         $(".P_3").text("");
-                        $(".P_3").text(p_three_result[1]);
-                        p_three_data.push([p_three_result[0], p_three_result[1]])
+                        $(".P_3").text(pdiff3_recent);
+                        p_three_data.push(pdiff3_recent)
                         pressurechart.series[3].setData(p_three_data);
 
+                        // var gauge_one_result = generate_all_data.temp_strain_gauge_zero;
+                        // $(".Gauge_1").text("");
+                        // $(".Gauge_1").text(gauge_one_result[1]);
+                        // gauge_one_data.push([gauge_one_result[0], gauge_one_result[1]])
+                        // thrustchart.series[0].setData(gauge_one_data);
 
-                        var gauge_one_result = generate_all_data.temp_strain_gauge_zero;
-                        $(".Gauge_1").text("");
-                        $(".Gauge_1").text(gauge_one_result[1]);
-                        gauge_one_data.push([gauge_one_result[0], gauge_one_result[1]])
-                        thrustchart.series[0].setData(gauge_one_data);
+                        // var gauge_two_result = generate_all_data.temp_strain_gauge_one;
+                        // $(".Gauge_2").text("");
+                        // $(".Gauge_2").text(gauge_one_result[1]);
+                        // gauge_two_data.push([gauge_two_result[0], gauge_two_result[1]])
+                        // thrustchart.series[1].setData(gauge_two_data);
 
-                        var gauge_two_result = generate_all_data.temp_strain_gauge_one;
-                        $(".Gauge_2").text("");
-                        $(".Gauge_2").text(gauge_one_result[1]);
-                        gauge_two_data.push([gauge_two_result[0], gauge_two_result[1]])
-                        thrustchart.series[1].setData(gauge_two_data);
-
-                        setTimeout(request_all_data, 1000);
+                        setTimeout(request_all_data, 500);
                     });
 
                 }
@@ -1224,7 +1227,7 @@ circle {
                         },
                         series: [{
                             name: 'P_0',
-                            data: p_zero_data
+                            // data: p_zero_data
                         }, {
                             name: 'P_1',
                             data: p_one_data,
@@ -1294,16 +1297,15 @@ circle {
                         },
                         series: [{
                             name: 'Strain gauge 1',
-                            data: gauge_one_data
+                            // data: gauge_one_data
                         }, {
                             name: 'Strain gauge 2',
-                            data: gauge_two_data,
+                            // data: gauge_two_data,
                             color: 'red'
                         }]
                     });
 
                     $('#startButton').click(function() {
-
                         // Prevent the form from being submitted
                         event.preventDefault();
 

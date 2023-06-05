@@ -11,6 +11,9 @@ import os
 import tkinter as tk
 import json
 import random
+import serial
+import threading
+import logging
 
 voltage_task = None
 temperature_task = None
@@ -400,6 +403,61 @@ def stop_button():
     #     if motor_profile == 'profile_ramp_down':
     #         return render_template('index.html')
     # return render_template('index.html', input_motor_data=input_motor_data)
+
+logging.basicConfig(level=logging.DEBUG)
+
+experiment_running = True
+
+@app.route('/read_pdiff_values', methods=['GET', 'POST'])
+def read_pdiff_values():
+    ser = serial.Serial('COM6', 9600)  # Replace 'COM6' with the appropriate serial port
+    global pdiff1_recent, pdiff2_recent, pdiff3_recent
+
+    # Initialise pressure values
+    pdiff1_recent = 0.0
+    pdiff2_recent = 0.0
+    pdiff3_recent = 0.0
+
+    while experiment_running:
+        line = ser.readline().decode().strip()  # Read a line from the serial port and decode it
+        if line:
+            values = line.split(',')  # Split the line by comma to extract the pdiff values
+            
+            if len(values) >= 3:
+                pdiff1_recent = float(values[0])  # Convert the first value to float
+                pdiff2_recent = float(values[1])  # Convert the second value to float
+                pdiff3_recent = float(values[2])  # Convert the third value to float
+
+                # logging.debug(f"read_pdiff_values - pdiff1_recent: {pdiff1_recent}")
+                # logging.debug(f"read_pdiff_values - pdiff2_recent: {pdiff2_recent}")
+                # logging.debug(f"read_pdiff_values - pdiff3_recent: {pdiff3_recent}")
+
+    ser.close()
+    return pdiff1_recent, pdiff2_recent, pdiff3_recent
+
+@app.route('/main_2', methods=['GET', 'POST'])
+def main_2():
+    global experiment_running
+
+    pdiff1_recent, pdiff2_recent, pdiff3_recent = read_pdiff_values()
+
+    pdiff1_recent = pdiff1_recent if pdiff1_recent is not None else 0.0
+    pdiff2_recent = pdiff2_recent if pdiff2_recent is not None else 0.0
+    pdiff3_recent = pdiff3_recent if pdiff3_recent is not None else 0.0
+
+    logging.debug(f"main_2 - pdiff1_recent: {pdiff1_recent}")
+    logging.debug(f"main_2 - pdiff2_recent: {pdiff2_recent}")
+    logging.debug(f"main_2 - pdiff3_recent: {pdiff3_recent}")
+
+    # print(pdiff1_recent)
+    # print(pdiff2_recent)
+    # print(pdiff3_recent)
+
+    response = make_response(json.dumps([pdiff1_recent, pdiff2_recent, pdiff3_recent]))
+
+    response.content_type = 'application/json'
+    return response 
+
 
 
 @app.route('/main', methods=['POST'])
@@ -899,23 +957,23 @@ def stop():
 def stop_motor():
     vesc.ramp_down(0)
 
-def stop_actuators():
+# def stop_actuators():
 
-    # Retrieve linear actuator and rotary motor positions from session
-    input_motor_data = session.get('input_motor_data', {})
-    linear_position = input_motor_data.get('linear_actuator', 0)
-    #rotary_position = input_motor_data.get('rotary_motor', 0)
+#     # Retrieve linear actuator and rotary motor positions from session
+#     input_motor_data = session.get('input_motor_data', {})
+#     linear_position = input_motor_data.get('linear_actuator', 0)
+#     #rotary_position = input_motor_data.get('rotary_motor', 0)
 
-    try:
-        arduino = ArduinoControl(input_motor_data['arduino_port'])
-    except:
-        return "Error: Arduino port connection not found.", 400
+#     try:
+#         arduino = ArduinoControl(input_motor_data['arduino_port'])
+#     except:
+#         return "Error: Arduino port connection not found.", 400
     
-    # Move the actuators back to the 0 position
-    arduino.move_to(0)  # Adjust the values accordingly if needed
+#     # Move the actuators back to the 0 position
+#     arduino.move_to(0)  # Adjust the values accordingly if needed
 
-    return "Actuators stopped successfully!"
+#     return "Actuators stopped successfully!"
 
 
 if __name__ == '__main__':
-    app.run(debug=True, threaded=True) 
+    app.run(debug=True) 
