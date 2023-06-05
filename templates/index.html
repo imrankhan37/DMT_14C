@@ -1049,12 +1049,16 @@ circle {
             <div class="control-card">
                 <p class="control-header">System control</p>
                 <div class="grid grid-cols-2 gap-4 control-form">
-                    <form action="{{url_for('main')}}" method="POST">
+<<<<<<< HEAD
+                    <form action="{{url_for('start_all')}}" method="POST">
+                        <button type="submit" value="start_button" class="control-button-start">Start</button>
+=======
+                    <form action="{{url_for('read_pdiff_values')}}" method="POST">
                         <button type="submit" class="control-button-start">Start</button>
+>>>>>>> 7c43e45c0c02ce07bc2d4ba272d9b06d078db022
                     </form>
-                    <form method="POST">
-                        <!-- action="{{url_for('stop')}}"  -->
-                        <button type="submit" id="stopButton" value="stop_button" class="control-button-stop">Stop</button>
+                    <form action ="{{url_for('stop')}}" method="POST">
+                        <button type="submit" value="stop_button" class="control-button-stop">Stop</button>
                     </form>
                 </div>
             </div>  
@@ -1063,13 +1067,13 @@ circle {
     </div>
 
     <div>
-
+<!-- 
         <div>
             <button class="bg-green-500 text-white" id="startButton">Temp start button</button>
         </div>
         <div>
             <button class="bg-red-500 text-white" id="stopButton">Temp stop button</button>
-        </div>
+        </div> -->
         <p class="section-title">Key parameters</p>
 
     <div class="key-parameter-grid">
@@ -1618,6 +1622,35 @@ circle {
         </button>
     </form>
 </div>
+
+<script>
+       function calibrateLoadCells(event) {
+
+event.preventDefault(); // Prevent the default form submission behavior
+
+// Make an AJAX request to the server
+fetch('/calibrate_load_cells', {
+    method: 'POST'
+})
+.then(response => response.json())
+.then(data => {
+    // Update the offsets element
+    const offsets = data.offsets;
+    const offset1 = offsets.strain_gauge_offset_1.toFixed(2);
+    const offset2 = offsets.strain_gauge_offset_2.toFixed(2);
+    const offsetsHtml = `
+        <p>Strain Gauge Offset 1:</p>
+        <p><span id="offset1">${offset1}</p>
+        <p>Strain Gauge Offset 2: </p>
+         <p>  <span id="offset2">${offset2}</span></p>
+    `;
+    document.getElementById('offsets').innerHTML = offsetsHtml;
+})
+.catch(error => {
+    console.log('Error:', error);
+});
+}
+</script>
 
 
     <!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
