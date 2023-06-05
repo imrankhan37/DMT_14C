@@ -1085,6 +1085,7 @@ circle {
                 var pressurechart;
                 var strainchart;
                 var stopFlag = false;
+                var tickInterval = 0.5;
 
                 function request_all_data() {
                     if (stopFlag) return;
@@ -1213,7 +1214,8 @@ circle {
                                 }
                             },
                             gridLineColor: 'white',
-                            tickColor: 'white'
+                            tickColor: 'white',
+                            tickInterval: tickInterval
                         },
                         yAxis: {
                             title: {
