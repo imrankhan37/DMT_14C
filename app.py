@@ -54,8 +54,6 @@ class ArduinoControl:
     def close(self):
         self.ser.close()
 
-
-voltage_task = None
 temperature_task = None
 strain_task = None
 experiment_running = False  # Flag to track if the experiment is running
@@ -93,34 +91,21 @@ def configureDAQ(device_name, type, channels, sampling_rate, samples_per_channel
 
     return task
 
-def initializeDAQTasks(voltage_device, strain_device,
-                       voltage_channels, strain_channels,
-                       voltage_sampling_rate, voltage_samples,
-                       strain_sampling_rate, strain_samples):
-    
-    global voltage_task
+def initializeDAQTasks(strain_device, strain_channels, strain_sampling_rate, strain_samples):
     global strain_task
-
-    if voltage_task is not None:
-        voltage_task.close()
-        voltage_task = None
 
     if strain_task is not None:
         strain_task.close()
         strain_task = None
 
-    voltage_task = configureDAQ(device_name=voltage_device, type='voltage', channels=voltage_channels,
-                                sampling_rate=voltage_sampling_rate, samples_per_channel=voltage_samples)
     strain_task = configureDAQ(device_name=strain_device, type='strain', channels=strain_channels,
                                sampling_rate=strain_sampling_rate, samples_per_channel=strain_samples)
 
     tasks = {
-        'voltage': voltage_task,
         'strain': strain_task
     }
 
     return tasks
-
 
 # initializeDAQTasks(
 #     voltage_device='Voltage_DAQ',
@@ -132,36 +117,6 @@ def initializeDAQTasks(voltage_device, strain_device,
 #     strain_sampling_rate=100,
 #     strain_samples=100
 # )
-
-
-# Read the data from the specified task
-def readDAQData(task, samples_per_channel, channels, type):
-    try:
-        data = task.read(number_of_samples_per_channel=samples_per_channel)
-        channel_data = {}
-
-        if len(channels) == 1:
-            channel_data[channels[0]] = data
-        else:
-            for i, channel in enumerate(channels):
-                if type == 'voltage':
-                    voltage_data = data[i]
-                    pressure_data = []
-                    for voltage in voltage_data:
-                        output_percent = (voltage / 5.0) * 100.0
-                        pressure = ((80.0 / 12.0) * (output_percent - 10.0)) - 6.0
-                        pressure_data.append(pressure)
-                    channel_data[channel] = pressure_data
-                else:
-                    channel_data[channel] = data[i]
-
-        return channel_data
-
-    except nidaqmx.errors.DaqReadError as e:
-        print("Error while reading DAQ data:", e)
-        return None
-
-
 
 # This allows the app to start
 app = Flask(__name__, static_url_path='/static', template_folder='templates')
@@ -206,7 +161,6 @@ def get_profiles():
         profiles = json.load(file)
     return jsonify(profiles=profiles)
 
-
 @app.route('/saved_profiles')
 def saved_profiles():
     # Read the profiles from the JSON file
@@ -214,8 +168,6 @@ def saved_profiles():
         saved_profiles = json.load(file)
 
     return render_template('savedprofiles.html', profiles=saved_profiles)
-
-
 
 @app.route('/get_profile_names', methods=['GET'])
 def get_profile_names():
@@ -240,24 +192,14 @@ def delete_profile():
 
     return jsonify(success=True)
 
-
-
-
 @app.route('/', methods=['GET'])
 def index():
     input_motor_data = session.get('input_motor_data', {})
-    last_values = session.get('last_values', {})
-    time_data = session.get('time_data')
-    json_p_zero_data = session.get('json_p_zero_data')
-    json_p_one_data = session.get('json_p_one_data')
-    json_p_two_data = session.get('json_p_two_data')
-    json_p_three_data = session.get('json_p_three_data')
     json_strain_gauge_zero_data = session.get('json_strain_gauge_zero_data')
     json_strain_gauge_one_data = session.get('json_strain_gauge_one_data')
     json_motor_temp_data = session.get('json_motor_temp_data')
 
-    return render_template('index.html', input_motor_data=input_motor_data, last_values=last_values, time_data=time_data, json_p_zero_data=json_p_zero_data, json_p_one_data=json_p_one_data, json_p_two_data=json_p_two_data, json_p_three_data=json_p_three_data, json_strain_gauge_zero_data=json_strain_gauge_zero_data, json_strain_gauge_one_data=json_strain_gauge_one_data, json_motor_temp_data=json_motor_temp_data, start_button_disabled=False)
-
+    return render_template('index.html', input_motor_data=input_motor_data, json_strain_gauge_zero_data=json_strain_gauge_zero_data, json_strain_gauge_one_data=json_strain_gauge_one_data, json_motor_temp_data=json_motor_temp_data, start_button_disabled=False)
 
 # Collects all input parameters and saves it in a dictionary
 @app.route('/motor_input_parameters', methods=['GET', 'POST'])
@@ -436,15 +378,21 @@ def stop_button():
 # logging.basicConfig(level=logging.DEBUG) # This allows for viewing of the logging statements
 
 experiment_running = False # Initialise experiment_running
-pdiff_queue = Queue() # Initialise the queue for the pdiff values
-
-# Initialise the pdiff values
-pdiff1_recent = 0.0
-pdiff2_recent = 0.0
-pdiff3_recent = 0.0
 data_lock = threading.Lock()
 stop_event = threading.Event()
 
+# Initialise the pdiff and strain values
+pdiff1_recent = 0.0
+pdiff2_recent = 0.0
+pdiff3_recent = 0.0
+strain1_recent = 0.0
+strain2_recent = 0.0
+
+# Initalise the queues
+pdiff_queue = Queue()
+strain_queue = Queue()
+
+# Arduino code that reads the pressure difference values from the three sensors
 def read_pdiff_values():
     ser = serial.Serial('COM6', 9600)  # Replace 'COM6' with the appropriate serial port
     global experiment_running, pdiff1_recent, pdiff2_recent, pdiff3_recent
@@ -465,61 +413,31 @@ def read_pdiff_values():
     ser.close()
     return pdiff1_recent, pdiff2_recent, pdiff3_recent
 
-def start_reading_pdiff_values():
-    global experiment_running, stop_event
-    # Start the data reading thread (threading allows multiple tasks to run simultaneously)
-    stop_event.clear()
-    thread = threading.Thread(target=read_pdiff_values)
-    thread.start()
+# Read the data from the specified task
+def readDAQData(task, samples_per_channel, channels, type):
+    try:
+        data = task.read(number_of_samples_per_channel=samples_per_channel)
+        channel_data = {}
 
-# This removes the delay between the front and backend by ensuring the pdiff values is synchronised between threads
-def get_recent_pdiff_values():
-    global pdiff1_recent, pdiff2_recent, pdiff3_recent
-    with data_lock:
-        return pdiff1_recent, pdiff2_recent, pdiff3_recent
+        if len(channels) == 1:
+            channel_data[channels[0]] = data
+        else:
+            for i, channel in enumerate(channels):
+                if type == 'strain':
+                    channel_data[channel] = data[i]
 
-@app.route('/start_experiment', methods=['GET', 'POST'])
-def start_experiment():
-    global experiment_running
-    if not experiment_running:
-        pdiff_queue.queue.clear()
-        experiment_running = True
-        start_reading_pdiff_values()
-    return "Started"
+        return channel_data
 
-@app.route('/stop_experiment')
-def stop_experiment():
-    global experiment_running
-    experiment_running = False
-    stop_event.set()
-    return 'Experiment stopped'
-
-@app.route('/data')
-def data():
-    global pdiff_queue
-    # Checks if the queue is empty
-    if not pdiff_queue.empty():
-        # Retrieves most recent values from the queue
-        pdiff = pdiff_queue.get()
-    else:
-        pdiff = get_recent_pdiff_values()
-    return jsonify(pdiff)
+    except nidaqmx.errors.DaqReadError as e:
+        print("Error while reading DAQ data:", e)
+        return None
 
 @app.route('/main', methods=['POST'])
 def main():
-    global last_values
+    offset_1 = -0.5
+    offset_2 = -3.5
     global experiment_running
     global sample_df
-
-    # global time_data
-    # global json_p_zero_data
-    # global json_p_one_data
-    # global json_p_two_data
-    # global json_p_three_data
-    # global json_strain_gauge_zero_data
-    # global json_strain_gauge_one_data
-    # global json_motor_temp_data
-
     global strain_device
     global strain_channels
     global strain_sampling_rate
@@ -534,104 +452,55 @@ def main():
         return # Exit the function if the experiment is not running
 
     # Define the channels and parameters for each type of data
-    voltage_device = 'Voltage_DAQ'
-    strain_device = 'Strain_Device'
-    voltage_channels = ['ai1', 'ai2', 'ai3', 'ai4']
-    strain_channels = ['ai1', 'ai2']
-    voltage_sampling_rate = 300
-    voltage_samples = 20
-    strain_sampling_rate = 300
-    strain_samples = 20
+    strain_device = 'cDAQ2Mod1'
+    strain_channels = ['ai0', 'ai1']
+    strain_sampling_rate = 2
+    strain_samples = 2
 
     # Create empty pandas dataframe to store data
-    data_df = pd.DataFrame(columns=['Voltage Measurement {}'.format(i) for i in range(len(voltage_channels))] +
-                                 ['Strain Measurement {}'.format(i) for i in range(len(strain_channels))])
+    data_df = pd.DataFrame(columns=['Strain Measurement {}'.format(i) for i in range(len(strain_channels))])
 
     # Initialize the DAQ tasks
-    tasks = initializeDAQTasks(voltage_device=voltage_device,
-                               strain_device=strain_device,
-                               voltage_channels=voltage_channels,
+    tasks = initializeDAQTasks(
+                               strain_device=strain_device,      
                                strain_channels=strain_channels,
-                               voltage_sampling_rate=voltage_sampling_rate,
-                               voltage_samples=voltage_samples,
                                strain_sampling_rate=strain_sampling_rate,
                                strain_samples=strain_samples)
 
-    voltage_task = tasks['voltage']
     strain_task = tasks['strain']
-
-    time_data = '[]'
-    json_p_zero_data = '[]'
-    json_p_one_data = '[]'
-    json_p_two_data = '[]'
-    json_p_three_data = '[]'
-    json_motor_temp_data = '[]'
-    json_strain_gauge_zero_data = '[]'
-    json_strain_gauge_one_data = '[]'
 
     while True:
         try:
             # Read the data from the DAQ tasks and update last_values accordingly
-            voltage_data = readDAQData(voltage_task, samples_per_channel=voltage_samples, channels=voltage_channels,
-                                    type='voltage')
             strain_data = readDAQData(strain_task, samples_per_channel=strain_samples, channels=strain_channels,
                                     type='strain')
 
-            if voltage_data is not None and strain_data is not None:
+            if strain_data is not None:
                 # Add the data to the DataFrame
                 current_time = datetime.datetime.now()
-                num_samples = len(voltage_data[voltage_channels[0]])
-                seconds_per_sample = 1.0 / voltage_sampling_rate
+                num_samples = len(strain_data[strain_channels[0]])
+                seconds_per_sample = 1.0 / strain_sampling_rate
                 seconds = np.arange(num_samples) * seconds_per_sample
 
                 sample = {'Time': [current_time] * num_samples, 'Seconds': seconds}
 
-                for i, channel in enumerate(voltage_channels):
-                    column_name = 'Voltage Measurement {}'.format(i)
-                    sample[column_name] = pd.Series(voltage_data[channel])
-
                 for i, channel in enumerate(strain_channels):
-                    column_name = 'Strain Measurement {}'.format(i)
+                    column_name = 'Strain_Measurement {}'.format(i)
                     sample[column_name] = pd.Series(strain_data[channel])
 
                 # Convert the sample dictionary to a DataFrame
                 sample_df = pd.DataFrame(sample)
 
                 # Apply offsets to each strain measurement column
-                if strain_gauge_offset_1 is not None:
-                    sample_df['Strain Measurement 0'] = sample_df['Strain Measurement 0'].apply(lambda x: -1 * (x + strain_gauge_offset_1))
-                if strain_gauge_offset_2 is not None:
-                    sample_df['Strain Measurement 1'] = sample_df['Strain Measurement 1'].apply(lambda x: x + strain_gauge_offset_2)
-                
-                # Append the sample dataframe to the data dataframe
-                print(sample_df)
+                sample_df['Strain_Measurement_0'] = sample_df['Strain_Measurement_0'].apply(lambda x: -1 * (x+offset_1)).rolling(20).mean()
+                sample_df['Strain_Measurement_1'] = sample_df['Strain_Measurement_1'].apply(lambda x: x +offset_2).rolling(20).mean()
+                sample_df['Total_Strain'] = sample_df['Strain Measurement_0'] + sample_df['Strain Measurement_1']
 
-            # Append the sample dataframe to the data dataframe
-            data_df = pd.concat([data_df, sample_df], ignore_index=True)
+                # Append the sample dataframe to the data  dataframe
+                data_df = data_df.append(sample_df, ignore_index=True)
+                data_df_last = data_df.tail(strain_samples)
 
             # Update the last values dictionary
-            p_zero_data = sample_df[['Seconds', 'Voltage Measurement 0']]
-            p_zero_data = p_zero_data.rename(columns={'Seconds': 'Seconds', 'Voltage Measurement 0': 'P_0'})
-            time_data = p_zero_data['Seconds'].values.tolist()
-            time_data = json.dumps(time_data) if time_data is not None else '[]'
-            json_p_zero_data = p_zero_data['P_0'].values.tolist()
-            json_p_zero_data = json.dumps(json_p_zero_data) if json_p_zero_data is not None else '[]'
-
-            p_one_data = sample_df[['Seconds', 'Voltage Measurement 1']]
-            p_one_data = p_one_data.rename(columns={'Seconds': 'Seconds', 'Voltage Measurement 1': 'P_1'})
-            json_p_one_data = p_one_data['P_1'].values.tolist()
-            json_p_one_data = json.dumps(json_p_one_data) if json_p_one_data is not None else '[]'
-
-            p_two_data = sample_df[['Seconds', 'Voltage Measurement 2']]
-            p_two_data = p_two_data.rename(columns={'Seconds': 'Seconds', 'Voltage Measurement 2': 'P_2'})
-            json_p_two_data = p_two_data['P_2'].values.tolist()
-            json_p_two_data = json.dumps(json_p_two_data) if json_p_two_data is not None else '[]'
-
-            p_three_data = sample_df[['Seconds', 'Voltage Measurement 3']]
-            p_three_data = p_three_data.rename(columns={'Seconds': 'Seconds', 'Voltage Measurement 3': 'P_3'})
-            json_p_three_data = p_three_data['P_3'].values.tolist()
-            json_p_three_data = json.dumps(json_p_three_data) if json_p_three_data is not None else '[]'
-
             strain_gauge_zero_data = sample_df[['Seconds', 'Strain Measurement 0']]
             strain_gauge_zero_data = strain_gauge_zero_data.rename(columns={'Seconds': 'Seconds', 'Strain Measurement 0': 'Strain_0'})
             json_strain_gauge_zero_data = strain_gauge_zero_data['Strain_0'].values.tolist()
@@ -642,25 +511,69 @@ def main():
             json_strain_gauge_one_data = strain_gauge_one_data['Strain_1'].values.tolist()
             json_strain_gauge_one_data = json.dumps(json_strain_gauge_one_data) if json_strain_gauge_one_data is not None else '[]'
 
-            # Store the required dataframes in the session
-            session['time_data'] = time_data
-            session['json_p_zero_data'] = json_p_zero_data
-            session['json_p_one_data'] = json_p_one_data
-            session['json_p_two_data'] = json_p_two_data
-            session['json_p_three_data'] = json_p_three_data
-            session['json_strain_gauge_zero_data'] = json_strain_gauge_zero_data
-            session['json_strain_gauge_one_data'] = json_strain_gauge_one_data
-            session['json_motor_temp_data'] = json_motor_temp_data
-
         except Exception as e:
             print("An error occurred:", str(e))
-            voltage_task.close()
             strain_task.close()
 
-        voltage_task.close()
         strain_task.close()
 
-        return time_data, json_p_zero_data, json_p_one_data, json_p_two_data, json_p_three_data, json_strain_gauge_zero_data, json_strain_gauge_one_data, json_motor_temp_data
+        return json_strain_gauge_zero_data, json_strain_gauge_one_data
+
+def start_reading_pdiff_values():
+    global experiment_running, stop_event
+    # Start the data reading thread (threading allows multiple tasks to run simultaneously)
+    stop_event.clear()
+    thread_pdiff = threading.Thread(target=read_pdiff_values)
+    thread_pdiff.start()
+
+def start_reading_strain_values():
+    global experiment_running, stop_event
+    stop_event.clear()
+    thread_strain = threading.Thread(target=readDAQData)
+    thread_strain.start()
+
+# This removes the delay between the front and backend by ensuring the pdiff values is synchronised between threads
+def get_recent_pdiff_values():
+    global pdiff1_recent, pdiff2_recent, pdiff3_recent
+    with data_lock:
+        return pdiff1_recent, pdiff2_recent, pdiff3_recent
+
+def get_recent_strain_values():
+    global strain1_recent, strain2_recent
+    with data_lock:
+        return strain1_recent, strain2_recent
+
+@app.route('/start_experiment', methods=['GET', 'POST'])
+def start_experiment():
+    global experiment_running
+    if not experiment_running:
+        pdiff_queue.queue.clear()
+        strain_queue.queue.clear()
+        experiment_running = True
+        start_reading_pdiff_values()
+        start_reading_strain_values()
+    return "Started"
+
+@app.route('/stop_experiment')
+def stop_experiment():
+    global experiment_running
+    experiment_running = False
+    stop_event.set()
+    return 'Experiment stopped'
+
+@app.route('/data')
+def data():
+    global pdiff_queue, strain_queue
+    # Checks if the queue is empty
+    if not pdiff_queue.empty() and not strain_queue.empty():
+        # Retrieves most recent values from the queue
+        pdiff = pdiff_queue.get()
+        strain = strain_queue.get()
+    else:
+        pdiff = get_recent_pdiff_values()
+        strain = get_recent_strain_values()
+    return jsonify(pdiff, strain)
+
 
 @app.route('/calibrate_load_cells', methods=['POST'])
 def calibrate_load_cells():
@@ -716,105 +629,6 @@ def calibrate_load_cells():
 #     response = make_response(json.dumps(temp_p_zero_data))
 #     response.content_type = 'application/json'
 #     return response
-
-@app.route('/generate_all_data', methods=['GET', 'POST'])
-def generate_all_data():
-
-    results = {}
-
-    # Get the p_zero_data from the session
-    temp_p_zero_data = session.get('json_p_zero_data', [])
-    temp_p_one_data = session.get('json_p_one_data', [])
-    temp_p_two_data = session.get('json_p_two_data', [])
-    temp_p_three_data = session.get('json_p_three_data', [])
-    temp_strain_gauge_zero_data = session.get('json_strain_gauge_zero_data', [])
-    temp_strain_gauge_one_data = session.get('json_strain_gauge_one_data', [])
-
-
-    if temp_p_zero_data:
-        # Convert it back to a list
-        temp_p_zero_data = json.loads(temp_p_zero_data)
-        # Get the last value and the corresponding time
-        temp_p_zero = temp_p_zero_data[-1]
-        temp_time = session.get('time_data', [])
-        if temp_time:
-            temp_time = json.loads(temp_time)[-1] * 1000
-        else:
-            temp_time = time() * 1000
-
-        results['p_zero'] = [temp_time, temp_p_zero]
-
-    if temp_p_one_data:
-        # Convert it back to a list
-        temp_p_one_data = json.loads(temp_p_one_data)
-        # Get the last value and the corresponding time
-        temp_p_one = temp_p_one_data[-1]
-        temp_time = session.get('time_data', [])
-        if temp_time:
-            temp_time = json.loads(temp_time)[-1] * 1000
-        else:
-            temp_time = time() * 1000
-
-        results['p_one'] = [temp_time, temp_p_one]
-
-    if temp_p_two_data:
-        # Convert it back to a list
-        temp_p_two_data = json.loads(temp_p_two_data)
-        # Get the last value and the corresponding time
-        temp_p_two = temp_p_two_data[-1]
-        temp_time = session.get('time_data', [])
-        if temp_time:
-            temp_time = json.loads(temp_time)[-1] * 1000
-        else:
-            temp_time = time() * 1000
-
-        results['p_two'] = [temp_time, temp_p_two]   
-
-    if temp_p_three_data:
-        # Convert it back to a list
-        temp_p_three_data = json.loads(temp_p_three_data)
-        # Get the last value and the corresponding time
-        temp_p_three = temp_p_three_data[-1]
-        temp_time = session.get('time_data', [])
-        if temp_time:
-            temp_time = json.loads(temp_time)[-1] * 1000
-        else:
-            temp_time = time() * 1000
-
-        results['p_three'] = [temp_time, temp_p_three]
-
-    if temp_strain_gauge_zero_data:
-        # Convert it back to a list
-        temp_strain_gauge_zero_data = json.loads(temp_strain_gauge_zero_data)
-        # Get the last value and the corresponding time
-        temp_strain_gauge_zero = temp_strain_gauge_zero_data[-1]
-        temp_time = session.get('time_data', [])
-        if temp_time:
-            temp_time = json.loads(temp_time)[-1] * 1000
-        else:
-            temp_time = time() * 1000
-
-        results['strain_gauge_zero'] = [temp_time, temp_strain_gauge_zero]
-
-    if temp_strain_gauge_one_data:
-        # Convert it back to a list
-        temp_strain_gauge_one_data = json.loads(temp_strain_gauge_one_data)
-        # Get the last value and the corresponding time
-        temp_strain_gauge_one = temp_strain_gauge_one_data[-1]
-        temp_time = session.get('time_data', [])
-        if temp_time:
-            temp_time = json.loads(temp_time)[-1] * 1000
-        else:
-            temp_time = time() * 1000
-
-        results['strain_gauge_one'] = [temp_time, temp_strain_gauge_one]
-
-    if not results:
-        return make_response('n/a', 204)
-    
-    response = make_response(json.dumps(results))
-    response.content_type = 'application/json'
-    return response
 
 arduino = None
 
