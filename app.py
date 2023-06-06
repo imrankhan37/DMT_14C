@@ -416,66 +416,7 @@ def read_pdiff_values():
     ser.close()
     return pdiff1_recent, pdiff2_recent, pdiff3_recent
 
-def start_reading_pdiff_values():
-    global experiment_running, stop_event
-    # Start the data reading thread (threading allows multiple tasks to run simultaneously)
-    stop_event.clear()
-    thread_pdiff = threading.Thread(target=read_pdiff_values)
-    thread_pdiff.start()
 
-def start_reading_strain_values():
-    global experiment_running, stop_event
-    stop_event.clear()
-    thread_strain = threading.Thread(target=read_strain_values)
-    thread_strain.start()
-    
-# This removes the delay between the front and backend by ensuring the pdiff values is synchronised between threads
-def get_recent_pdiff_values():
-    global pdiff1_recent, pdiff2_recent, pdiff3_recent
-    with data_lock:
-        return pdiff1_recent, pdiff2_recent, pdiff3_recent
-    
-
-def get_recent_strain_values():
-    global strain1_recent, strain2_recent
-    with data_lock:
-        return strain1_recent, strain2_recent
-
-@app.route('/start_experiment', methods=['GET', 'POST'])
-def start_experiment():
-    global experiment_running
-    if not experiment_running:
-        experiment_running = True
-        start_reading_pdiff_values()
-    return "Started"
-
-@app.route('/stop_experiment')
-def stop_experiment():
-    global experiment_running
-    experiment_running = False
-    return 'Experiment stopped'
-
-@app.route('/pdiff_data')
-def pdiff_data():
-    global pdiff_queue
-    # Checks if the queue is empty
-    if not pdiff_queue.empty():
-        # Retrieves most recent values from the queue
-        pdiff = pdiff_queue.get()
-    else:
-        pdiff = get_recent_pdiff_values()
-    return jsonify(pdiff)
-
-@app.route('/strain_data')
-def strain_data():
-    global strain_queue
-    if not strain_queue.empty():
-        strain = strain_queue.get()
-    else:
-        strain = get_recent_strain_values()
-    return jsonify(strain)
-
-@app.route('/main', methods=['POST'])
 def read_strain_values():
     global experiment_running
     global sample_df
@@ -518,6 +459,8 @@ def read_strain_values():
         try:
             strain_data = readDAQData(strain_task, samples_per_channel=strain_samples, channels=strain_channels,
                                     type='strain')
+            
+            print(strain_data)
 
             if strain_data is not None:
                 # Add the data to the DataFrame
@@ -570,6 +513,162 @@ def read_strain_values():
         strain_task.close()
 
         return strain1_recent, strain2_recent
+
+def start_reading_pdiff_values():
+    global experiment_running, stop_event
+    # Start the data reading thread (threading allows multiple tasks to run simultaneously)
+    stop_event.clear()
+    thread_pdiff = threading.Thread(target=read_pdiff_values)
+    thread_pdiff.start()
+
+def start_reading_strain_values():
+    global experiment_running, stop_event
+    stop_event.clear()
+    thread_strain = threading.Thread(target=read_strain_values)
+    thread_strain.start()
+    
+# This removes the delay between the front and backend by ensuring the pdiff values is synchronised between threads
+def get_recent_pdiff_values():
+    global pdiff1_recent, pdiff2_recent, pdiff3_recent
+    with data_lock:
+        return pdiff1_recent, pdiff2_recent, pdiff3_recent
+    
+
+def get_recent_strain_values():
+    global strain1_recent, strain2_recent
+    with data_lock:
+        return strain1_recent, strain2_recent
+
+@app.route('/start_experiment', methods=['GET', 'POST'])
+def start_experiment():
+    global experiment_running
+    if not experiment_running:
+        experiment_running = True
+        start_reading_pdiff_values()
+        start_reading_strain_values()
+    return "Started"
+
+@app.route('/stop_experiment')
+def stop_experiment():
+    global experiment_running
+    experiment_running = False
+    return 'Experiment stopped'
+
+@app.route('/pdiff_data')
+def pdiff_data():
+    global pdiff_queue
+    # Checks if the queue is empty
+    if not pdiff_queue.empty():
+        # Retrieves most recent values from the queue
+        pdiff = pdiff_queue.get()
+    else:
+        pdiff = get_recent_pdiff_values()
+    return jsonify(pdiff)
+
+@app.route('/strain_data')
+def strain_data():
+    global strain_queue
+    if not strain_queue.empty():
+        strain = strain_queue.get()
+    else:
+        strain = get_recent_strain_values()
+    return jsonify(strain)
+
+# @app.route('/main', methods=['POST'])
+# def read_strain_values():
+#     global experiment_running
+#     global sample_df
+
+#     global strain_device
+#     global strain_channels
+#     global strain_sampling_rate
+#     global strain_samples
+
+#      # Retrieve the strain gauge offsets from the session
+#     strain_gauge_offset_1 = session.get('strain_gauge_offset_1')
+#     strain_gauge_offset_2 = session.get('strain_gauge_offset_2')
+
+#     # Check if the experiment is not running
+#     if experiment_running == False:
+#         return # Exit the function if the experiment is not running
+
+#     # Define the channels and parameters for each type of data
+#     strain_device = 'Strain_Device'
+#     strain_channels = ['ai1', 'ai2']
+#     strain_sampling_rate = 200
+#     strain_samples = 5
+
+#     # Create empty pandas dataframe to store data
+#     data_df = pd.DataFrame(columns=['Strain Measurement {}'.format(i) for i in range(len(strain_channels))])
+
+#     # Initialize the DAQ tasks
+#     tasks = initializeDAQTasks(strain_device=strain_device,
+#                                strain_channels=strain_channels,
+#                                strain_sampling_rate=strain_sampling_rate,
+#                                strain_samples=strain_samples)
+
+#     strain_task = tasks['strain']
+
+#     time_data = '[]'
+#     json_strain_gauge_zero_data = '[]'
+#     json_strain_gauge_one_data = '[]'
+
+#     while True:
+#         try:
+#             strain_data = readDAQData(strain_task, samples_per_channel=strain_samples, channels=strain_channels,
+#                                     type='strain')
+
+#             if strain_data is not None:
+#                 # Add the data to the DataFrame
+#                 current_time = datetime.datetime.now()
+#                 num_samples = len(strain_data[strain_channels[0]])
+#                 seconds_per_sample = 1.0 / strain_sampling_rate
+#                 seconds = np.arange(num_samples) * seconds_per_sample
+
+#                 sample = {'Time': [current_time] * num_samples, 'Seconds': seconds}
+
+
+#                 for i, channel in enumerate(strain_channels):
+#                     column_name = 'Strain Measurement {}'.format(i)
+#                     sample[column_name] = pd.Series(strain_data[channel])
+
+#                 # Convert the sample dictionary to a DataFrame
+#                 sample_df = pd.DataFrame(sample)
+
+#                 # Apply offsets to each strain measurement column
+#                 if strain_gauge_offset_1 is not None:
+#                     sample_df['Strain Measurement 0'] = sample_df['Strain Measurement 0'].apply(lambda x: -1 * (x + strain_gauge_offset_1))
+#                 if strain_gauge_offset_2 is not None:
+#                     sample_df['Strain Measurement 1'] = sample_df['Strain Measurement 1'].apply(lambda x: x + strain_gauge_offset_2)
+                
+#                 # Append the sample dataframe to the data dataframe
+#                 print(sample_df)
+
+#             # Append the sample dataframe to the data dataframe
+#             data_df = pd.concat([data_df, sample_df], ignore_index=True)
+
+#             strain_gauge_zero_data = sample_df[['Seconds', 'Strain Measurement 0']]
+#             strain_gauge_one_data = sample_df[['Seconds', 'Strain Measurement 1']]
+
+#             strain1_recent = strain_gauge_zero_data['Strain Measurement 0'].iloc[-1]
+#             strain2_recent = strain_gauge_one_data['Strain Measurement 1'].iloc[-1]
+
+#             print(strain1_recent, strain2_recent)
+
+#             strain_queue.put([strain1_recent, strain2_recent]) # Put the values in the queue
+
+#             # Store the required dataframes in the session
+#             session['time_data'] = time_data
+#             session['json_strain_gauge_zero_data'] = json_strain_gauge_zero_data
+#             session['json_strain_gauge_one_data'] = json_strain_gauge_one_data
+
+#         except Exception as e:
+#             print("An error occurred:", str(e))
+#             strain_task.close()
+
+#         strain_task.close()
+
+#         return strain1_recent, strain2_recent
 
 @app.route('/calibrate_load_cells', methods=['POST'])
 def calibrate_load_cells():
