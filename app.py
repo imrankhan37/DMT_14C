@@ -426,7 +426,7 @@ def start_reading_pdiff_values():
 def start_reading_strain_values():
     global experiment_running, stop_event
     stop_event.clear()
-    thread_strain = threading.Thread(target=readDAQData)
+    thread_strain = threading.Thread(target=read_strain_values)
     thread_strain.start()
     
 # This removes the delay between the front and backend by ensuring the pdiff values is synchronised between threads
@@ -476,7 +476,7 @@ def strain_data():
     return jsonify(strain)
 
 @app.route('/main', methods=['POST'])
-def main():
+def read_strain_values():
     global last_values
     global experiment_running
     global sample_df
@@ -554,6 +554,8 @@ def main():
 
             strain1_recent = strain_gauge_zero_data['Strain Measurement 0'].iloc[-1]
             strain2_recent = strain_gauge_one_data['Strain Measurement 1'].iloc[-1]
+
+            print(strain1_recent, strain2_recent)
 
             strain_queue.put([strain1_recent, strain2_recent]) # Put the values in the queue
 
