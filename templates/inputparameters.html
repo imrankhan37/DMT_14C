@@ -188,16 +188,12 @@ body {
             <div class="form-group">
                 <label>Motor Settings:</label>
                 <div class="input-group">
-                    <div class="input-title">Duty cycle [%]</div>
-                    <input type="text" id="duty_cycle" name="duty_cycle" placeholder="Enter duty cycle" value="50">
-                    <div class="input-title">Current [A]</div>
-                    <input type="text" id="current" name="current" placeholder="Enter current" value="5">
-                    <div class="input-title">Input speed [rpm]</div>
-                    <input type="text" id="speed" name="speed" placeholder="Enter input speed" value="1000">
-                    <div class="input-title">Ramp down speed [rpm]</div>
-                    <input type="text" id="ramp_down_speed" name="ramp_down_speed" placeholder="Enter ramp down speed" value="500">
-                    <div class="input-title">Ramp up speed [rpm]</div>
-                    <input type="text" id="ramp_up_speed" name="ramp_up_speed" placeholder="Enter ramp up speed" value="2000">
+                    <div class="input-title">Duty cycle Start [%]</div>
+                    <input type="number" id="duty_cycle_start" name="duty_cycle_start" placeholder="Enter Start Duty Cycle" value="5">
+                    <div class="input-title">Duty Cycle End [%]</div>
+                    <input type="number" id="duty_cycle_end" name="duty_cycle_end" placeholder="Enter End Duty Cycle" value="20">
+                    <div class="input-title">Duty Cycle Time Interval [s]</div>
+                    <input type="number" id="duty_cycle_interval" name="duty_cycle_interval" placeholder="Enter End Duty Cycle" value="5">
                 </div>
             </div>
 
@@ -234,11 +230,9 @@ body {
             if (profileName !== '') {
                 const profileData = {
                     name: profileName,
-                    duty_cycle: document.getElementById('duty_cycle').value,
-                    current: document.getElementById('current').value,
-                    speed: document.getElementById('speed').value,
-                    ramp_down_speed: document.getElementById('ramp_down_speed').value,
-                    ramp_up_speed: document.getElementById('ramp_up_speed').value,
+                    duty_cycle_start: document.getElementById('duty_cycle_start').value,
+                    duty_cycle_end: document.getElementById('duty_cycle_end').value,
+                    duty_cycle_interval: document.getElementById('duty_cycle_interval').value,
                     linear_actuator: document.getElementById('linear_actuator').value,
                     rotary_motor: document.getElementById('rotary_motor').value,
                     vesc_port: document.getElementById('vesc_port').value,

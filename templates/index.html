@@ -154,7 +154,7 @@
     }
 
     .parameter-card {
-        grid-column: span 6;
+        grid-column: span 3;
         background-color: rgba(255, 255, 255, 0.1);  /* Set this to your preferred value */
         border-radius: 8px;
         padding: 10px;
@@ -211,10 +211,13 @@
         font-weight: bold;
         text-transform: uppercase;
     }
+
     .param-subdescription {
     font-size: 15px;
     margin-top: 25px;
     text-align: center;
+    margin-left: 55px;  /* Add margin-left to create horizontal spacing */
+    margin-right: 30px; 
 }
 
     .param-value {
@@ -223,6 +226,11 @@
         font-weight: bold;
         text-align: center;
         text-transform: uppercase;
+        margin-left: 90px;  /* Add margin-left to create horizontal spacing */
+        margin-right: 100px;
+        justify-content: spa;
+        flex: 1;  /* Distribute available space equally among elements */
+
     }
 
 
@@ -267,7 +275,7 @@
 .reset-card {
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-    grid-column: span 1;
+    grid-column: span 2;
     padding: 10px;
     box-shadow: 0 0 10px rgb(255, 255, 255);  /* This matches the parameter-card hover effect */
 
@@ -277,7 +285,7 @@
 .calibration-values-card {
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-    grid-column: span 1;
+    grid-column: span 2;
     padding: 10px;
     box-shadow: 0 0 10px rgb(255, 255, 255);  /* This matches the parameter-card hover effect */
 }
@@ -329,7 +337,7 @@
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     padding: 20px;
-    grid-column: span 1;
+    grid-column: span 2;
     box-shadow: 0 0 10px rgb(255, 255, 255);  /* This matches the parameter-card hover effect */
     transition: box-shadow 0.3s ease-in-out;
 }
@@ -935,18 +943,17 @@ circle {
                     <div class="parameter-card">
                         <p class="parameter-title">FAN MOTOR INPUTS</p>
                         <div class="parameter-details-grid">
-                            <p class="param-subdescription text-center">Duty cycle</p>
-                            <p class="param-subdescription text-center">Current</p>
-                            <p class="param-subdescription text-center">Input speed</p>
-                            <p class="param-subdescription text-center">Ramp down speed</p>
-                            <p class="param-subdescription text-center">Ramp up speed</p>
+                            <p class="param-subdescription text-center">Duty Cycle Start</p>
+                            <p class="param-subdescription text-center">Duty Cycle End</p>
+                            <p class="param-subdescription text-center">Duty Cycle Interval</p>
+
                         </div>
                         <div class="grid grid-cols-5 gap-2 mb-2">
     
                     <div>
                         <p class="param-value">
-                            {% if input_motor_data and input_motor_data.duty_cycle %}
-                                {{ input_motor_data.duty_cycle }}%
+                            {% if input_motor_data and input_motor_data.duty_cycle_start %}
+                                {{ input_motor_data.duty_cycle_start }}%
                             {% else %}
                                 0%
                             {% endif %}
@@ -954,37 +961,19 @@ circle {
                     </div>
                     <div>
                         <p class="param-value">
-                            {% if input_motor_data and input_motor_data.current %}
-                                {{ input_motor_data.current }}A
+                            {% if input_motor_data and input_motor_data.duty_cycle_end %}
+                                {{ input_motor_data.duty_cycle_end }}%
                             {% else %}
-                                0A
+                                0%
                             {% endif %}
                         </p>
                     </div>
                     <div>
                         <p class="param-value">
-                            {% if input_motor_data and input_motor_data.speed %}
-                                {{ input_motor_data.speed }}rpm
+                            {% if input_motor_data and input_motor_data.duty_cycle_interval %}
+                                {{ input_motor_data.duty_cycle_interval }}s
                             {% else %}
-                                0rpm
-                            {% endif %}
-                        </p>
-                    </div>
-                    <div>
-                        <p class="param-value">
-                            {% if input_motor_data and input_motor_data.ramp_down_speed %}
-                                {{ input_motor_data.ramp_down_speed }}rpm
-                            {% else %}
-                                0rpm
-                            {% endif %}
-                        </p>
-                    </div>
-                    <div>
-                        <p class="param-value">
-                            {% if input_motor_data and input_motor_data.ramp_up_speed %}
-                                {{ input_motor_data.ramp_up_speed }}rpm
-                            {% else %}
-                                0rpm
+                                0s
                             {% endif %}
                         </p>
                     </div>
@@ -1080,18 +1069,18 @@ circle {
                 var p_one_data = [];
                 var p_two_data = [];
                 var p_three_data = [];
-                // var gauge_one_data = [];
-                // var gauge_two_data = [];
+                var gauge_one_data = [];
+                var gauge_two_data = [];
                 var pressurechart;
                 var strainchart;
                 var stopFlag = false;
                 var tickInterval = 0.5;
 
-                function request_all_data() {
+                function request_pdiff_data() {
                     if (stopFlag) return;
-                    var requests = $.get('/data');
-                    requests.done(function (data) {
-                        console.log(data);
+                    var pdiff_requests = $.get('/pdiff_data');
+                    pdiff_requests.done(function (data) {
+                        console.log(p_one_data, p_two_data, p_three_data);
                         
                         // console.log(generate_all_data)
                         // var p_zero_result = generate_all_data.temp_p_zero;
@@ -1106,21 +1095,21 @@ circle {
                         $(".P_1").text("");
                         $(".P_1").text(pdiff1_recent);
                         p_one_data.push(pdiff1_recent)
-                        pressurechart.series[1].setData(p_one_data);
+                        pressurechart.series[0].setData(p_one_data);
 
                         var pdiff2_recent = data[1];
                         console.log(pdiff2_recent)
                         $(".P_2").text("");
                         $(".P_2").text(pdiff2_recent);
                         p_two_data.push(pdiff2_recent)
-                        pressurechart.series[2].setData(p_two_data);
+                        pressurechart.series[1].setData(p_two_data);
 
                         var pdiff3_recent = data[2];
                         console.log(pdiff3_recent)
                         $(".P_3").text("");
                         $(".P_3").text(pdiff3_recent);
                         p_three_data.push(pdiff3_recent)
-                        pressurechart.series[3].setData(p_three_data);
+                        pressurechart.series[2].setData(p_three_data);
 
                         // var gauge_one_result = generate_all_data.temp_strain_gauge_zero;
                         // $(".Gauge_1").text("");
@@ -1134,32 +1123,56 @@ circle {
                         // gauge_two_data.push([gauge_two_result[0], gauge_two_result[1]])
                         // thrustchart.series[1].setData(gauge_two_data);
 
-                        setTimeout(request_all_data, 500);
+                        setTimeout(request_pdiff_data, 500);
                     });
 
                 }
+
+                function request_strain_data() {
+                    if (stopFlag) return;
+                    var strain_requests = $.get('/strain_data');
+                    strain_requests.done(function (data) {
+
+                        var strain1_recent = data[0]
+                        console.log(strain1_recent)
+                        $(".Gauge_1").text("");
+                        $(".Gauge_1").text(strain1_recent);
+                        gauge_one_data.push(strain1_recent)
+                        thrustchart.series[0].setData(gauge_one_data);
+
+                        var strain2_recent = data[1]
+                        console.log(strain2_recent)
+                        $(".Gauge_2").text("");
+                        $(".Gauge_2").text(strain2_recent);
+                        gauge_two_data.push(strain2_recent)
+                        thrustchart.series[1].setData(gauge_two_data);
+
+                        setTimeout(request_strain_data, 500);
+                    });
+            }
                 
                 function start_experiment() {
                     var request = $.post('/start_experiment');
                     request.done(function (data) {
-                        console.log(data);
-                        request_all_data();
+                        request_pdiff_data();
+                        request_strain_data();
                     });
                 }
 
                 function stop_experiment() {
+                    // Reset the arrays
+                    p_one_data = [];
+                    p_two_data = [];
+                    p_three_data = [];
+                    gauge_one_data = [];
+                    gauge_two_data = [];
                     var request = $.post('/stop_experiment');
                     request.done(function (data) {
-                        console.log(data);
                         stopFlag = true;
                     });
                 }
 
                 // Functions that displays zero until the start button is pressed
-                function p_zero_displayZero() {
-                    $(".P_0").text(0);
-                }
-                
                 function p_one_displayZero() {
                     $(".P_1").text(0);
                 };
@@ -1182,7 +1195,6 @@ circle {
 
                 // Function that only calls the python scripts when the start button is pressed
                 $(document).ready(function() {
-                    p_zero_displayZero();
                     p_one_displayZero();
                     p_two_displayZero();
                     p_three_displayZero();
@@ -1243,20 +1255,16 @@ circle {
                             enabled: false
                         },
                         series: [{
-                            name: 'P_0',
-                            // data: p_zero_data
-                        }, {
                             name: 'P_1',
                             data: p_one_data,
-                            color: 'red'
                         }, {
                             name: 'P_2',
                             data: p_two_data,
-                            color:'orange'
+                            color:'red'
                         }, {
                             name: 'P_3',
                             data: p_three_data,
-                            color: 'green'
+                            color: 'orange'
                         }]
                     });
 
@@ -1314,10 +1322,10 @@ circle {
                         },
                         series: [{
                             name: 'Strain gauge 1',
-                            // data: gauge_one_data
+                            data: gauge_one_data
                         }, {
                             name: 'Strain gauge 2',
-                            // data: gauge_two_data,
+                            data: gauge_two_data,
                             color: 'red'
                         }]
                     });

@@ -15,6 +15,9 @@ import logging
 from queue import Queue
 import threading
 from threading import Thread
+import pyvesc
+from pyvesc.VESC.messages import Alive, SetDutyCycle, SetRPM, GetValues
+
 
 class ArduinoControl:
     def __init__(self, port):
@@ -93,29 +96,22 @@ def configureDAQ(device_name, type, channels, sampling_rate, samples_per_channel
 
     return task
 
-def initializeDAQTasks(voltage_device, strain_device,
-                       voltage_channels, strain_channels,
-                       voltage_sampling_rate, voltage_samples,
+def initializeDAQTasks(strain_device,
+                       strain_channels,
                        strain_sampling_rate, strain_samples):
     
-    global voltage_task
     global strain_task
 
-    if voltage_task is not None:
-        voltage_task.close()
-        voltage_task = None
 
     if strain_task is not None:
         strain_task.close()
         strain_task = None
 
-    voltage_task = configureDAQ(device_name=voltage_device, type='voltage', channels=voltage_channels,
-                                sampling_rate=voltage_sampling_rate, samples_per_channel=voltage_samples)
+
     strain_task = configureDAQ(device_name=strain_device, type='strain', channels=strain_channels,
                                sampling_rate=strain_sampling_rate, samples_per_channel=strain_samples)
 
     tasks = {
-        'voltage': voltage_task,
         'strain': strain_task
     }
 
@@ -264,97 +260,65 @@ def index():
 def motor_input_parameters():
     input_motor_data = {}
 
-    error_duty_cycle = None
-    error_current = None
-    error_speed = None
-    error_ramp_up_speed = None
-    error_ramp_down_speed = None
+    error_duty_cycle_start = None
+    error_duty_cycle_end = None
+    error_duty_cycle_interval = None
 
     error_linear_actuator = None
     error_rotary_motor = None
 
     if request.method == 'POST':
-        duty_cycle = request.form.get('duty_cycle')
-        if duty_cycle:
+        duty_cycle_start = int(request.form.get('duty_cycle_start'))
+        if duty_cycle_start:
             try:
-                duty_cycle = float(duty_cycle)
-                if duty_cycle <0 or duty_cycle > 100:
-                    error_duty_cycle = {'field': 'duty_cycle', 'message': 'Duty cycle must be between 0 and 100'}
-                    duty_cycle = None
-                    print(error_duty_cycle)
+                duty_cycle_start = int(duty_cycle_start)
+                if duty_cycle_start <0 or duty_cycle_start > 100:
+                    error_duty_cycle_start = {'field': 'duty_cycle_start', 'message': 'Duty cycle must be between 0 and 100'}
+                    duty_cycle_start = None
+                    print(error_duty_cycle_start)
             except ValueError:
-                error_duty_cycle = {'field': 'duty_cycle', 'message': 'Invalid input for duty cycle'}
+                error_duty_cycle_start = {'field': 'duty_cycle_start', 'message': 'Invalid input for duty cycle'}
                 duty_cycle = None
-                print(error_duty_cycle)
+                print(error_duty_cycle_start)
         else:
-            error_duty_cycle = {'field': 'duty_cycle', 'message': 'Please enter a value for duty cycle'}
-            duty_cycle = None
-            print(error_duty_cycle)
+            error_duty_cycle_start = {'field': 'duty_cycle_start', 'message': 'Please enter a value for duty cycle'}
+            duty_cycle_start = None
+            print(error_duty_cycle_start)
 
-        current = request.form.get('current')
-        if current:
+        duty_cycle_end = int(request.form.get('duty_cycle_end'))
+        if duty_cycle_end:
             try:
-                current = float(current)
-                if current <0 or current > 5:
-                    error_current = {'field': 'current', 'message': 'Current must be between 0 and 5'}
+                duty_cycle_end = int(duty_cycle_end)
+                if duty_cycle_end <0 or duty_cycle_end > 100:
+                    error_duty_cycle_end = {'field': 'duty_cycle_end', 'message': 'Current must be between 0 and 5'}
                     current = None
-                    print(error_current)
+                    print(error_duty_cycle_end)
             except ValueError:
-                error_current = {'field': 'current', 'message': 'Invalid input for current'}
-                current = None
-                print(error_current)
+                error_duty_cycle_end = {'field': 'duty_cycle_end', 'message': 'Invalid input for duty cycle'}
+                duty_cycle_end = None
+                print(error_duty_cycle_end)
         else:
-            error_current = {'field': 'current', 'message': 'Please enter a value for current'}
-            current = None
-            print(error_current)
+            error_duty_cycle_end = {'field': 'duty_cycle_end', 'message': 'Please enter a value for duty cycle'}
+            duty_cycle_end = None
+            print(error_duty_cycle_end)
 
-        speed = request.form.get('speed')
-        if speed:
+        duty_cycle_interval = float(request.form.get('duty_cycle_interval'))
+        if duty_cycle_interval:
             try:
-                speed = float(speed)
-                if speed < 0 or speed > 10000:
-                    error_speed = {'field': 'speed', 'message': 'Speed must be between 0 and 10,000'}
-                    speed = None
-                    print(error_speed)
+                duty_cycle_interval = int(duty_cycle_interval)
+                if duty_cycle_interval <0 or duty_cycle_interval > 100:
+                    error_duty_cycle_interval = {'field': 'duty_cycle_interval', 'message': 'Duty Cycle Interval must be between 0 and 100'}
+                    current = None
+                    print(error_duty_cycle_interval)
             except ValueError:
-                error_speed = {'field': 'speed', 'message': 'Invalid input for speed'}
-                print(error_speed)
+                error_duty_cycle_interval = {'field': 'duty_cycle_interval', 'message': 'Invalid input for duty cycle interval'}
+                duty_cycle_interval = None
+                print(error_duty_cycle_interval)
         else:
-            error_speed = {'field': 'speed', 'message': 'Please enter a value for speed'}
-            speed = None
-            print(error_speed)
-        
-        ramp_down_speed = request.form.get('ramp_down_speed')
-        if ramp_down_speed:
-            try:
-                ramp_down_speed = float(ramp_down_speed)
-                if ramp_down_speed >= speed or ramp_down_speed > 10000:
-                    error_ramp_down_speed = {'field': 'ramp_down_speed', 'message': 'Ramp down speed must be between 0 and 10,000 and less than input speed'}
-                    ramp_down_speed = None
-                    print(error_ramp_down_speed)
-            except ValueError:
-                error_ramp_down_speed = {'field': 'ramp_down_speed', 'message': 'Invalid input for ramp down speed'}
-                print(error_ramp_down_speed)
-        else:
-            error_ramp_down_speed = {'field': 'ramp_down_speed', 'message': 'Please enter a value for ramp down speed'}
-            ramp_down_speed = None
-            print(error_ramp_down_speed)
-           
-        ramp_up_speed = request.form.get('ramp_up_speed')
-        if ramp_up_speed:
-            try:
-                ramp_up_speed = float(ramp_up_speed)
-                if ramp_up_speed <= speed or ramp_up_speed > 10000:
-                    error_ramp_up_speed = {'field': 'ramp_up_speed', 'message': 'Ramp up speed must be between 0 and 10,000 and greater than input speed'}
-                    ramp_up_speed = None
-                    print(error_ramp_up_speed)
-            except ValueError:
-                error_ramp_up_speed = {'field': 'ramp_up_speed', 'message': 'Invalid input for ramp up speed'}
-                print(error_ramp_up_speed)
-        else:
-            error_ramp_up_speed = {'field': 'ramp_up_speed', 'message': 'Please enter a value for ramp up speed'}
-            ramp_up_speed = None
-            print(error_ramp_up_speed)
+            error_duty_cycle_interval = {'field': 'duty_cycle_interval', 'message': 'Please enter a value for duty cycle'}
+            duty_cycle_interval = None
+            print(error_duty_cycle_interval)
+
 
         linear_actuator = request.form.get('linear_actuator')
         if linear_actuator:
@@ -388,15 +352,13 @@ def motor_input_parameters():
             rotary_motor = None
             print(error_rotary_motor)
 
-        if error_duty_cycle or error_current or error_speed or error_ramp_down_speed or error_ramp_up_speed or error_linear_actuator or error_rotary_motor:
+        if error_duty_cycle_start or error_duty_cycle_end or error_duty_cycle_interval or error_linear_actuator or error_rotary_motor:
             session['input_motor_data'] = None
-            return render_template('inputparameters.html', error_duty_cycle=error_duty_cycle, error_current=error_current, error_speed = error_speed, error_ramp_down_speed=error_ramp_down_speed, error_ramp_up_speed=error_ramp_up_speed, error_linear_actuator=error_linear_actuator, error_rotary_motor=error_rotary_motor, input_motor_data=input_motor_data)
+            return render_template('inputparameters.html', error_duty_cycle_start=error_duty_cycle_start, error_duty_cycle_end=error_duty_cycle_end, error_duty_cycle_interval = error_duty_cycle_interval, error_linear_actuator=error_linear_actuator, error_rotary_motor=error_rotary_motor, input_motor_data=input_motor_data)
 
-        input_motor_data['duty_cycle'] = duty_cycle
-        input_motor_data['current'] = current
-        input_motor_data['speed'] = speed
-        input_motor_data['ramp_down_speed'] = ramp_down_speed
-        input_motor_data['ramp_up_speed'] = ramp_up_speed
+        input_motor_data['duty_cycle_start'] = duty_cycle_start
+        input_motor_data['duty_cycle_end'] = duty_cycle_start
+        input_motor_data['duty_cycle_interval'] = duty_cycle_interval
         input_motor_data['linear_actuator'] = linear_actuator
         input_motor_data['rotary_motor'] = rotary_motor
         input_motor_data['vesc_port'] = request.form.get('vesc_port')
@@ -418,31 +380,21 @@ def reset_session():
 def stop_button():
     return render_template('index.html')
 
-# Chooses motor profile
-# @app.route('/motor_profile_selection', methods=['GET', 'POST'])
-# def motor_profile_selection():
-    # input_motor_data = session.get('input_motor_data', {})
-    # print(input_motor_data)
-    # if request.method == ['POST']:
-    #     motor_profile = request.form.get('motor_profile')
-    #     if motor_profile == 'profile_constant_speed':
-    #         return render_template('index.html')
-    #     if motor_profile == 'profile_ramp_up':
-    #         return render_template('index.html')
-    #     if motor_profile == 'profile_ramp_down':
-    #         return render_template('index.html')
-    # return render_template('index.html', input_motor_data=input_motor_data)
-
-# logging.basicConfig(level=logging.DEBUG) # This allows for viewing of the logging statements
+logging.basicConfig(level=logging.DEBUG)
 
 experiment_running = False # Initialise experiment_running
-pdiff_queue = Queue() # Initialise the queue for the pdiff values
 
+data_lock = threading.Lock() # Initialise the data lock
+stop_event = threading.Event() # Initialise the stop event
 # Initialise the pdiff values
 pdiff1_recent = 0.0
 pdiff2_recent = 0.0
 pdiff3_recent = 0.0
-data_lock = threading.Lock()
+strain1_recent = 0.0
+strain2_recent = 0.0
+
+pdiff_queue = Queue() # Initialise the queue for the pdiff values
+strain_queue = Queue() # Initialise the queue for the strain values
 
 def read_pdiff_values():
     ser = serial.Serial('COM6', 9600)  # Replace 'COM6' with the appropriate serial port
@@ -457,24 +409,37 @@ def read_pdiff_values():
                 pdiff1_recent = float(values[0])  # Convert the first value to float
                 pdiff2_recent = float(values[1])  # Convert the second value to float
                 pdiff3_recent = float(values[2])  # Convert the third value to float
-                # logging.debug(f"read_pdiff_values - pdiff1_recent: {pdiff1_recent}")
-                # logging.debug(f"read_pdiff_values - pdiff2_recent: {pdiff2_recent}")
-                # logging.debug(f"read_pdiff_values - pdiff3_recent: {pdiff3_recent}")
+                logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff1_recent}")
+                logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff2_recent}")
+                logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff3_recent}")
                 pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent]) # Put the values in the queue
     ser.close()
     return pdiff1_recent, pdiff2_recent, pdiff3_recent
 
 def start_reading_pdiff_values():
-    global experiment_running
+    global experiment_running, stop_event
     # Start the data reading thread (threading allows multiple tasks to run simultaneously)
-    thread = threading.Thread(target=read_pdiff_values)
-    thread.start()
+    stop_event.clear()
+    thread_pdiff = threading.Thread(target=read_pdiff_values)
+    thread_pdiff.start()
 
+def start_reading_strain_values():
+    global experiment_running, stop_event
+    stop_event.clear()
+    thread_strain = threading.Thread(target=readDAQData)
+    thread_strain.start()
+    
 # This removes the delay between the front and backend by ensuring the pdiff values is synchronised between threads
 def get_recent_pdiff_values():
     global pdiff1_recent, pdiff2_recent, pdiff3_recent
     with data_lock:
         return pdiff1_recent, pdiff2_recent, pdiff3_recent
+    
+
+def get_recent_strain_values():
+    global strain1_recent, strain2_recent
+    with data_lock:
+        return strain1_recent, strain2_recent
 
 @app.route('/start_experiment', methods=['GET', 'POST'])
 def start_experiment():
@@ -490,8 +455,8 @@ def stop_experiment():
     experiment_running = False
     return 'Experiment stopped'
 
-@app.route('/data')
-def data():
+@app.route('/pdiff_data')
+def pdiff_data():
     global pdiff_queue
     # Checks if the queue is empty
     if not pdiff_queue.empty():
@@ -501,20 +466,20 @@ def data():
         pdiff = get_recent_pdiff_values()
     return jsonify(pdiff)
 
+@app.route('/strain_data')
+def strain_data():
+    global strain_queue
+    if not strain_queue.empty():
+        strain = strain_queue.get()
+    else:
+        strain = get_recent_strain_values()
+    return jsonify(strain)
+
 @app.route('/main', methods=['POST'])
 def main():
     global last_values
     global experiment_running
     global sample_df
-
-    # global time_data
-    # global json_p_zero_data
-    # global json_p_one_data
-    # global json_p_two_data
-    # global json_p_three_data
-    # global json_strain_gauge_zero_data
-    # global json_strain_gauge_one_data
-    # global json_motor_temp_data
 
     global strain_device
     global strain_channels
@@ -530,61 +495,40 @@ def main():
         return # Exit the function if the experiment is not running
 
     # Define the channels and parameters for each type of data
-    voltage_device = 'Voltage_DAQ'
     strain_device = 'Strain_Device'
-    voltage_channels = ['ai1', 'ai2', 'ai3', 'ai4']
     strain_channels = ['ai1', 'ai2']
-    voltage_sampling_rate = 300
-    voltage_samples = 20
-    strain_sampling_rate = 300
-    strain_samples = 20
+    strain_sampling_rate = 200
+    strain_samples = 5
 
     # Create empty pandas dataframe to store data
-    data_df = pd.DataFrame(columns=['Voltage Measurement {}'.format(i) for i in range(len(voltage_channels))] +
-                                 ['Strain Measurement {}'.format(i) for i in range(len(strain_channels))])
+    data_df = pd.DataFrame(columns=['Strain Measurement {}'.format(i) for i in range(len(strain_channels))])
 
     # Initialize the DAQ tasks
-    tasks = initializeDAQTasks(voltage_device=voltage_device,
-                               strain_device=strain_device,
-                               voltage_channels=voltage_channels,
+    tasks = initializeDAQTasks(strain_device=strain_device,
                                strain_channels=strain_channels,
-                               voltage_sampling_rate=voltage_sampling_rate,
-                               voltage_samples=voltage_samples,
                                strain_sampling_rate=strain_sampling_rate,
                                strain_samples=strain_samples)
 
-    voltage_task = tasks['voltage']
     strain_task = tasks['strain']
 
     time_data = '[]'
-    json_p_zero_data = '[]'
-    json_p_one_data = '[]'
-    json_p_two_data = '[]'
-    json_p_three_data = '[]'
-    json_motor_temp_data = '[]'
     json_strain_gauge_zero_data = '[]'
     json_strain_gauge_one_data = '[]'
 
     while True:
         try:
-            # Read the data from the DAQ tasks and update last_values accordingly
-            voltage_data = readDAQData(voltage_task, samples_per_channel=voltage_samples, channels=voltage_channels,
-                                    type='voltage')
             strain_data = readDAQData(strain_task, samples_per_channel=strain_samples, channels=strain_channels,
                                     type='strain')
 
-            if voltage_data is not None and strain_data is not None:
+            if strain_data is not None:
                 # Add the data to the DataFrame
                 current_time = datetime.datetime.now()
-                num_samples = len(voltage_data[voltage_channels[0]])
-                seconds_per_sample = 1.0 / voltage_sampling_rate
+                num_samples = len(strain_data[strain_channels[0]])
+                seconds_per_sample = 1.0 / strain_sampling_rate
                 seconds = np.arange(num_samples) * seconds_per_sample
 
                 sample = {'Time': [current_time] * num_samples, 'Seconds': seconds}
 
-                for i, channel in enumerate(voltage_channels):
-                    column_name = 'Voltage Measurement {}'.format(i)
-                    sample[column_name] = pd.Series(voltage_data[channel])
 
                 for i, channel in enumerate(strain_channels):
                     column_name = 'Strain Measurement {}'.format(i)
@@ -605,58 +549,26 @@ def main():
             # Append the sample dataframe to the data dataframe
             data_df = pd.concat([data_df, sample_df], ignore_index=True)
 
-            # Update the last values dictionary
-            p_zero_data = sample_df[['Seconds', 'Voltage Measurement 0']]
-            p_zero_data = p_zero_data.rename(columns={'Seconds': 'Seconds', 'Voltage Measurement 0': 'P_0'})
-            time_data = p_zero_data['Seconds'].values.tolist()
-            time_data = json.dumps(time_data) if time_data is not None else '[]'
-            json_p_zero_data = p_zero_data['P_0'].values.tolist()
-            json_p_zero_data = json.dumps(json_p_zero_data) if json_p_zero_data is not None else '[]'
-
-            p_one_data = sample_df[['Seconds', 'Voltage Measurement 1']]
-            p_one_data = p_one_data.rename(columns={'Seconds': 'Seconds', 'Voltage Measurement 1': 'P_1'})
-            json_p_one_data = p_one_data['P_1'].values.tolist()
-            json_p_one_data = json.dumps(json_p_one_data) if json_p_one_data is not None else '[]'
-
-            p_two_data = sample_df[['Seconds', 'Voltage Measurement 2']]
-            p_two_data = p_two_data.rename(columns={'Seconds': 'Seconds', 'Voltage Measurement 2': 'P_2'})
-            json_p_two_data = p_two_data['P_2'].values.tolist()
-            json_p_two_data = json.dumps(json_p_two_data) if json_p_two_data is not None else '[]'
-
-            p_three_data = sample_df[['Seconds', 'Voltage Measurement 3']]
-            p_three_data = p_three_data.rename(columns={'Seconds': 'Seconds', 'Voltage Measurement 3': 'P_3'})
-            json_p_three_data = p_three_data['P_3'].values.tolist()
-            json_p_three_data = json.dumps(json_p_three_data) if json_p_three_data is not None else '[]'
-
             strain_gauge_zero_data = sample_df[['Seconds', 'Strain Measurement 0']]
-            strain_gauge_zero_data = strain_gauge_zero_data.rename(columns={'Seconds': 'Seconds', 'Strain Measurement 0': 'Strain_0'})
-            json_strain_gauge_zero_data = strain_gauge_zero_data['Strain_0'].values.tolist()
-            json_strain_gauge_zero_data = json.dumps(json_strain_gauge_zero_data) if json_strain_gauge_zero_data is not None else '[]'
-
             strain_gauge_one_data = sample_df[['Seconds', 'Strain Measurement 1']]
-            strain_gauge_one_data = strain_gauge_one_data.rename(columns={'Seconds': 'Seconds', 'Strain Measurement 1': 'Strain_1'})
-            json_strain_gauge_one_data = strain_gauge_one_data['Strain_1'].values.tolist()
-            json_strain_gauge_one_data = json.dumps(json_strain_gauge_one_data) if json_strain_gauge_one_data is not None else '[]'
+
+            strain1_recent = strain_gauge_zero_data['Strain Measurement 0'].iloc[-1]
+            strain2_recent = strain_gauge_one_data['Strain Measurement 1'].iloc[-1]
+
+            strain_queue.put([strain1_recent, strain2_recent]) # Put the values in the queue
 
             # Store the required dataframes in the session
             session['time_data'] = time_data
-            session['json_p_zero_data'] = json_p_zero_data
-            session['json_p_one_data'] = json_p_one_data
-            session['json_p_two_data'] = json_p_two_data
-            session['json_p_three_data'] = json_p_three_data
             session['json_strain_gauge_zero_data'] = json_strain_gauge_zero_data
             session['json_strain_gauge_one_data'] = json_strain_gauge_one_data
-            session['json_motor_temp_data'] = json_motor_temp_data
 
         except Exception as e:
             print("An error occurred:", str(e))
-            voltage_task.close()
             strain_task.close()
 
-        voltage_task.close()
         strain_task.close()
 
-        return time_data, json_p_zero_data, json_p_one_data, json_p_two_data, json_p_three_data, json_strain_gauge_zero_data, json_strain_gauge_one_data, json_motor_temp_data
+        return strain1_recent, strain2_recent
 
 @app.route('/calibrate_load_cells', methods=['POST'])
 def calibrate_load_cells():
@@ -696,22 +608,6 @@ def calibrate_load_cells():
         }
     })
 
-# @app.route('/final_speed_submit', methods=['POST'])
-# def final_speed_submission():
-#     final_speed = request.form.get('final_speed')
-#     print('Final speed = ', final_speed)
-#     return render_template('index.html')
-
-
-# @app.route('/generate_p_zero_data', methods=['GET', 'POST'])
-# def generate_p_zero_data():
-#     # Generate temporary data
-#     temp_p_zero = random.randrange(1, 1000)
-#     # Put the data in a list
-#     temp_p_zero_data = [time() * 1000, temp_p_zero]
-#     response = make_response(json.dumps(temp_p_zero_data))
-#     response.content_type = 'application/json'
-#     return response
 
 @app.route('/generate_all_data', methods=['GET', 'POST'])
 def generate_all_data():
@@ -850,8 +746,13 @@ def start_all():
     # Initialize the last_values dictionary
     last_values = {}
 
-    establish_arduino_connection()  # Assign the returned arduino object
-    start_actuators()
+
+    #establish_arduino_connection()  # Assign the returned arduino object
+    #start_actuators()
+
+    #start_motor()
+
+    main()
 
     return redirect(url_for('index'))
 
@@ -893,10 +794,70 @@ def start_all():
 
     return redirect(url_for('index'))
 
-# def start_motor(vesc, speed, profile, current, duty_cycle):
-#     vesc.start_motor(speed, profile, current, duty_cycle)
-#     temp_thread = threading.Thread(target=check_temp, args=(vesc,))
-#     temp_thread.start()
+
+
+def start_motor():
+
+    global ser
+
+    input_motor_data = session.get('input_motor_data', {})
+
+    duty_cycle_start = int(input_motor_data.get('duty_cycle_start', 0))
+    duty_cycle_end = int(input_motor_data.get('duty_cycle_end', 0))
+    duty_cycle_interval = int(input_motor_data.get('duty_cycle_interval', 0))
+    vesc_port = input_motor_data.get('vesc_port', 0)
+
+    motor_data = []
+
+    
+
+    # Start the motor
+    with serial.Serial(vesc_port, 115200, timeout=0.1) as ser:
+
+        start_time = time.time()  # Store the start time
+
+        try:
+            for i in range(duty_cycle_start, duty_cycle_end):
+
+                for j in range(duty_cycle_interval*100):
+
+
+                    ser.write(pyvesc.encode(Alive()))  # Send heartbeat
+                    ser.write(pyvesc.encode(SetDutyCycle(i / 100)))  # Send command to get values
+                    ser.write(pyvesc.encode_request(GetValues))
+
+                    time.sleep(0.01)
+
+                    # Check if there is enough data back for a measurement
+                    if ser.in_waiting > 71:
+                        (response, consumed) = pyvesc.decode(ser.read(ser.in_waiting))
+
+                    # Decode and process the response
+                    try:
+                        if response:
+                            elapsed_time = time.time() - start_time  # Calculate elapsed time
+                            motor_data.append({
+                                'time': elapsed_time,
+                                'duty_cycle_now': response.duty_cycle_now,
+                                'rpm': response.rpm,
+                                'motor_temp': response.temp_fet,
+                                'avg_motor_current': response.avg_motor_current,
+                                'avg_input_current': response.avg_input_current,
+                                'amp_hours': response.amp_hours * 1000
+                            })
+
+                    except Exception as e:
+                        print(f"Error processing response: {str(e)}")
+
+
+                # Convert data to JSON
+                json_data = json.dumps(motor_data)
+                print(json_data)
+
+        except Exception as e:
+                print(f"Error: {str(e)}")    
+
+
 
 
 def start_actuators():
@@ -916,12 +877,6 @@ def start_actuators():
     print(f"start_actuators: After move_linear_and_rotary_actuator, arduino is {arduino}")
 
 
-# def check_temp(vesc):
-#     while True:
-#         temperature = vesc.get_temperature()
-#         if vesc.check_temp(temperature):
-#             break
-#         time.sleep(1)
 
 data_df = pd.DataFrame()  # Create an empty dataframe to store the collected data
 
@@ -1009,15 +964,20 @@ def stop():
     export_csv_enabled = True
 
     # Stop the actuators
-    stop_actuators()
+    #stop_actuators()
 
     # Set the experiment_running flag to False
     experiment_running = False
 
+    stop_motor()
+
     return redirect(url_for('index'))  # Redirect to the main page
 
-# def stop_motor():
-#     vesc.ramp_down(0)
+
+def stop_motor():
+    global ser
+    ser.write(pyvesc.encode(SetDutyCycle(0)))  # Send command to set duty cycle to zero
+    ser.close()  # Close the serial connection
 
 def stop_actuators():
 
