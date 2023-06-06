@@ -375,7 +375,7 @@ def stop_button():
     #         return render_template('index.html')
     # return render_template('index.html', input_motor_data=input_motor_data)
 
-# logging.basicConfig(level=logging.DEBUG) # This allows for viewing of the logging statements
+logging.basicConfig(level=logging.DEBUG) # This allows for viewing of the logging statements
 
 experiment_running = False # Initialise experiment_running
 data_lock = threading.Lock()
@@ -406,9 +406,9 @@ def read_pdiff_values():
                 pdiff1_recent = float(values[0])  # Convert the first value to float
                 pdiff2_recent = float(values[1])  # Convert the second value to float
                 pdiff3_recent = float(values[2])  # Convert the third value to float
-                # logging.debug(f"read_pdiff_values - pdiff1_recent: {pdiff1_recent}")
-                # logging.debug(f"read_pdiff_values - pdiff2_recent: {pdiff2_recent}")
-                # logging.debug(f"read_pdiff_values - pdiff3_recent: {pdiff3_recent}")
+                logging.debug(f"read_pdiff_values - pdiff1_recent: {pdiff1_recent}")
+                logging.debug(f"read_pdiff_values - pdiff2_recent: {pdiff2_recent}")
+                logging.debug(f"read_pdiff_values - pdiff3_recent: {pdiff3_recent}")
                 pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent]) # Put the values in the queue
     ser.close()
     return pdiff1_recent, pdiff2_recent, pdiff3_recent
@@ -561,18 +561,25 @@ def stop_experiment():
     stop_event.set()
     return 'Experiment stopped'
 
-@app.route('/data')
-def data():
-    global pdiff_queue, strain_queue
+@app.route('/pdiff_data')
+def pdiff_data():
+    global pdiff_queue
     # Checks if the queue is empty
-    if not pdiff_queue.empty() and not strain_queue.empty():
+    if not pdiff_queue.empty():
         # Retrieves most recent values from the queue
         pdiff = pdiff_queue.get()
-        strain = strain_queue.get()
     else:
         pdiff = get_recent_pdiff_values()
+    return jsonify(pdiff)
+
+@app.route('/strain_data')
+def strain_data():
+    global strain_queue
+    if not strain_queue.empty():
+        strain = strain_queue.get()
+    else:
         strain = get_recent_strain_values()
-    return jsonify(pdiff, strain)
+    return jsonify(strain)
 
 
 @app.route('/calibrate_load_cells', methods=['POST'])
