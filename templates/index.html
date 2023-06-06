@@ -501,7 +501,7 @@
 }
 
 .graph-card {
-    flex: 0 0 calc(33.33% - 40px); /* Adjusted width calculation */
+    flex: 0 0 50%; /* Adjusted width calculation */
   margin-bottom: 10px;
   background-color: rgba(255, 255, 255, 0.1);
   border-radius: 8px;
@@ -509,6 +509,18 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   margin-right: 10px;
   margin-left: 10px
+
+}
+
+.motor-graph-card {
+    flex: 0 0 calc(33% - 20px); /* Adjusted width calculation */
+  margin-bottom: 10px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-right: 20px;
+  margin-left: 20px
 
 }
 
@@ -1400,9 +1412,9 @@ circle {
           </div>
 
           <!-- <div class = "graph-container"> -->
-          <div class="graph-card">
+          <div class="motor-graph-card">
             <h3 class="graph-title">Motor temperature [°C]</h3>
-            <canvas id="motorTempChart" width="650" height="300"></canvas>
+            <canvas id="motorTempChart" width="500" height="200"></canvas>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
@@ -1464,9 +1476,9 @@ circle {
             });
         </script>
 
-    <div class="graph-card">
+    <div class="motor-graph-card">
         <h3 class="graph-title">Motor Duty Cycle</h3>
-        <canvas id="motorDutyCycleChart" width="650" height="300"></canvas>
+        <canvas id="motorDutyCycleChart" width="500" height="200"></canvas>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
@@ -1557,78 +1569,12 @@ circle {
         <p class="text-xl font-bold ml-6 mt-5 mb-3">Graphs</p>
 
         <div class="graph-container">
-            <div class="canvas-container">
                 <div class="graph-card">
-                    <div id="pressureChart" style="width: 550px; height: 300px;"></div>
+                    <div id="pressureChart" style="width: 1200px; height: 600px;"></div>
                 </div>  
-            </div>             
         <div class="graph-card">
-            <div id="thrustChart" style="width: 550px; height: 300px;"></div>
+            <div id="thrustChart" style="width: 1200px; height: 600px;"></div>
         </div>
-        
-        <div class="graph-card">
-            <h3 class="graph-title">Motor temperature [°C]</h3>
-            <canvas id="motortempChart" width="650" height="300"></canvas>
-        </div>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script>
-            var ctx3 = document.getElementById('motortempChart').getContext('2d');
-        
-            // Generate fake data
-            var labels = [1, 2, 3, 4, 5, 6, 7];
-            var json_motor_temp_data = [30, 35, 40, 45, 42, 38, 36];
-        
-          new Chart(ctx3, {
-  type: 'line',
-  data: {
-    labels: labels,
-    datasets: [{
-      label: 'Motor temperature',
-      data: json_motor_temp_data,
-      borderWidth: 3,
-    }]
-  },
-  options: {
-    scales: {
-      x: {
-        beginAtZero: true,
-        title: {
-          display: true,
-          text: 'Time [s]',
-          color: '#ffffff',
-        },
-        ticks: {
-          color: '#ffffff',
-        },
-        grid: {
-          color: '#ffffff',
-        }
-      },
-      y: {
-        beginAtZero: false,
-        title: {
-          display: true,
-          text: 'Temperature [°C]',
-          color: '#ffffff',
-        },
-        ticks: {
-          color: '#ffffff',
-        },
-        grid: {
-          color: '#ffffff',
-        }
-      },
-    },
-    plugins: {
-      legend: {
-        labels: {
-          color: '#ffffff',
-        },
-      },
-    },
-  },
-});
-
         </script>
         </div>        
 

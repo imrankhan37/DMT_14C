@@ -477,7 +477,6 @@ def strain_data():
 
 @app.route('/main', methods=['POST'])
 def read_strain_values():
-    global last_values
     global experiment_running
     global sample_df
 
@@ -754,7 +753,7 @@ def start_all():
 
     #start_motor()
 
-    main()
+    
 
     return redirect(url_for('index'))
 
