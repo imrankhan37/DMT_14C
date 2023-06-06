@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, session, redirect, url_for, jsonify, Response, stream_template, stream_with_context, make_response
 # from motor_vesc import VESC
-# from actuator import ArduinoControl
 import nidaqmx
 import time
 import serial
@@ -52,40 +51,6 @@ class ArduinoControl:
                 else:
                     print('Received:', response)
 
-
-    # def move_to(self, linear_position, rotary_position):
-        
-
-    #     while True:
-    #         if self.ser.in_waiting > 0:
-    #             # Send linear position command
-    #             linear_position_str = '{}\n'.format(linear_position)
-    #             self.ser.write(linear_position_str.encode())
-    #             response = self.ser.readline().strip().decode()
-    #             if response == 'OK':
-    #                 print('Linear position set successfully')
-    #                 break
-    #             elif 'ERROR' in response:
-    #                 raise ValueError('Error setting position')
-    #             else:
-    #                 print(response)  # ignore any other responses
-        
-    #     # Send rotary position command
-    #     rotary_position_str = '{}\n'.format(rotary_position)
-    #     self.ser.write(rotary_position_str.encode())
-    #     print(rotary_position_str.encode())
-
-    #     while True:
-    #         if self.ser.in_waiting > 0:
-    #             response = self.ser.readline().strip().decode()
-    #             #print(response)
-    #             if response.startswith('Position set'):
-    #                 break
-    #             elif response.startswith('Error'):
-    #                 raise ValueError(response)
-    #             else:
-    #                 print('Received:', response)
-
     def close(self):
         self.ser.close()
 
@@ -106,16 +71,6 @@ def configureDAQ(device_name, type, channels, sampling_rate, samples_per_channel
                 print("Added voltage channel:", full_channel_name)
             except nidaqmx.errors.DaqError as e:
                 print("Error adding voltage channel:", full_channel_name)
-                print("Error message:", str(e))
-        elif type == 'temperature':
-            try:
-                task.ai_channels.add_ai_thrmcpl_chan(full_channel_name,
-                                                    thermocouple_type=nidaqmx.constants.ThermocoupleType.K,
-                                                    cjc_source=nidaqmx.constants.CJCSource.CONSTANT_USER_VALUE,
-                                                    cjc_val=25.0)
-                print("Added temperature channel:", full_channel_name)
-            except nidaqmx.errors.DaqError as e:
-                print("Error adding temperature channel:", full_channel_name)
                 print("Error message:", str(e))
         elif type == 'strain':
             try:
@@ -138,22 +93,17 @@ def configureDAQ(device_name, type, channels, sampling_rate, samples_per_channel
 
     return task
 
-def initializeDAQTasks(voltage_device, temperature_device, strain_device,
-                       voltage_channels, temperature_channels, strain_channels,
+def initializeDAQTasks(voltage_device, strain_device,
+                       voltage_channels, strain_channels,
                        voltage_sampling_rate, voltage_samples,
-                       temperature_sampling_rate, temperature_samples,
                        strain_sampling_rate, strain_samples):
+    
     global voltage_task
-    global temperature_task
     global strain_task
 
     if voltage_task is not None:
         voltage_task.close()
         voltage_task = None
-
-    if temperature_task is not None:
-        temperature_task.close()
-        temperature_task = None
 
     if strain_task is not None:
         strain_task.close()
@@ -161,14 +111,11 @@ def initializeDAQTasks(voltage_device, temperature_device, strain_device,
 
     voltage_task = configureDAQ(device_name=voltage_device, type='voltage', channels=voltage_channels,
                                 sampling_rate=voltage_sampling_rate, samples_per_channel=voltage_samples)
-    temperature_task = configureDAQ(device_name=temperature_device, type='temperature', channels=temperature_channels,
-                                    sampling_rate=temperature_sampling_rate, samples_per_channel=temperature_samples)
     strain_task = configureDAQ(device_name=strain_device, type='strain', channels=strain_channels,
                                sampling_rate=strain_sampling_rate, samples_per_channel=strain_samples)
 
     tasks = {
         'voltage': voltage_task,
-        'temperature': temperature_task,
         'strain': strain_task
     }
 
@@ -177,15 +124,11 @@ def initializeDAQTasks(voltage_device, temperature_device, strain_device,
 
 # initializeDAQTasks(
 #     voltage_device='Voltage_DAQ',
-#     temperature_device='Temp_Device',
 #     strain_device='Strain_Device',
 #     voltage_channels=['ai0', 'ai1', 'ai2', 'ai3'],
-#     temperature_channels=['ai0'],
 #     strain_channels=['ai0', 'ai1'],
 #     voltage_sampling_rate=100,
 #     voltage_samples=100,
-#     temperature_sampling_rate=100,
-#     temperature_samples=100,
 #     strain_sampling_rate=100,
 #     strain_samples=100
 # )
@@ -592,39 +535,29 @@ def main():
 
     # Define the channels and parameters for each type of data
     voltage_device = 'Voltage_DAQ'
-    temperature_device = 'Temp_Device'
     strain_device = 'Strain_Device'
     voltage_channels = ['ai1', 'ai2', 'ai3', 'ai4']
-    temperature_channels = ['ai1']
     strain_channels = ['ai1', 'ai2']
     voltage_sampling_rate = 300
     voltage_samples = 20
-    temperature_sampling_rate = 300
-    temperature_samples = 20
     strain_sampling_rate = 300
     strain_samples = 20
 
     # Create empty pandas dataframe to store data
     data_df = pd.DataFrame(columns=['Voltage Measurement {}'.format(i) for i in range(len(voltage_channels))] +
-                                 ['Temperature Measurement {}'.format(i) for i in range(len(temperature_channels))] +
                                  ['Strain Measurement {}'.format(i) for i in range(len(strain_channels))])
 
     # Initialize the DAQ tasks
     tasks = initializeDAQTasks(voltage_device=voltage_device,
-                               temperature_device=temperature_device,
                                strain_device=strain_device,
                                voltage_channels=voltage_channels,
-                               temperature_channels=temperature_channels,
                                strain_channels=strain_channels,
                                voltage_sampling_rate=voltage_sampling_rate,
                                voltage_samples=voltage_samples,
-                               temperature_sampling_rate=temperature_sampling_rate,
-                               temperature_samples=temperature_samples,
                                strain_sampling_rate=strain_sampling_rate,
                                strain_samples=strain_samples)
 
     voltage_task = tasks['voltage']
-    temperature_task = tasks['temperature']
     strain_task = tasks['strain']
 
     time_data = '[]'
@@ -641,12 +574,10 @@ def main():
             # Read the data from the DAQ tasks and update last_values accordingly
             voltage_data = readDAQData(voltage_task, samples_per_channel=voltage_samples, channels=voltage_channels,
                                     type='voltage')
-            temperature_data = readDAQData(temperature_task, samples_per_channel=temperature_samples,
-                                        channels=temperature_channels, type='temperature')
             strain_data = readDAQData(strain_task, samples_per_channel=strain_samples, channels=strain_channels,
                                     type='strain')
 
-            if voltage_data is not None and temperature_data is not None and strain_data is not None:
+            if voltage_data is not None and strain_data is not None:
                 # Add the data to the DataFrame
                 current_time = datetime.datetime.now()
                 num_samples = len(voltage_data[voltage_channels[0]])
@@ -658,10 +589,6 @@ def main():
                 for i, channel in enumerate(voltage_channels):
                     column_name = 'Voltage Measurement {}'.format(i)
                     sample[column_name] = pd.Series(voltage_data[channel])
-
-                for i, channel in enumerate(temperature_channels):
-                    column_name = 'Temperature Measurement {}'.format(i)
-                    sample[column_name] = pd.Series(temperature_data[channel])
 
                 for i, channel in enumerate(strain_channels):
                     column_name = 'Strain Measurement {}'.format(i)
@@ -705,11 +632,6 @@ def main():
             json_p_three_data = p_three_data['P_3'].values.tolist()
             json_p_three_data = json.dumps(json_p_three_data) if json_p_three_data is not None else '[]'
 
-            motor_temp_data = sample_df[['Seconds', 'Temperature Measurement 0']]
-            motor_temp_data = motor_temp_data.rename(columns={'Seconds': 'Seconds', 'Temperature Measurement 0': 'T_0'})
-            json_motor_temp_data = motor_temp_data['T_0'].values.tolist()
-            json_motor_temp_data = json.dumps(json_motor_temp_data) if json_motor_temp_data is not None else '[]'
-
             strain_gauge_zero_data = sample_df[['Seconds', 'Strain Measurement 0']]
             strain_gauge_zero_data = strain_gauge_zero_data.rename(columns={'Seconds': 'Seconds', 'Strain Measurement 0': 'Strain_0'})
             json_strain_gauge_zero_data = strain_gauge_zero_data['Strain_0'].values.tolist()
@@ -733,14 +655,12 @@ def main():
         except Exception as e:
             print("An error occurred:", str(e))
             voltage_task.close()
-            temperature_task.close()
             strain_task.close()
 
         voltage_task.close()
-        temperature_task.close()
         strain_task.close()
 
-    return time_data, json_p_zero_data, json_p_one_data, json_p_two_data, json_p_three_data, json_strain_gauge_zero_data, json_strain_gauge_one_data, json_motor_temp_data
+        return time_data, json_p_zero_data, json_p_one_data, json_p_two_data, json_p_three_data, json_strain_gauge_zero_data, json_strain_gauge_one_data, json_motor_temp_data
 
 @app.route('/calibrate_load_cells', methods=['POST'])
 def calibrate_load_cells():
@@ -756,8 +676,6 @@ def calibrate_load_cells():
                                sampling_rate=1000, samples_per_channel=300)
     
     data = readDAQData(strain_task, samples_per_channel=300, channels=["ai0", "ai1"], type='strain')
-
-    print(data)
 
  # Calculate the average value for each load cell
     averages = []
@@ -898,7 +816,48 @@ def generate_all_data():
     response.content_type = 'application/json'
     return response
 
+arduino = None
 
+def establish_arduino_connection():
+    global arduino
+
+    if arduino is None:
+        try:
+            input_motor_data = session.get('input_motor_data', {})
+            arduino = ArduinoControl(input_motor_data['arduino_port'])
+        except Exception as e:
+            return "Error: Failed to establish Arduino connection.", 400
+        else:
+            print(f"establish_arduino_connection: arduino is {arduino}")
+
+def move_linear_and_rotary_actuator(linear_position, rotary_position):
+    
+    global arduino
+
+    try:
+        # Move the linear and rotary actuators to the specified positions
+        arduino.move_to(linear_position, rotary_position)
+
+    except ValueError as e:
+        print('Error:', str(e))
+
+
+
+@app.route('/start_all', methods=['POST'])
+def start_all():
+
+    global experiment_running
+    input_motor_data = session.get('input_motor_data', {})
+    # Set the experiment_running flag to True
+    experiment_running = True
+
+    # Initialize the last_values dictionary
+    last_values = {}
+
+    establish_arduino_connection()  # Assign the returned arduino object
+    start_actuators()
+
+    return redirect(url_for('index'))
 
 # @app.route('/start_all', methods=['POST'])
 # def start_all():
@@ -950,8 +909,6 @@ def start_actuators():
     input_motor_data = session.get('input_motor_data', {})
     linear_position = input_motor_data.get('linear_actuator', 0)
     rotary_position = input_motor_data.get('rotary_motor', 0)
-
-    print(linear_position, rotary_position)
 
 
     # Move the linear actuator to the specified positions
@@ -1063,15 +1020,15 @@ def stop():
 
     return redirect(url_for('index'))  # Redirect to the main page
 
-def stop_motor():
-    vesc.ramp_down(0)
+# def stop_motor():
+#     vesc.ramp_down(0)
 
-# def stop_actuators():
+def stop_actuators():
+
+    global arduino
 
     # Retrieve linear actuator and rotary motor positions from session
     input_motor_data = session.get('input_motor_data', {})
-    linear_position = input_motor_data.get('linear_actuator', 0)
-    #rotary_position = input_motor_data.get('rotary_motor', 0)
 
     try:
         arduino = ArduinoControl(input_motor_data['arduino_port'])
@@ -1079,7 +1036,7 @@ def stop_motor():
         return "Error: Arduino port connection not found.", 400
     
     # Move the actuators back to the 0 position
-    arduino.move_to(0)  # Adjust the values accordingly if needed
+    arduino.move_to(0, 0.0000001)  # Adjust the values accordingly if needed
 
     return "Actuators stopped successfully!"
 
