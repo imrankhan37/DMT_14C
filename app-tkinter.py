@@ -1,3 +1,4 @@
+
 from flask import Flask, render_template, request, session, redirect, url_for, jsonify, Response, stream_template, stream_with_context, make_response
 import threading
 import nidaqmx
@@ -15,45 +16,6 @@ import threading
 import logging
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
-class ArduinoControl:
-    def __init__(self, port):
-        self.ser = serial.Serial(port=port, baudrate=9600, timeout=1)
-
-        if not self.ser.is_open:
-            self.ser.open()
-
-        time.sleep(2)  # wait for Arduino to initialize
-
-    def move_to(self, linear_position, rotary_position):
-        # Send linear position command
-        linear_position_str = '{}\n'.format(linear_position)
-        command_state = 'linear'
-        while True:
-            if self.ser.in_waiting > 0:
-                response = self.ser.readline().strip().decode()
-                if command_state == 'linear' and response == 'Enter linear position (mm):':
-                    print('Arduino ready for linear position')
-                    self.ser.write(linear_position_str.encode())
-                    print('Arduino linear position sent')
-                    command_state = 'linear-confirmation'
-                elif response == 'OK':
-                    print('Linear position set successfully')
-                    # Now we'll send the rotary command
-                    rotary_position_str = '{}\n'.format(rotary_position)
-                    self.ser.write(rotary_position_str.encode())
-                    command_state = 'rotary'
-                elif command_state == 'rotary' and response.startswith('Position set'):
-                    print(response)
-                    break
-                elif response.startswith('Error'):
-                    raise ValueError(response)
-                else:
-                    print('Received:', response)
-
-    def close(self):
-        self.ser.close()
-
 
 voltage_task = None
 temperature_task = None
@@ -164,7 +126,6 @@ def readDAQData(task, samples_per_channel, channels, type):
     except nidaqmx.errors.DaqReadError as e:
         print("Error while reading DAQ data:", e)
         return None
-
 
 
 # This allows the app to start
@@ -420,59 +381,9 @@ def reset_session():
 def stop_button():
     return render_template('index.html')
 
+logging.basicConfig(level=logging.DEBUG)
 
 experiment_running = True
-
-@app.route('/read_pdiff_values', methods=['GET', 'POST'])
-def read_pdiff_values():
-    ser = serial.Serial('COM6', 9600)  # Replace 'COM6' with the appropriate serial port
-    global pdiff1_recent, pdiff2_recent, pdiff3_recent
-
-    # Initialise pressure values
-    pdiff1_recent = 0.0
-    pdiff2_recent = 0.0
-    pdiff3_recent = 0.0
-
-    while experiment_running:
-        line = ser.readline().decode().strip()  # Read a line from the serial port and decode it
-        if line:
-            values = line.split(',')  # Split the line by comma to extract the pdiff values
-            
-            if len(values) >= 3:
-                pdiff1_recent = float(values[0])  # Convert the first value to float
-                pdiff2_recent = float(values[1])  # Convert the second value to float
-                pdiff3_recent = float(values[2])  # Convert the third value to float
-
-                # logging.debug(f"read_pdiff_values - pdiff1_recent: {pdiff1_recent}")
-                # logging.debug(f"read_pdiff_values - pdiff2_recent: {pdiff2_recent}")
-                # logging.debug(f"read_pdiff_values - pdiff3_recent: {pdiff3_recent}")
-
-    ser.close()
-    return pdiff1_recent, pdiff2_recent, pdiff3_recent
-
-@app.route('/main_2', methods=['GET', 'POST'])
-def main_2():
-    global experiment_running
-
-    pdiff1_recent, pdiff2_recent, pdiff3_recent = read_pdiff_values()
-
-    pdiff1_recent = pdiff1_recent if pdiff1_recent is not None else 0.0
-    pdiff2_recent = pdiff2_recent if pdiff2_recent is not None else 0.0
-    pdiff3_recent = pdiff3_recent if pdiff3_recent is not None else 0.0
-
-    logging.debug(f"main_2 - pdiff1_recent: {pdiff1_recent}")
-    logging.debug(f"main_2 - pdiff2_recent: {pdiff2_recent}")
-    logging.debug(f"main_2 - pdiff3_recent: {pdiff3_recent}")
-
-    # print(pdiff1_recent)
-    # print(pdiff2_recent)
-    # print(pdiff3_recent)
-
-    response = make_response(json.dumps([pdiff1_recent, pdiff2_recent, pdiff3_recent]))
-
-    response.content_type = 'application/json'
-    return response 
-
 
 
 @app.route('/main', methods=['POST'])
@@ -480,15 +391,6 @@ def main():
     global last_values
     global experiment_running
     global sample_df
-
-    # global time_data
-    # global json_p_zero_data
-    # global json_p_one_data
-    # global json_p_two_data
-    # global json_p_three_data
-    # global json_strain_gauge_zero_data
-    # global json_strain_gauge_one_data
-    # global json_motor_temp_data
 
     global strain_device
     global strain_channels
@@ -532,13 +434,7 @@ def main():
     strain_task = tasks['strain']
 
     time_data = '[]'
-    json_p_zero_data = '[]'
-    json_p_one_data = '[]'
-    json_p_two_data = '[]'
-    json_p_three_data = '[]'
-    json_motor_temp_data = '[]'
-    json_strain_gauge_zero_data = '[]'
-    json_strain_gauge_one_data = '[]'
+
 
     while True:
         try:
@@ -582,46 +478,12 @@ def main():
 
             # Update the last values dictionary
             p_zero_data = sample_df[['Seconds', 'Voltage Measurement 0']]
-            # p_zero_data = p_zero_data.rename(columns={'Seconds': 'Seconds', 'Voltage Measurement 0': 'P_0'})
-            # time_data = p_zero_data['Seconds'].values.tolist()
-            # time_data = json.dumps(time_data) if time_data is not None else '[]'
-            # json_p_zero_data = p_zero_data['P_0'].values.tolist()
-            # json_p_zero_data = json.dumps(json_p_zero_data) if json_p_zero_data is not None else '[]'
-
             p_one_data = sample_df[['Seconds', 'Voltage Measurement 1']]
-            # p_one_data = p_one_data.rename(columns={'Seconds': 'Seconds', 'Voltage Measurement 1': 'P_1'})
-            # json_p_one_data = p_one_data['P_1'].values.tolist()
-            # json_p_one_data = json.dumps(json_p_one_data) if json_p_one_data is not None else '[]'
-
             p_two_data = sample_df[['Seconds', 'Voltage Measurement 2']]
-            # p_two_data = p_two_data.rename(columns={'Seconds': 'Seconds', 'Voltage Measurement 2': 'P_2'})
-            # json_p_two_data = p_two_data['P_2'].values.tolist()
-            # json_p_two_data = json.dumps(json_p_two_data) if json_p_two_data is not None else '[]'
-
             p_three_data = sample_df[['Seconds', 'Voltage Measurement 3']]
-            # p_three_data = p_three_data.rename(columns={'Seconds': 'Seconds', 'Voltage Measurement 3': 'P_3'})
-            # json_p_three_data = p_three_data['P_3'].values.tolist()
-            # json_p_three_data = json.dumps(json_p_three_data) if json_p_three_data is not None else '[]'
-
             strain_gauge_zero_data = sample_df[['Seconds', 'Strain Measurement 0']]
-            # strain_gauge_zero_data = strain_gauge_zero_data.rename(columns={'Seconds': 'Seconds', 'Strain Measurement 0': 'Strain_0'})
-            # json_strain_gauge_zero_data = strain_gauge_zero_data['Strain_0'].values.tolist()
-            # json_strain_gauge_zero_data = json.dumps(json_strain_gauge_zero_data) if json_strain_gauge_zero_data is not None else '[]'
-
             strain_gauge_one_data = sample_df[['Seconds', 'Strain Measurement 1']]
-            # strain_gauge_one_data = strain_gauge_one_data.rename(columns={'Seconds': 'Seconds', 'Strain Measurement 1': 'Strain_1'})
-            # json_strain_gauge_one_data = strain_gauge_one_data['Strain_1'].values.tolist()
-            # json_strain_gauge_one_data = json.dumps(json_strain_gauge_one_data) if json_strain_gauge_one_data is not None else '[]'
 
-            # Store the required dataframes in the session
-            # session['time_data'] = time_data
-            # session['json_p_zero_data'] = json_p_zero_data
-            # session['json_p_one_data'] = json_p_one_data
-            # session['json_p_two_data'] = json_p_two_data
-            # session['json_p_three_data'] = json_p_three_data
-            # session['json_strain_gauge_zero_data'] = json_strain_gauge_zero_data
-            # session['json_strain_gauge_one_data'] = json_strain_gauge_one_data
-            # session['json_motor_temp_data'] = json_motor_temp_data
 
         except Exception as e:
             print("An error occurred:", str(e))
@@ -631,16 +493,10 @@ def main():
         voltage_task.close()
         strain_task.close()
 
-        return jsonify([
-            time_data, 
-            p_zero_data.to_dict(orient='records'), 
-            p_one_data.to_dict(orient='records'), 
-            p_two_data.to_dict(orient='records'), 
-            p_three_data.to_dict(orient='records'), 
-            strain_gauge_zero_data.to_dict(orient='records'), 
-            strain_gauge_one_data.to_dict(orient='records')
-        ])
-    
+        return time_data, p_zero_data, p_one_data, p_two_data, p_three_data, strain_gauge_zero_data, strain_gauge_one_data
+
+
+
 @app.route('/calibrate_load_cells', methods=['POST'])
 def calibrate_load_cells():
 
@@ -679,218 +535,16 @@ def calibrate_load_cells():
         }
     })
 
-# @app.route('/final_speed_submit', methods=['POST'])
-# def final_speed_submission():
-#     final_speed = request.form.get('final_speed')
-#     print('Final speed = ', final_speed)
-#     return render_template('index.html')
 
-
-# @app.route('/generate_p_zero_data', methods=['GET', 'POST'])
-# def generate_p_zero_data():
-#     # Generate temporary data
-#     temp_p_zero = random.randrange(1, 1000)
-#     # Put the data in a list
-#     temp_p_zero_data = [time() * 1000, temp_p_zero]
-#     response = make_response(json.dumps(temp_p_zero_data))
-#     response.content_type = 'application/json'
-#     return response
-
-@app.route('/generate_all_data', methods=['GET', 'POST'])
-def generate_all_data():
-
-    results = {}
-
-    # Get the p_zero_data from the session
-    temp_p_zero_data = session.get('json_p_zero_data', [])
-    temp_p_one_data = session.get('json_p_one_data', [])
-    temp_p_two_data = session.get('json_p_two_data', [])
-    temp_p_three_data = session.get('json_p_three_data', [])
-    temp_strain_gauge_zero_data = session.get('json_strain_gauge_zero_data', [])
-    temp_strain_gauge_one_data = session.get('json_strain_gauge_one_data', [])
-
-
-    if temp_p_zero_data:
-        # Convert it back to a list
-        temp_p_zero_data = json.loads(temp_p_zero_data)
-        # Get the last value and the corresponding time
-        temp_p_zero = temp_p_zero_data[-1]
-        temp_time = session.get('time_data', [])
-        if temp_time:
-            temp_time = json.loads(temp_time)[-1] * 1000
-        else:
-            temp_time = time() * 1000
-
-        results['p_zero'] = [temp_time, temp_p_zero]
-
-    if temp_p_one_data:
-        # Convert it back to a list
-        temp_p_one_data = json.loads(temp_p_one_data)
-        # Get the last value and the corresponding time
-        temp_p_one = temp_p_one_data[-1]
-        temp_time = session.get('time_data', [])
-        if temp_time:
-            temp_time = json.loads(temp_time)[-1] * 1000
-        else:
-            temp_time = time() * 1000
-
-        results['p_one'] = [temp_time, temp_p_one]
-
-    if temp_p_two_data:
-        # Convert it back to a list
-        temp_p_two_data = json.loads(temp_p_two_data)
-        # Get the last value and the corresponding time
-        temp_p_two = temp_p_two_data[-1]
-        temp_time = session.get('time_data', [])
-        if temp_time:
-            temp_time = json.loads(temp_time)[-1] * 1000
-        else:
-            temp_time = time() * 1000
-
-        results['p_two'] = [temp_time, temp_p_two]   
-
-    if temp_p_three_data:
-        # Convert it back to a list
-        temp_p_three_data = json.loads(temp_p_three_data)
-        # Get the last value and the corresponding time
-        temp_p_three = temp_p_three_data[-1]
-        temp_time = session.get('time_data', [])
-        if temp_time:
-            temp_time = json.loads(temp_time)[-1] * 1000
-        else:
-            temp_time = time() * 1000
-
-        results['p_three'] = [temp_time, temp_p_three]
-
-    if temp_strain_gauge_zero_data:
-        # Convert it back to a list
-        temp_strain_gauge_zero_data = json.loads(temp_strain_gauge_zero_data)
-        # Get the last value and the corresponding time
-        temp_strain_gauge_zero = temp_strain_gauge_zero_data[-1]
-        temp_time = session.get('time_data', [])
-        if temp_time:
-            temp_time = json.loads(temp_time)[-1] * 1000
-        else:
-            temp_time = time() * 1000
-
-        results['strain_gauge_zero'] = [temp_time, temp_strain_gauge_zero]
-
-    if temp_strain_gauge_one_data:
-        # Convert it back to a list
-        temp_strain_gauge_one_data = json.loads(temp_strain_gauge_one_data)
-        # Get the last value and the corresponding time
-        temp_strain_gauge_one = temp_strain_gauge_one_data[-1]
-        temp_time = session.get('time_data', [])
-        if temp_time:
-            temp_time = json.loads(temp_time)[-1] * 1000
-        else:
-            temp_time = time() * 1000
-
-        results['strain_gauge_one'] = [temp_time, temp_strain_gauge_one]
-
-    if not results:
-        return make_response('n/a', 204)
-    
-    response = make_response(json.dumps(results))
-    response.content_type = 'application/json'
-    return response
-
-
-def establish_arduino_connection():
-    global arduino
-
-    if arduino is None:
-        try:
-            input_motor_data = session.get('input_motor_data', {})
-            arduino = ArduinoControl(input_motor_data['arduino_port'])
-        except Exception as e:
-            return "Error: Failed to establish Arduino connection.", 400
-
-def move_linear_and_rotary_actuator(linear_position, rotary_position):
-    global arduino
-
-    try:
-        # Move the linear and rotary actuators to the specified positions
-        print(rotary_position)
-        arduino.move_to(linear_position, rotary_position)
-    except ValueError as e:
-        print('Error:', str(e))
-
-import threading
-
-# Global variables
-experiment_running = False
-root = None
-fig = None
-ax1 = None
-ax2 = None
-canvas = None
-
-def update_plots(time_data, p_zero_data, p_one_data, p_two_data, p_three_data, strain_gauge_zero_data, strain_gauge_one_data):
-    # Clear the axes
-    ax1.clear()
-    ax2.clear()
-
-    # Plot the pressure data against time
-    ax1.plot(time_data, p_zero_data, label='P0')
-    ax1.plot(time_data, p_one_data, label='P1')
-    ax1.plot(time_data, p_two_data, label='P2')
-    ax1.plot(time_data, p_three_data, label='P3')
-    ax1.set_xlabel('Time')
-    ax1.set_ylabel('Pressure')
-    ax1.legend()
-
-    # Plot the strain gauge data against time
-    ax2.plot(time_data, strain_gauge_zero_data, label='Strain 0')
-    ax2.plot(time_data, strain_gauge_one_data, label='Strain 1')
-    ax2.set_xlabel('Time')
-    ax2.set_ylabel('Strain')
-    ax2.legend()
-
-    # Update the canvas
-    canvas.draw()
-
-def continuous_update():
-    global experiment_running
-    while experiment_running:
-        try:
-            # Make a POST request to the '/main' endpoint
-            response = app.test_client().post('/main')
-            data = response.get_json()
-
-            # Extract the data from the response
-            time_data = data[0]
-            p_zero_data = data[1]
-            p_one_data = data[2]
-            p_two_data = data[3]
-            p_three_data = data[4]
-            strain_gauge_zero_data = data[5]
-            strain_gauge_one_data = data[6]
-
-            # Call the update_plots function with the new data
-            update_plots(time_data, p_zero_data, p_one_data, p_two_data, p_three_data, strain_gauge_zero_data, strain_gauge_one_data)
-
-        except Exception as e:
-            print("An error occurred:", str(e))
-            break
-
-    # Close the voltage and strain tasks
-    voltage_task.close()
-    strain_task.close()
 
 @app.route('/start_all', methods=['POST'])
 def start_all():
+
     global experiment_running
-    global root
-    global fig
-    global ax1
-    global ax2
-    global canvas
 
     # Set the experiment_running flag to True
     experiment_running = True
 
-    # Create the Tkinter window
     root = tk.Tk()
     root.title("Data Visualization")
     root.geometry("800x400")
@@ -904,195 +558,49 @@ def start_all():
     canvas.draw()
     canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-    # Start the continuous update in a separate thread
-    update_thread = threading.Thread(target=continuous_update)
-    update_thread.start()
 
-    # Start the Tkinter main loop
-    root.mainloop()
+    try:
+        while experiment_running:
+            # Create the Tkinter window
 
-    # Set the experiment_running flag to False when the Tkinter loop ends
-    experiment_running = False
+            time_data, p_zero_data, p_one_data, p_two_data, p_three_data, strain_gauge_zero_data, strain_gauge_one_data = main()
 
-    # Join the update_thread to ensure it finishes before redirecting
-    update_thread.join()
+             # Function to update the plots with new data
+            def update_plots(time_data, p_zero_data, p_one_data, p_two_data, p_three_data, strain_gauge_zero_data, strain_gauge_one_data):
+                # Clear the axes
+                ax1.clear()
+                ax2.clear()
 
-    # Redirect to the 'index' route
+                # Plot the pressure data against time
+                ax1.plot(time_data, p_zero_data, label='P0')
+                ax1.plot(time_data, p_one_data, label='P1')
+                ax1.plot(time_data, p_two_data, label='P2')
+                ax1.plot(time_data, p_three_data, label='P3')
+                ax1.set_xlabel('Time')
+                ax1.set_ylabel('Pressure')
+                ax1.legend()
+
+                # Plot the strain gauge data against time
+                ax2.plot(time_data, strain_gauge_zero_data, label='Strain 0')
+                ax2.plot(time_data, strain_gauge_one_data, label='Strain 1')
+                ax2.set_xlabel('Time')
+                ax2.set_ylabel('Strain')
+                ax2.legend()
+
+                # Update the canvas
+                canvas.draw()
+
+            # Call the update_plots function with the data
+            update_plots(time_data, p_zero_data, p_one_data, p_two_data, p_three_data, strain_gauge_zero_data, strain_gauge_one_data)
+
+
+    
+    except Exception as e:
+        print("An error occurred:", str(e))
+        voltage_task.close()
+        strain_task.close()
+
+
+
+
     return redirect(url_for('index'))
-
-
-# @app.route('/start_all', methods=['POST'])
-# def start_all():
-
-#     global experiment_running
-
-#     # Set the experiment_running flag to True
-#     experiment_running = True
-
-#     root = tk.Tk()
-#     root.title("Data Visualization")
-#     root.geometry("800x400")
-
-#     # Create the matplotlib figure and axes
-#     fig = Figure(figsize=(6, 4), dpi=100)
-#     ax1 = fig.add_subplot(121)
-#     ax2 = fig.add_subplot(122)
-
-#     canvas = FigureCanvasTkAgg(fig, master=root)
-#     canvas.draw()
-#     canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-
-
-#     try:
-#         while experiment_running:
-#             # Create the Tkinter window
-
-#             time_data, p_zero_data, p_one_data, p_two_data, p_three_data, strain_gauge_zero_data, strain_gauge_one_data = main()
-
-#              # Function to update the plots with new data
-#             def update_plots(time_data, p_zero_data, p_one_data, p_two_data, p_three_data, strain_gauge_zero_data, strain_gauge_one_data):
-#                 # Clear the axes
-#                 ax1.clear()
-#                 ax2.clear()
-
-#                 # Plot the pressure data against time
-#                 ax1.plot(p_zero_data.iloc[:, 0], p_zero_data.iloc[:, 1], label='P0')
-#                 ax1.plot(p_one_data.iloc[:,0], p_one_data.iloc[:,1], label='P1')
-#                 ax1.plot(p_two_data.iloc[:,0], p_two_data.iloc[:,1], label='P2')
-#                 ax1.plot(p_three_data.iloc[:,0], p_three_data.iloc[:,1], label='P3')
-#                 ax1.set_xlabel('Time')
-#                 ax1.set_ylabel('Pressure')
-#                 ax1.legend()
-
-#                 # Plot the strain gauge data against time
-#                 ax2.plot(strain_gauge_zero_data.iloc[:,0], strain_gauge_zero_data.iloc[:,1], label='Strain 0')
-#                 ax2.plot(strain_gauge_one_data.iloc[:,0], strain_gauge_one_data.iloc[:,1], label='Strain 1')
-#                 ax2.set_xlabel('Time')
-#                 ax2.set_ylabel('Strain')
-#                 ax2.legend()
-
-#                 # Update the canvas
-#                 canvas.draw()
-
-#             # Call the update_plots function with the data
-#             update_plots(time_data, p_zero_data, p_one_data, p_two_data, p_three_data, strain_gauge_zero_data, strain_gauge_one_data)
-
-
-    
-#     except Exception as e:
-#         print("An error occurred:", str(e))
-#         voltage_task.close()
-#         strain_task.close()
-
-
-
-
-#     return redirect(url_for('index'))
-
-# def start_motor(vesc, speed, profile, current, duty_cycle):
-#     vesc.start_motor(speed, profile, current, duty_cycle)
-#     temp_thread = threading.Thread(target=check_temp, args=(vesc,))
-#     temp_thread.start()
-
-
-def start_actuators():
-
-    # Retrieve linear actuator and rotary motor positions from session
-    input_motor_data = session.get('input_motor_data', {})
-    linear_position = input_motor_data.get('linear_actuator', 0)
-    rotary_position = input_motor_data.get('rotary_motor', 0)
-
-
-    try:
-        move_linear_and_rotary_actuator(linear_position, rotary_position)
-    except ValueError as e:
-        return str(e), 400
-    print(f"start_actuators: After move_linear_and_rotary_actuator, arduino is {arduino}")
-
-
-data_df = pd.DataFrame()  # Create an empty dataframe to store the collected data
-
-
-@app.route('/update_values', methods=['GET'])
-def update_values():
-
-    global last_values
-    last_values = session.get('last_values', {})
-    
-    # Perform any necessary processing on last_values here
-    
-    # Generate the HTML for last values
-    last_values_html = ''
-    for key, value in last_values.items():
-        last_values_html += f'<p>{key}: {value}</p>'
-
-    print('Updated values from update_values() {}'.format(last_values))
-
-    return {'last_values_html': last_values_html}
-
-
-@app.route('/export_csv', methods=['POST'])
-def export_csv():
-    global data_df, export_csv_enabled
-
-    if export_csv_enabled:
-        # Define the file path and name on the server
-        file_path = 'data.csv'
-
-        # Export the dataframe to the file path
-        data_df.to_csv(file_path, index=False)
-
-        # Check if the file was successfully saved
-        if os.path.isfile(file_path):
-            return "CSV Exported: " + file_path
-        else:
-            return "CSV Export Failed"
-    else:
-        return "CSV Export is not enabled"
-
-@app.route('/stop', methods=['GET', 'POST'])
-def stop():
-    global experiment_running
-    global arduino
-
-    # Check if the experiment is not running
-    if not experiment_running:
-        return redirect(url_for('index'))  # Redirect to the main page
-    
-    # save the data to a csv file
-    # save_data_to_csv()
-
-    # Update the export CSV button status
-    export_csv_enabled = True
-
-    # Stop the actuators
-    stop_actuators()
-
-    # Set the experiment_running flag to False
-    experiment_running = False
-
-    return redirect(url_for('index'))  # Redirect to the main page
-
-def stop_motor():
-    vesc.ramp_down(0)
-
-def stop_actuators():
-
-    # Retrieve linear actuator and rotary motor positions from session
-    input_motor_data = session.get('input_motor_data', {})
-    linear_position = input_motor_data.get('linear_actuator', 0)
-    rotary_position = input_motor_data.get('rotary_motor', 0)
-
-    try:
-        arduino = ArduinoControl(input_motor_data['arduino_port'])
-    except:
-        return "Error: Arduino port connection not found.", 400
-    
-    # Move the actuators back to the 0 position
-    arduino.move_to(0, 0.000000001)  # Adjust the values accordingly if needed
-
-    return "Actuators stopped successfully!"
-
-
-if __name__ == '__main__':
-    app.run() 
