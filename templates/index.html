@@ -1091,7 +1091,8 @@ circle {
                     if (stopFlag) return;
                     var requests = $.get('/data');
                     requests.done(function (data) {
-                        console.log(data);
+                        // console.log(data);
+                        console.log(p_one_data, p_two_data, p_three_data);
                         
                         // console.log(generate_all_data)
                         // var p_zero_result = generate_all_data.temp_p_zero;
@@ -1148,6 +1149,10 @@ circle {
                 }
 
                 function stop_experiment() {
+                    // Reset the data arrays
+                    p_one_data = [];
+                    p_two_data = [];
+                    p_three_data = [];
                     var request = $.post('/stop_experiment');
                     request.done(function (data) {
                         console.log(data);

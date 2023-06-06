@@ -500,6 +500,7 @@ pdiff1_recent = 0.0
 pdiff2_recent = 0.0
 pdiff3_recent = 0.0
 data_lock = threading.Lock()
+stop_event = threading.Event()
 
 def read_pdiff_values():
     ser = serial.Serial('COM6', 9600)  # Replace 'COM6' with the appropriate serial port
@@ -522,8 +523,9 @@ def read_pdiff_values():
     return pdiff1_recent, pdiff2_recent, pdiff3_recent
 
 def start_reading_pdiff_values():
-    global experiment_running
+    global experiment_running, stop_event
     # Start the data reading thread (threading allows multiple tasks to run simultaneously)
+    stop_event.clear()
     thread = threading.Thread(target=read_pdiff_values)
     thread.start()
 
@@ -537,6 +539,7 @@ def get_recent_pdiff_values():
 def start_experiment():
     global experiment_running
     if not experiment_running:
+        pdiff_queue.queue.clear()
         experiment_running = True
         start_reading_pdiff_values()
     return "Started"
@@ -545,6 +548,7 @@ def start_experiment():
 def stop_experiment():
     global experiment_running
     experiment_running = False
+    stop_event.set()
     return 'Experiment stopped'
 
 @app.route('/data')
