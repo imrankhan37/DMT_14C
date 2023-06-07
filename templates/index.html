@@ -1083,6 +1083,7 @@ circle {
                 var p_two_data = [];
                 var p_three_data = [];
                 var velocity_data = [];
+                var yaw_data = []
                 var gauge_one_data = [];
                 var gauge_two_data = [];
                 var motor_duty_cycle = [];
@@ -1125,6 +1126,12 @@ circle {
                         $("Velocity").text(velocity);
                         velocity_data.push(velocity)
                         // velocitychart.series[0].setData(velocity);
+
+                        var yaw_angle = data[4];
+                        console.log(yaw_angle)
+                        $(".Yaw").text("");
+                        $(".Yaw").text(yaw_angle);
+                        yaw_data.push(yaw_angle)
 
                         setTimeout(request_pdiff_data, 500);
                     });

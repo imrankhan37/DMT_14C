@@ -384,6 +384,7 @@ pdiff3_recent = 1.0
 strain1_recent = 0.0
 strain2_recent = 0.0
 velocity = 0.0
+yaw_angle = 0.0
 # motor_duty_cycle_recent = 0.0
 # motor_rpm_recent = 0.0
 # motor_temp_recent = 0.0
@@ -394,8 +395,8 @@ strain_queue = Queue() # Initialise the queue for the strain values
 # motor_queue= Queue() # Initialise the queue for the motor values
 
 def read_pdiff_values():
-    ser = serial.Serial('COM6', 9600)  # Replace 'COM6' with the appropriate serial port
-    global experiment_running, pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity
+    ser = serial.Serial('COM5', 9600)  # Replace 'COM6' with the appropriate serial port
+    global experiment_running, pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle
 
     while experiment_running:
         line = ser.readline().decode().strip()  # Read a line from the serial port and decode it
@@ -406,9 +407,6 @@ def read_pdiff_values():
                 pdiff1_recent = float(values[0])  # Convert the first value to float
                 pdiff2_recent = float(values[1])  # Convert the second value to float
                 pdiff3_recent = float(values[2])  # Convert the third value to float
-                logging.debug(f"read_pdiff_values - pdiff_recent1: {pdiff1_recent}")
-                logging.debug(f"read_pdiff_values - pdiff_recent2: {pdiff2_recent}")
-                logging.debug(f"read_pdiff_values - pdiff_recen3: {pdiff3_recent}")
 
                 density = 1.392181 # kg/m^3
 
@@ -421,18 +419,20 @@ def read_pdiff_values():
                     logging.debug(f"read_pdiff_values - k_t: {k_t}")
                     velocity = abs(((2*(pdiff1_recent - (k_t * (pdiff1_recent-pdiff_average))))/density))**0.5
                     logging.debug(f"read_pdiff_values - velocity: {velocity}")
+                    yaw_angle = 0.039989809*k_beta**8 - 0.159177308*k_beta**7 - 0.2904159*k_beta**6 - 0.1602285*k_beta**5 - 0.3923435*k_beta**4 + 0.29777905*k_beta**3 + 1.917721*k_beta**2 - 18.7517*k_beta - 0.51817
+                    logging.debug(f"read_pdiff_values - yaw_angle: {yaw_angle}")
                 
                 except ZeroDivisionError:
                     velocity = 0.0
                     pdiff1_recent = 1.0
                     pdiff2_recent = 1.0
                     pdiff3_recent = 1.0
+                    yaw_angle = 0.0
 
-                pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity]) # Put the values in the queue
-                # velocity_queue.put([velocity])
+                pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle]) # Put the values in the queue
 
     ser.close()
-    return pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity
+    return pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle
 
 
 def read_strain_values():
