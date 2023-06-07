@@ -386,6 +386,7 @@ experiment_running = False # Initialise experiment_running
 
 data_lock = threading.Lock() # Initialise the data lock
 stop_event = threading.Event() # Initialise the stop event
+
 # Initialise the pdiff values
 pdiff1_recent = 0.0
 pdiff2_recent = 0.0
@@ -430,9 +431,13 @@ def read_strain_values():
     strain_gauge_offset_1 = session.get('strain_gauge_offset_1')
     strain_gauge_offset_2 = session.get('strain_gauge_offset_2')
 
+    logging.DEBUG(experiment_running)
+
+
     # Check if the experiment is not running
     if experiment_running == False:
         return # Exit the function if the experiment is not running
+    
 
     # Define the channels and parameters for each type of data
     strain_device = 'Strain_Device'
@@ -455,64 +460,64 @@ def read_strain_values():
     json_strain_gauge_zero_data = '[]'
     json_strain_gauge_one_data = '[]'
 
-    while True:
-        try:
-            strain_data = readDAQData(strain_task, samples_per_channel=strain_samples, channels=strain_channels,
-                                    type='strain')
+    while experiment_running:
+        strain_data = readDAQData(strain_task, samples_per_channel=strain_samples, channels=strain_channels,
+                                type='strain')
+        
+        logging.DEBUG(f"read_strain_values - strain_data: {strain_data}")
+
+        if strain_data is not None:
+            # Add the data to the DataFrame
+            current_time = datetime.datetime.now()
+            num_samples = len(strain_data[strain_channels[0]])
+            seconds_per_sample = 1.0 / strain_sampling_rate
+            seconds = np.arange(num_samples) * seconds_per_sample
+
+            sample = {'Time': [current_time] * num_samples, 'Seconds': seconds}
+
+
+            for i, channel in enumerate(strain_channels):
+                column_name = 'Strain Measurement {}'.format(i)
+                sample[column_name] = pd.Series(strain_data[channel])
+
+            # Convert the sample dictionary to a DataFrame
+            sample_df = pd.DataFrame(sample)
+
+            # Apply offsets to each strain measurement column
+            if strain_gauge_offset_1 is not None:
+                sample_df['Strain Measurement 0'] = sample_df['Strain Measurement 0'].apply(lambda x: -1 * (x + strain_gauge_offset_1))
+            if strain_gauge_offset_2 is not None:
+                sample_df['Strain Measurement 1'] = sample_df['Strain Measurement 1'].apply(lambda x: x + strain_gauge_offset_2)
             
-            print(strain_data)
-
-            if strain_data is not None:
-                # Add the data to the DataFrame
-                current_time = datetime.datetime.now()
-                num_samples = len(strain_data[strain_channels[0]])
-                seconds_per_sample = 1.0 / strain_sampling_rate
-                seconds = np.arange(num_samples) * seconds_per_sample
-
-                sample = {'Time': [current_time] * num_samples, 'Seconds': seconds}
-
-
-                for i, channel in enumerate(strain_channels):
-                    column_name = 'Strain Measurement {}'.format(i)
-                    sample[column_name] = pd.Series(strain_data[channel])
-
-                # Convert the sample dictionary to a DataFrame
-                sample_df = pd.DataFrame(sample)
-
-                # Apply offsets to each strain measurement column
-                if strain_gauge_offset_1 is not None:
-                    sample_df['Strain Measurement 0'] = sample_df['Strain Measurement 0'].apply(lambda x: -1 * (x + strain_gauge_offset_1))
-                if strain_gauge_offset_2 is not None:
-                    sample_df['Strain Measurement 1'] = sample_df['Strain Measurement 1'].apply(lambda x: x + strain_gauge_offset_2)
-                
-                # Append the sample dataframe to the data dataframe
-                print(sample_df)
-
             # Append the sample dataframe to the data dataframe
-            data_df = pd.concat([data_df, sample_df], ignore_index=True)
+            print(sample_df)
 
-            strain_gauge_zero_data = sample_df[['Seconds', 'Strain Measurement 0']]
-            strain_gauge_one_data = sample_df[['Seconds', 'Strain Measurement 1']]
+        # Append the sample dataframe to the data dataframe
+        data_df = pd.concat([data_df, sample_df], ignore_index=True)
 
-            strain1_recent = strain_gauge_zero_data['Strain Measurement 0'].iloc[-1]
-            strain2_recent = strain_gauge_one_data['Strain Measurement 1'].iloc[-1]
+        strain_gauge_zero_data = sample_df[['Seconds', 'Strain Measurement 0']]
+        strain_gauge_one_data = sample_df[['Seconds', 'Strain Measurement 1']]
 
-            print(strain1_recent, strain2_recent)
+        strain1_recent = strain_gauge_zero_data['Strain Measurement 0'].iloc[-1]
+        strain2_recent = strain_gauge_one_data['Strain Measurement 1'].iloc[-1]
 
-            strain_queue.put([strain1_recent, strain2_recent]) # Put the values in the queue
+        print(strain1_recent, strain2_recent)
 
-            # Store the required dataframes in the session
-            session['time_data'] = time_data
-            session['json_strain_gauge_zero_data'] = json_strain_gauge_zero_data
-            session['json_strain_gauge_one_data'] = json_strain_gauge_one_data
+        strain_queue.put([strain1_recent, strain2_recent]) # Put the values in the queue
 
-        except Exception as e:
-            print("An error occurred:", str(e))
-            strain_task.close()
+        # # Store the required dataframes in the session
+        # session['time_data'] = time_data
+        # session['json_strain_gauge_zero_data'] = json_strain_gauge_zero_data
+        # session['json_strain_gauge_one_data'] = json_strain_gauge_one_data
 
         strain_task.close()
 
-        return strain1_recent, strain2_recent
+    return strain1_recent, strain2_recent
+
+
+        # except Exception as e:
+        #     print("An error occurred:", str(e))
+        #     strain_task.close()
 
 def start_reading_pdiff_values():
     global experiment_running, stop_event
