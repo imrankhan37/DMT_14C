@@ -1075,10 +1075,9 @@ circle {
 
     <div class="key-parameter-grid">
         <div class="key-parameter-card">
-            <p class="key-parameter-label">Pressure (Static) - P<sub>0</sub> [Pa]</p>
-            <div class="key-parameter-value P_0"></div>
+            <p class="key-parameter-label">Pressure (Differential) - P<sub>1</sub> [Pa]</p>
+            <div class="key-parameter-value P_1"></div>  
             <script>
-                // var p_zero_data = [];
                 var p_one_data = [];
                 var p_two_data = [];
                 var p_three_data = [];
@@ -1089,6 +1088,7 @@ circle {
                 var motor_duty_cycle = [];
                 var motor_temp = []
                 var pressurechart;
+                var velocitychart;
                 var stopFlag = false;
                 var tickInterval = 0.5;
 
@@ -1100,38 +1100,39 @@ circle {
                         // console.log(p_one_data, p_two_data, p_three_data);
                         
                         var pdiff1_recent = data[0];
-                        console.log(pdiff1_recent)
+                        // console.log(pdiff1_recent)
                         $(".P_1").text("");
                         $(".P_1").text(pdiff1_recent);
                         p_one_data.push(pdiff1_recent)
                         pressurechart.series[0].setData(p_one_data);
 
                         var pdiff2_recent = data[1];
-                        console.log(pdiff2_recent)
+                        // console.log(pdiff2_recent)
                         $(".P_2").text("");
                         $(".P_2").text(pdiff2_recent);
                         p_two_data.push(pdiff2_recent)
                         pressurechart.series[1].setData(p_two_data);
 
                         var pdiff3_recent = data[2];
-                        console.log(pdiff3_recent)
+                        // console.log(pdiff3_recent)
                         $(".P_3").text("");
                         $(".P_3").text(pdiff3_recent);
                         p_three_data.push(pdiff3_recent)
                         pressurechart.series[2].setData(p_three_data);
 
                         var velocity = data[3];
-                        console.log(velocity)
+                        // console.log(velocity)
                         $(".Velocity").text("");
-                        $("Velocity").text(velocity);
+                        $(".Velocity").text(velocity);
                         velocity_data.push(velocity)
-                        // velocitychart.series[0].setData(velocity);
+                        velocitychart.series[0].setData(velocity_data);
 
                         var yaw_angle = data[4];
-                        console.log(yaw_angle)
+                        // console.log(yaw_angle)
                         $(".Yaw").text("");
                         $(".Yaw").text(yaw_angle);
                         yaw_data.push(yaw_angle)
+                        yawchart.series[0].setData(yaw_data);
 
                         setTimeout(request_pdiff_data, 500);
                     });
@@ -1141,16 +1142,17 @@ circle {
                     if (stopFlag) return;
                     var strain_requests = $.get('/strain_data');
                     strain_requests.done(function (data) {
+                        console.log(data);
 
                         var strain1_recent = data[0]
-                        console.log(strain1_recent)
+                        // console.log(strain1_recent)
                         $(".Gauge_1").text("");
                         $(".Gauge_1").text(strain1_recent);
                         gauge_one_data.push(strain1_recent)
                         thrustchart.series[0].setData(gauge_one_data);
 
                         var strain2_recent = data[1]
-                        console.log(strain2_recent)
+                        // console.log(strain2_recent)
                         $(".Gauge_2").text("");
                         $(".Gauge_2").text(strain2_recent);
                         gauge_two_data.push(strain2_recent)
@@ -1198,6 +1200,8 @@ circle {
                     p_one_data = [];
                     p_two_data = [];
                     p_three_data = [];
+                    velocity_data = [];
+                    yaw_data = [];
                     gauge_one_data = [];
                     gauge_two_data = [];
                     motor_duty_cycle = [];
@@ -1222,6 +1226,9 @@ circle {
                 function velocity_displayZero() {
                     $(".Velocity").text(0);
                 };
+                function yaw_displayZero() {
+                    $(".Yaw").text(0);
+                };
                 function gauge_one_displayZero() {
                     $(".Gauge_1").text(0);
                 };
@@ -1239,6 +1246,8 @@ circle {
                     p_one_displayZero();
                     p_two_displayZero();
                     p_three_displayZero();
+                    velocity_displayZero();
+                    yaw_displayZero();
                     gauge_one_displayZero();
                     gauge_two_displayZero();
                     motor_duty_cycle_displayZero();
@@ -1373,64 +1382,121 @@ circle {
                         }]
                     });
 
-                    // velocitychart = Highcharts.chart('velocityChart', {
-                    //     chart: {
-                    //         renderTo: 'velocityChart',
-                    //         type: 'line',
-                    //         backgroundColor: 'rgba(0,0,0,0)'
-                    //     },
-                    //     title: {
-                    //         text: 'Flow velocity [m/s]',
-                    //         style: {
-                    //                 color: 'white'
-                    //             }
-                    //     },
-                    //     xAxis: {
-                    //         title: {
-                    //             text: 'Time [s]',
-                    //             style: {
-                    //                 color: 'white'
-                    //             }
-                    //         },
-                    //         labels: {
-                    //             style: {
-                    //                 color: 'white'
-                    //             }
-                    //         },
-                    //         gridLineColor: 'white',
-                    //         tickColor: 'white'
-                    //     },
-                    //     yAxis: {
-                    //         title: {
-                    //             text: 'Flow velocity [m/s]',
-                    //             style: {
-                    //                 color: 'white'
-                    //             }
-                    //         },
-                    //         labels: {
-                    //             style: {
-                    //                 color: 'white'
-                    //             }
-                    //         },
-                    //         gridLineColor: 'white',
-                    //     },
-                    //     legend: {
-                    //         itemStyle: {
-                    //             color: 'white'
-                    //         }
-                    //     },
-                    //     credits: {
-                    //         enabled: false
-                    //     },
-                    //     exporting: {
-                    //         enabled: false
-                    //     },
-                    //     series: [{
-                    //         name: 'Flow velocity',
-                    //         data: velocity_data
-                    //     }]
-                    // });
+                    velocitychart = Highcharts.chart('velocityChart', {
+                        chart: {
+                            renderTo: 'velocityChart',
+                            type: 'line',
+                            backgroundColor: 'rgba(0,0,0,0)'
+                        },
+                        title: {
+                            text: 'Flow velocity [m/s]',
+                            style: {
+                                    color: 'white'
+                                }
+                        },
+                        xAxis: {
+                            title: {
+                                text: 'Time [s]',
+                                style: {
+                                    color: 'white'
+                                }
+                            },
+                            labels: {
+                                style: {
+                                    color: 'white'
+                                }
+                            },
+                            gridLineColor: 'white',
+                            tickColor: 'white'
+                        },
+                        yAxis: {
+                            title: {
+                                text: 'Flow velocity [m/s]',
+                                style: {
+                                    color: 'white'
+                                }
+                            },
+                            labels: {
+                                style: {
+                                    color: 'white'
+                                }
+                            },
+                            gridLineColor: 'white',
+                        },
+                        legend: {
+                            itemStyle: {
+                                color: 'white'
+                            }
+                        },
+                        credits: {
+                            enabled: false
+                        },
+                        exporting: {
+                            enabled: false
+                        },
+                        series: [{
+                            name: 'Flow velocity',
+                            data: velocity_data
+                        }]
+                    });
 
+                    yawchart = Highcharts.chart('yawChart', {
+                        chart: {
+                            renderTo: 'yawChart',
+                            type: 'line',
+                            backgroundColor: 'rgba(0,0,0,0)'
+                        },
+                        title: {
+                            text: 'Yaw angle [&#176;]',
+                            style: {
+                                    color: 'white'
+                                }
+                        },
+                        xAxis: {
+                            title: {
+                                text: 'Time [s]',
+                                style: {
+                                    color: 'white'
+                                }
+                            },
+                            labels: {
+                                style: {
+                                    color: 'white'
+                                }
+                            },
+                            gridLineColor: 'white',
+                            tickColor: 'white'
+                        },
+                        yAxis: {
+                            title: {
+                                text: 'Yaw angle [&#176;]',
+                                style: {
+                                    color: 'white'
+                                }
+                            },
+                            labels: {
+                                style: {
+                                    color: 'white'
+                                }
+                            },
+                            gridLineColor: 'white',
+                        },
+                        legend: {
+                            itemStyle: {
+                                color: 'white'
+                            }
+                        },
+                        credits: {
+                            enabled: false
+                        },
+                        exporting: {
+                            enabled: false
+                        },
+                        series: [{
+                            name: 'Yaw angle',
+                            data: yaw_data
+                        }]
+                    });
 
                     $('#startButton').click(function() {
                         // Prevent the form from being submitted
@@ -1444,12 +1510,7 @@ circle {
                         stopFlag = true;
                     });
                 });
-
-            </script>
-        </div>
-        <div class="key-parameter-card">
-            <p class="key-parameter-label">Pressure (Differential) - P<sub>1</sub> [Pa]</p>
-            <div class="key-parameter-value P_1"></div>        
+            </script>      
         </div>
         <div class="key-parameter-card">
             <p class="key-parameter-label">Pressure (Differential) - P<sub>2</sub> [Pa]</p>
@@ -1468,8 +1529,6 @@ circle {
             <div class="key-parameter-value Gauge_2"></div>
         </div>
     </div>
-
-        </div>
 
         
         <!-- <div class="wrapper">
@@ -1637,43 +1696,47 @@ circle {
         });
     </script>
 </div> -->
-
-          
-        <!-- </div> -->
         
 
-        <div class="calculated-measurement-grid">
-            <div class="calculated-measurement-card">
-                <p class="calculated-measurement-label">Flow velocity [m/s]</p>
-                <div class="calculated-measurement-value Velocity"></div>
-            </div>
-            <div class="calculated-measurement-card">
-                <p class="calculated-measurement-label">Yaw angle [&#176;]</p>
-                <p class="calculated-measurement-value">0</p>
-            </div>
-            <div class="calculated-measurement-card">
-                <p class="calculated-measurement-label">Mass flow rate [kg/s]</p>
-                <p class="calculated-measurement-value">0</p>
-            </div>
-            <div class="calculated-measurement-card">
-                <p class="calculated-measurement-label">Density [kg/m^3]</p>
-                <p class="calculated-measurement-value">0</p>
-            </div>
+    <div class="calculated-measurement-grid">
+        <div class="calculated-measurement-card">
+            <p class="calculated-measurement-label">Flow velocity [m/s]</p>
+            <div class="calculated-measurement-value Velocity"></div>
+        </div>
+        <div class="calculated-measurement-card">
+            <p class="calculated-measurement-label">Yaw angle [&#176;]</p>
+            <div class="calculated-measurement-value Yaw"></div>
+        </div>
+        <div class="calculated-measurement-card">
+            <p class="calculated-measurement-label">Mass flow rate [kg/s]</p>
+            <p class="calculated-measurement-value">0</p>
+        </div>
+        <div class="calculated-measurement-card">
+            <p class="calculated-measurement-label">Density [kg/m^3]</p>
+            <p class="calculated-measurement-value">0</p>
         </div>
     </div>
 
-    </div>
+    <div>
         <p class="text-xl font-bold ml-6 mt-5 mb-3">Graphs</p>
 
         <div class="graph-container">
-                <div class="graph-card" style="width: 40%;">
-                    <div id="pressureChart" style="width: 100%; height: 600px;"></div>
-                </div>  
-        <div class="graph-card" style="width: 40%;">
-            <div id="thrustChart" style="width: 100%; height: 600px;"></div>
+            <div class="graph-card" style="width: 40%;">
+                <div id="pressureChart" style="width: 100%; height: 600px;"></div>
+            </div>  
+            <div class="graph-card" style="width: 40%;">
+                <div id="thrustChart" style="width: 100%; height: 600px;"></div>
+            </div>
         </div>
-        </script>
-        </div>        
+        <div class="graph-container">
+            <div class="graph-card" style="width: 40%;">
+                <div id="velocityChart" style="width: 100%; height: 600px;"></div>
+            </div>
+            <div class="graph-card" style="width: 40%;">
+                <div id="yawChart" style="width: 100%; height: 600px;"></div>
+            </div>
+        </div>
+    </div>        
 
            
 <!-- Export CSV button -->

@@ -371,31 +371,32 @@ def stop_button():
     return render_template('index.html')
 
 logging.basicConfig(level=logging.DEBUG)
-
 experiment_running = False # Initialise experiment_running
-
 data_lock = threading.Lock() # Initialise the data lock
 stop_event = threading.Event() # Initialise the stop event
 
-# Initialise the pdiff values
+# Initialise values
 pdiff1_recent = 1.0
 pdiff2_recent = 1.0
 pdiff3_recent = 1.0
-strain1_recent = 0.0
-strain2_recent = 0.0
+pdiff_average = 0.0
+k_beta = 0.0
+k_t = 0.0
 velocity = 0.0
 yaw_angle = 0.0
+
+strain1_recent = 0.0
+strain2_recent = 0.0
 # motor_duty_cycle_recent = 0.0
 # motor_rpm_recent = 0.0
 # motor_temp_recent = 0.0
 
 pdiff_queue = Queue() # Initialise the queue for the pdiff values
 strain_queue = Queue() # Initialise the queue for the strain values
-# velocity_queue = Queue()
 # motor_queue= Queue() # Initialise the queue for the motor values
 
 def read_pdiff_values():
-    ser = serial.Serial('COM5', 9600)  # Replace 'COM6' with the appropriate serial port
+    ser = serial.Serial('COM6', 9600)  # Replace 'COM6' with the appropriate serial port
     global experiment_running, pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle
 
     while experiment_running:
@@ -404,23 +405,20 @@ def read_pdiff_values():
             values = line.split(',')  # Split the line by comma to extract the pdiff values
             
             if len(values) >= 3:
-                pdiff1_recent = float(values[0])  # Convert the first value to float
-                pdiff2_recent = float(values[1])  # Convert the second value to float
-                pdiff3_recent = float(values[2])  # Convert the third value to float
-
-                density = 1.392181 # kg/m^3
-
                 try:
-                    pdiff_average = (pdiff1_recent + pdiff2_recent + pdiff3_recent) / 3
-                    logging.debug(f"read_pdiff_values - pdiff_average: {pdiff_average}")
+                    pdiff1_recent = float(values[0])  # Convert the first value to float
+                    pdiff2_recent = float(values[1])  # Convert the second value to float
+                    pdiff3_recent = float(values[2])  # Convert the third value to float
+
+                    density = 1.392181 # kg/m^3
+
+                    pdiff_average = ((pdiff1_recent + pdiff2_recent + pdiff3_recent) / 3)
                     k_beta = (pdiff2_recent - pdiff3_recent) / (pdiff1_recent - pdiff_average)
-                    logging.debug(f"read_pdiff_values - k_beta: {k_beta}")
                     k_t = -0.01617818*k_beta**8 + 0.021501133*k_beta**7 + 0.06570708*k_beta**6 - 0.008913*k_beta**5 - 0.27974366*k_beta**4 + 0.06411619*k_beta**3 + 0.138739*k_beta**2 - 0.00876*k_beta + 0.005485
-                    logging.debug(f"read_pdiff_values - k_t: {k_t}")
                     velocity = abs(((2*(pdiff1_recent - (k_t * (pdiff1_recent-pdiff_average))))/density))**0.5
-                    logging.debug(f"read_pdiff_values - velocity: {velocity}")
                     yaw_angle = 0.039989809*k_beta**8 - 0.159177308*k_beta**7 - 0.2904159*k_beta**6 - 0.1602285*k_beta**5 - 0.3923435*k_beta**4 + 0.29777905*k_beta**3 + 1.917721*k_beta**2 - 18.7517*k_beta - 0.51817
-                    logging.debug(f"read_pdiff_values - yaw_angle: {yaw_angle}")
+                    
+                    pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle]) # Put the values in the queue         
                 
                 except ZeroDivisionError:
                     velocity = 0.0
@@ -429,7 +427,7 @@ def read_pdiff_values():
                     pdiff3_recent = 1.0
                     yaw_angle = 0.0
 
-                pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle]) # Put the values in the queue
+                    pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle]) # Put the values in the queue
 
     ser.close()
     return pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle
@@ -581,12 +579,16 @@ def read_strain_values():
 def start_reading_pdiff_values():
     global experiment_running, stop_event
     # Start the data reading thread (threading allows multiple tasks to run simultaneously)
+    pdiff_queue.queue.clear()
+    strain_queue.queue.clear()
     stop_event.clear()
     thread_pdiff = threading.Thread(target=read_pdiff_values)
     thread_pdiff.start()
 
 def start_reading_strain_values():
     global experiment_running, stop_event
+    pdiff_queue.queue.clear()
+    strain_queue.queue.clear()
     stop_event.clear()
     thread_strain = threading.Thread(target=read_strain_values)
     thread_strain.start()
@@ -599,9 +601,9 @@ def start_reading_strain_values():
     
 # This removes the delay between the front and backend by ensuring the pdiff values is synchronised between threads
 def get_recent_pdiff_values():
-    global pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity
+    global pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle
     with data_lock:
-        return pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity
+        return pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle
     
 
 def get_recent_strain_values():
@@ -628,6 +630,7 @@ def start_experiment():
 def stop_experiment():
     global experiment_running
     experiment_running = False
+    stop_event.set()
     return 'Experiment stopped'
 
 @app.route('/pdiff_data')
