@@ -1095,7 +1095,8 @@ circle {
                     if (stopFlag) return;
                     var pdiff_requests = $.get('/pdiff_data');
                     pdiff_requests.done(function (data) {
-                        console.log(p_one_data, p_two_data, p_three_data);
+                        console.log(data);
+                        // console.log(p_one_data, p_two_data, p_three_data);
                         
                         var pdiff1_recent = data[0];
                         console.log(pdiff1_recent)

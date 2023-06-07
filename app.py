@@ -16,7 +16,7 @@ from queue import Queue
 import threading
 from threading import Thread
 import pyvesc
-from pyvesc.VESC.messages import Alive, SetDutyCycle, SetRPM, GetValues
+# from pyvesc.VESC.messages import Alive, SetDutyCycle, SetRPM, GetValues
 
 
 class ArduinoControl:
@@ -390,11 +390,11 @@ velocity = 0.0
 
 pdiff_queue = Queue() # Initialise the queue for the pdiff values
 strain_queue = Queue() # Initialise the queue for the strain values
-velocity_queue = Queue()
+# velocity_queue = Queue()
 # motor_queue= Queue() # Initialise the queue for the motor values
 
 def read_pdiff_values():
-    ser = serial.Serial('COM5', 9600)  # Replace 'COM6' with the appropriate serial port
+    ser = serial.Serial('COM6', 9600)  # Replace 'COM6' with the appropriate serial port
     global experiment_running, pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity
 
     while experiment_running:
@@ -413,7 +413,6 @@ def read_pdiff_values():
                 density = 1.392181 # kg/m^3
 
                 try:
-
                     pdiff_average = (pdiff1_recent + pdiff2_recent + pdiff3_recent) / 3
                     logging.debug(f"read_pdiff_values - pdiff_average: {pdiff_average}")
                     k_beta = (pdiff2_recent - pdiff3_recent) / (pdiff1_recent - pdiff_average)
@@ -425,12 +424,12 @@ def read_pdiff_values():
                 
                 except ZeroDivisionError:
                     velocity = 0.0
-                    pdiff1_recent = 0.0
-                    pdiff2_recent = 0.0
-                    pdiff3_recent = 0.0
+                    pdiff1_recent = 1.0
+                    pdiff2_recent = 1.0
+                    pdiff3_recent = 1.0
 
-                pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent]) # Put the values in the queue
-                velocity_queue.put([velocity])
+                pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity]) # Put the values in the queue
+                # velocity_queue.put([velocity])
 
     ser.close()
     return pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity
@@ -633,17 +632,17 @@ def stop_experiment():
 
 @app.route('/pdiff_data')
 def pdiff_data():
-    global pdiff_queue, velocity_queue
+    global pdiff_queue
     # Checks if the queue is empty
-    if not pdiff_queue.empty() and not velocity_queue.empty():
+    if not pdiff_queue.empty():
         # Retrieves most recent values from the queue
         pdiff = pdiff_queue.get()
-        flowvelocity = velocity_queue.get()
+        # flowvelocity = velocity_queue.get()
     else:
         pdiff = get_recent_pdiff_values()
-        flowvelocity = get_recent_pdiff_values()
+        # flowvelocity = get_recent_pdiff_values()
         logging.debug(pdiff)
-    return jsonify(pdiff, velocity)
+    return jsonify(pdiff)
 
 @app.route('/strain_data')
 def strain_data():
