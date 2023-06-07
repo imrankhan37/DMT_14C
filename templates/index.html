@@ -1180,8 +1180,8 @@ circle {
                 function start_experiment() {
                     var request = $.post('/start_experiment');
                     request.done(function (data) {
-                        // request_pdiff_data();
-                        // request_strain_data();
+                        request_pdiff_data();
+                        request_strain_data();
                         request_motor_data();
                     });
                 }

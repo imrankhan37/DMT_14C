@@ -501,7 +501,6 @@ def read_strain_values():
         strain1_recent = strain_gauge_zero_data['Strain Measurement 0'].iloc[-1]
         strain2_recent = strain_gauge_one_data['Strain Measurement 1'].iloc[-1]
 
-
         strain_queue.put([strain1_recent, strain2_recent]) # Put the values in the queue
 
         # # Store the required dataframes in the session
@@ -541,6 +540,9 @@ def read_motor_values():
                         motor_temp_recent = response.temp_fet
 
                         motor_queue.put([motor_duty_cycle_recent, motor_temp_recent])
+
+                        logging.debug(f"read_motor_values - motor_duty_cycle_recent: {motor_duty_cycle_recent}")
+                        logging.debug(f"read_motor_values - motor_temp_recent: {motor_temp_recent}")
 
 
                         return motor_duty_cycle_recent, motor_temp_recent
@@ -604,7 +606,7 @@ def start_experiment():
     if not experiment_running:
         experiment_running = True
         # start_reading_pdiff_values()
-        # start_reading_strain_values()
+        start_reading_strain_values()
         start_reading_motor_values()
     return "Started"
 
@@ -882,24 +884,22 @@ def start_motor():
     
 
     # Start the motor
-    with serial.Serial(vesc_port, 115200, timeout=0.1) as ser:
+    ser = serial.Serial(vesc_port, 115200, timeout=0.1)
 
-        start_time = time.time()  # Store the start time
+    try:
+        for i in range(duty_cycle_start, duty_cycle_end):
 
-        try:
-            for i in range(duty_cycle_start, duty_cycle_end):
-
-                for j in range(duty_cycle_interval*100):
+            for j in range(duty_cycle_interval*100):
 
 
-                    ser.write(pyvesc.encode(Alive()))  # Send heartbeat
-                    ser.write(pyvesc.encode(SetDutyCycle(i / 100)))  # Send command to get values
-                    ser.write(pyvesc.encode_request(GetValues))
+                ser.write(pyvesc.encode(Alive()))  # Send heartbeat
+                ser.write(pyvesc.encode(SetDutyCycle(i / 100)))  # Send command to get values
+                ser.write(pyvesc.encode_request(GetValues))
 
-                    time.sleep(0.01)
+                time.sleep(0.01)
 
-        except Exception as e:
-                print(f"Error: {str(e)}")    
+    except Exception as e:
+            print(f"Error: {str(e)}")    
 
 
 
