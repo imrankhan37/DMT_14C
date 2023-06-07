@@ -1089,57 +1089,57 @@ circle {
                 var stopFlag = false;
                 var tickInterval = 0.5;
 
-                function request_pdiff_data() {
-                    if (stopFlag) return;
-                    var pdiff_requests = $.get('/pdiff_data');
-                    pdiff_requests.done(function (data) {
-                        console.log(p_one_data, p_two_data, p_three_data);
+                // function request_pdiff_data() {
+                //     if (stopFlag) return;
+                //     var pdiff_requests = $.get('/pdiff_data');
+                //     pdiff_requests.done(function (data) {
+                //         console.log(p_one_data, p_two_data, p_three_data);
                         
-                        // console.log(generate_all_data)
-                        // var p_zero_result = generate_all_data.temp_p_zero;
-                        // console.log(p_zero_result)
-                        // $(".P_0").text("");
-                        // $(".P_0").text(p_zero_result[1]);
-                        // p_zero_data.push([p_zero_result[0], p_zero_result[1]])
-                        // pressurechart.series[0].setData(p_zero_data);
+                //         // console.log(generate_all_data)
+                //         // var p_zero_result = generate_all_data.temp_p_zero;
+                //         // console.log(p_zero_result)
+                //         // $(".P_0").text("");
+                //         // $(".P_0").text(p_zero_result[1]);
+                //         // p_zero_data.push([p_zero_result[0], p_zero_result[1]])
+                //         // pressurechart.series[0].setData(p_zero_data);
 
-                        var pdiff1_recent = data[0];
-                        console.log(pdiff1_recent)
-                        $(".P_1").text("");
-                        $(".P_1").text(pdiff1_recent);
-                        p_one_data.push(pdiff1_recent)
-                        pressurechart.series[0].setData(p_one_data);
+                //         var pdiff1_recent = data[0];
+                //         console.log(pdiff1_recent)
+                //         $(".P_1").text("");
+                //         $(".P_1").text(pdiff1_recent);
+                //         p_one_data.push(pdiff1_recent)
+                //         pressurechart.series[0].setData(p_one_data);
 
-                        var pdiff2_recent = data[1];
-                        console.log(pdiff2_recent)
-                        $(".P_2").text("");
-                        $(".P_2").text(pdiff2_recent);
-                        p_two_data.push(pdiff2_recent)
-                        pressurechart.series[1].setData(p_two_data);
+                //         var pdiff2_recent = data[1];
+                //         console.log(pdiff2_recent)
+                //         $(".P_2").text("");
+                //         $(".P_2").text(pdiff2_recent);
+                //         p_two_data.push(pdiff2_recent)
+                //         pressurechart.series[1].setData(p_two_data);
 
-                        var pdiff3_recent = data[2];
-                        console.log(pdiff3_recent)
-                        $(".P_3").text("");
-                        $(".P_3").text(pdiff3_recent);
-                        p_three_data.push(pdiff3_recent)
-                        pressurechart.series[2].setData(p_three_data);
+                //         var pdiff3_recent = data[2];
+                //         console.log(pdiff3_recent)
+                //         $(".P_3").text("");
+                //         $(".P_3").text(pdiff3_recent);
+                //         p_three_data.push(pdiff3_recent)
+                //         pressurechart.series[2].setData(p_three_data);
 
-                        // var gauge_one_result = generate_all_data.temp_strain_gauge_zero;
-                        // $(".Gauge_1").text("");
-                        // $(".Gauge_1").text(gauge_one_result[1]);
-                        // gauge_one_data.push([gauge_one_result[0], gauge_one_result[1]])
-                        // thrustchart.series[0].setData(gauge_one_data);
+                //         // var gauge_one_result = generate_all_data.temp_strain_gauge_zero;
+                //         // $(".Gauge_1").text("");
+                //         // $(".Gauge_1").text(gauge_one_result[1]);
+                //         // gauge_one_data.push([gauge_one_result[0], gauge_one_result[1]])
+                //         // thrustchart.series[0].setData(gauge_one_data);
 
-                        // var gauge_two_result = generate_all_data.temp_strain_gauge_one;
-                        // $(".Gauge_2").text("");
-                        // $(".Gauge_2").text(gauge_one_result[1]);
-                        // gauge_two_data.push([gauge_two_result[0], gauge_two_result[1]])
-                        // thrustchart.series[1].setData(gauge_two_data);
+                //         // var gauge_two_result = generate_all_data.temp_strain_gauge_one;
+                //         // $(".Gauge_2").text("");
+                //         // $(".Gauge_2").text(gauge_one_result[1]);
+                //         // gauge_two_data.push([gauge_two_result[0], gauge_two_result[1]])
+                //         // thrustchart.series[1].setData(gauge_two_data);
 
-                        setTimeout(request_pdiff_data, 500);
-                    });
+                //         setTimeout(request_pdiff_data, 500);
+                //     });
 
-                }
+                // }
 
                 function request_strain_data() {
                     if (stopFlag) return;
@@ -1167,7 +1167,7 @@ circle {
                 function start_experiment() {
                     var request = $.post('/start_experiment');
                     request.done(function (data) {
-                        request_pdiff_data();
+                        // request_pdiff_data();
                         request_strain_data();
                     });
                 }

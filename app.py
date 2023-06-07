@@ -205,7 +205,6 @@ def get_profiles():
 
 @app.route('/saved_profiles')
 def saved_profiles():
-    # Read the profiles from the JSON file
     with open(PROFILES_FILE, 'r') as file:
         saved_profiles = json.load(file)
 
@@ -394,28 +393,28 @@ pdiff3_recent = 0.0
 strain1_recent = 0.0
 strain2_recent = 0.0
 
-pdiff_queue = Queue() # Initialise the queue for the pdiff values
+# pdiff_queue = Queue() # Initialise the queue for the pdiff values
 strain_queue = Queue() # Initialise the queue for the strain values
 
-def read_pdiff_values():
-    ser = serial.Serial('COM6', 9600)  # Replace 'COM6' with the appropriate serial port
-    global experiment_running, pdiff1_recent, pdiff2_recent, pdiff3_recent
+# def read_pdiff_values():
+#     ser = serial.Serial('COM6', 9600)  # Replace 'COM6' with the appropriate serial port
+#     global experiment_running, pdiff1_recent, pdiff2_recent, pdiff3_recent
 
-    while experiment_running:
-        line = ser.readline().decode().strip()  # Read a line from the serial port and decode it
-        if line:
-            values = line.split(',')  # Split the line by comma to extract the pdiff values
+#     while experiment_running:
+#         line = ser.readline().decode().strip()  # Read a line from the serial port and decode it
+#         if line:
+#             values = line.split(',')  # Split the line by comma to extract the pdiff values
             
-            if len(values) >= 3:
-                pdiff1_recent = float(values[0])  # Convert the first value to float
-                pdiff2_recent = float(values[1])  # Convert the second value to float
-                pdiff3_recent = float(values[2])  # Convert the third value to float
-                logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff1_recent}")
-                logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff2_recent}")
-                logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff3_recent}")
-                pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent]) # Put the values in the queue
-    ser.close()
-    return pdiff1_recent, pdiff2_recent, pdiff3_recent
+#             if len(values) >= 3:
+#                 pdiff1_recent = float(values[0])  # Convert the first value to float
+#                 pdiff2_recent = float(values[1])  # Convert the second value to float
+#                 pdiff3_recent = float(values[2])  # Convert the third value to float
+#                 logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff1_recent}")
+#                 logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff2_recent}")
+#                 logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff3_recent}")
+#                 pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent]) # Put the values in the queue
+#     ser.close()
+#     return pdiff1_recent, pdiff2_recent, pdiff3_recent
 
 
 def read_strain_values():
@@ -428,10 +427,10 @@ def read_strain_values():
     global strain_samples
 
      # Retrieve the strain gauge offsets from the session
-    strain_gauge_offset_1 = session.get('strain_gauge_offset_1')
-    strain_gauge_offset_2 = session.get('strain_gauge_offset_2')
+    # strain_gauge_offset_1 = session.get('strain_gauge_offset_1')
+    # strain_gauge_offset_2 = session.get('strain_gauge_offset_2')
 
-    logging.DEBUG(experiment_running)
+    # logging.DEBUG(experiment_running)
 
 
     # Check if the experiment is not running
@@ -441,9 +440,9 @@ def read_strain_values():
 
     # Define the channels and parameters for each type of data
     strain_device = 'Strain_Device'
-    strain_channels = ['ai1', 'ai2']
-    strain_sampling_rate = 200
-    strain_samples = 5
+    strain_channels = ['ai0', 'ai1']
+    strain_sampling_rate = 10
+    strain_samples = 3
 
     # Create empty pandas dataframe to store data
     data_df = pd.DataFrame(columns=['Strain Measurement {}'.format(i) for i in range(len(strain_channels))])
@@ -464,7 +463,7 @@ def read_strain_values():
         strain_data = readDAQData(strain_task, samples_per_channel=strain_samples, channels=strain_channels,
                                 type='strain')
         
-        logging.DEBUG(f"read_strain_values - strain_data: {strain_data}")
+        # logging.DEBUG(f"read_strain_values - strain_data: {strain_data}")
 
         if strain_data is not None:
             # Add the data to the DataFrame
@@ -483,14 +482,12 @@ def read_strain_values():
             # Convert the sample dictionary to a DataFrame
             sample_df = pd.DataFrame(sample)
 
-            # Apply offsets to each strain measurement column
-            if strain_gauge_offset_1 is not None:
-                sample_df['Strain Measurement 0'] = sample_df['Strain Measurement 0'].apply(lambda x: -1 * (x + strain_gauge_offset_1))
-            if strain_gauge_offset_2 is not None:
-                sample_df['Strain Measurement 1'] = sample_df['Strain Measurement 1'].apply(lambda x: x + strain_gauge_offset_2)
+            # # Apply offsets to each strain measurement column
+            # if strain_gauge_offset_1 is not None:
+            #     sample_df['Strain Measurement 0'] = sample_df['Strain Measurement 0'].apply(lambda x: -1 * (x + strain_gauge_offset_1))
+            # if strain_gauge_offset_2 is not None:
+            #     sample_df['Strain Measurement 1'] = sample_df['Strain Measurement 1'].apply(lambda x: x + strain_gauge_offset_2)
             
-            # Append the sample dataframe to the data dataframe
-            print(sample_df)
 
         # Append the sample dataframe to the data dataframe
         data_df = pd.concat([data_df, sample_df], ignore_index=True)
@@ -503,14 +500,13 @@ def read_strain_values():
 
         print(strain1_recent, strain2_recent)
 
+
         strain_queue.put([strain1_recent, strain2_recent]) # Put the values in the queue
 
         # # Store the required dataframes in the session
         # session['time_data'] = time_data
         # session['json_strain_gauge_zero_data'] = json_strain_gauge_zero_data
         # session['json_strain_gauge_one_data'] = json_strain_gauge_one_data
-
-        strain_task.close()
 
     return strain1_recent, strain2_recent
 
@@ -519,12 +515,12 @@ def read_strain_values():
         #     print("An error occurred:", str(e))
         #     strain_task.close()
 
-def start_reading_pdiff_values():
-    global experiment_running, stop_event
-    # Start the data reading thread (threading allows multiple tasks to run simultaneously)
-    stop_event.clear()
-    thread_pdiff = threading.Thread(target=read_pdiff_values)
-    thread_pdiff.start()
+# def start_reading_pdiff_values():
+#     global experiment_running, stop_event
+#     # Start the data reading thread (threading allows multiple tasks to run simultaneously)
+#     stop_event.clear()
+#     thread_pdiff = threading.Thread(target=read_pdiff_values)
+#     thread_pdiff.start()
 
 def start_reading_strain_values():
     global experiment_running, stop_event
@@ -533,10 +529,10 @@ def start_reading_strain_values():
     thread_strain.start()
     
 # This removes the delay between the front and backend by ensuring the pdiff values is synchronised between threads
-def get_recent_pdiff_values():
-    global pdiff1_recent, pdiff2_recent, pdiff3_recent
-    with data_lock:
-        return pdiff1_recent, pdiff2_recent, pdiff3_recent
+# def get_recent_pdiff_values():
+#     global pdiff1_recent, pdiff2_recent, pdiff3_recent
+#     with data_lock:
+#         return pdiff1_recent, pdiff2_recent, pdiff3_recent
     
 
 def get_recent_strain_values():
@@ -549,7 +545,7 @@ def start_experiment():
     global experiment_running
     if not experiment_running:
         experiment_running = True
-        start_reading_pdiff_values()
+        # start_reading_pdiff_values()
         start_reading_strain_values()
     return "Started"
 
@@ -559,16 +555,16 @@ def stop_experiment():
     experiment_running = False
     return 'Experiment stopped'
 
-@app.route('/pdiff_data')
-def pdiff_data():
-    global pdiff_queue
-    # Checks if the queue is empty
-    if not pdiff_queue.empty():
-        # Retrieves most recent values from the queue
-        pdiff = pdiff_queue.get()
-    else:
-        pdiff = get_recent_pdiff_values()
-    return jsonify(pdiff)
+# @app.route('/pdiff_data')
+# def pdiff_data():
+#     global pdiff_queue
+#     # Checks if the queue is empty
+#     if not pdiff_queue.empty():
+#         # Retrieves most recent values from the queue
+#         pdiff = pdiff_queue.get()
+#     else:
+#         pdiff = get_recent_pdiff_values()
+#     return jsonify(pdiff)
 
 @app.route('/strain_data')
 def strain_data():
