@@ -61,7 +61,7 @@ class ArduinoControl:
 voltage_task = None
 temperature_task = None
 strain_task = None
-experiment_running = False  # Flag to track if the experiment is running
+experiment_running = False  # Flag to track if the experiment is runningt th
 
 def configureDAQ(device_name, type, channels, sampling_rate, samples_per_channel, buffer_size=10000000):
     task = nidaqmx.Task()
@@ -129,7 +129,6 @@ def initializeDAQTasks(strain_device,
 #     strain_samples=100
 # )
 
-
 # Read the data from the specified task
 def readDAQData(task, samples_per_channel, channels, type):
     try:
@@ -156,8 +155,6 @@ def readDAQData(task, samples_per_channel, channels, type):
     except nidaqmx.errors.DaqReadError as e:
         print("Error while reading DAQ data:", e)
         return None
-
-
 
 # This allows the app to start
 app = Flask(__name__, static_url_path='/static', template_folder='templates')
@@ -202,15 +199,12 @@ def get_profiles():
         profiles = json.load(file)
     return jsonify(profiles=profiles)
 
-
 @app.route('/saved_profiles')
 def saved_profiles():
     with open(PROFILES_FILE, 'r') as file:
         saved_profiles = json.load(file)
 
     return render_template('savedprofiles.html', profiles=saved_profiles)
-
-
 
 @app.route('/get_profile_names', methods=['GET'])
 def get_profile_names():
@@ -236,8 +230,6 @@ def delete_profile():
     return jsonify(success=True)
 
 
-
-
 @app.route('/', methods=['GET'])
 def index():
     input_motor_data = session.get('input_motor_data', {})
@@ -252,7 +244,6 @@ def index():
     json_motor_temp_data = session.get('json_motor_temp_data')
 
     return render_template('index.html', input_motor_data=input_motor_data, last_values=last_values, time_data=time_data, json_p_zero_data=json_p_zero_data, json_p_one_data=json_p_one_data, json_p_two_data=json_p_two_data, json_p_three_data=json_p_three_data, json_strain_gauge_zero_data=json_strain_gauge_zero_data, json_strain_gauge_one_data=json_strain_gauge_one_data, json_motor_temp_data=json_motor_temp_data, start_button_disabled=False)
-
 
 # Collects all input parameters and saves it in a dictionary
 @app.route('/motor_input_parameters', methods=['GET', 'POST'])
@@ -395,6 +386,7 @@ strain2_recent = 0.0
 motor_duty_cycle_recent = 0.0
 # motor_rpm_recent = 0.0
 motor_temp_recent = 0.0
+density = 1.392181
 
 pdiff_queue = Queue() # Initialise the queue for the pdiff values
 strain_queue = Queue() # Initialise the queue for the strain values
@@ -402,7 +394,7 @@ motor_queue= Queue() # Initialise the queue for the motor values
 
 def read_pdiff_values():
     ser = serial.Serial('COM6', 9600)  # Replace 'COM6' with the appropriate serial port
-    global experiment_running, pdiff1_recent, pdiff2_recent, pdiff3_recent
+    global experiment_running, pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity
 
     while experiment_running:
         line = ser.readline().decode().strip()  # Read a line from the serial port and decode it
@@ -416,9 +408,16 @@ def read_pdiff_values():
                 logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff1_recent}")
                 logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff2_recent}")
                 logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff3_recent}")
-                pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent]) # Put the values in the queue
+
+                pdiff_average = (pdiff1_recent + pdiff2_recent + pdiff3_recent) / 3
+                k_beta = (pdiff2_recent - pdiff3_recent) / (pdiff1_recent - pdiff_average)
+                k_t = -0.01617818*k_beta**8 + 0.021501133*k_beta**7 + 0.06570708*k_beta**6 - 0.008913*k_beta**5 - 0.27974366*k_beta**4 + 0.06411619*k_beta**3 + 0.138739*k_beta**2 - 0.00876*k_beta + 0.005485
+                velocity = ((2*(pdiff1_recent - k_t(pdiff1_recent-pdiff_average)))/density)**0.5
+
+                pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity]) # Put the values in the queue
+
     ser.close()
-    return pdiff1_recent, pdiff2_recent, pdiff3_recent
+    return pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity
 
 
 def read_strain_values():
@@ -524,12 +523,12 @@ def read_motor_values():
         # Start the motor
         with serial.Serial("COM4", 115200, timeout=0.1) as ser:
 
-            logging.DEBUG("read_motor_values - serial port opened")
+            # logging.DEBUG("read_motor_values - serial port opened")
 
             # Check if there is enough data back for a measurement
             if ser.in_waiting > 71:
 
-                logging.DEBUG("read_motor_values - serial port has data")
+                # logging.DEBUG("read_motor_values - serial port has data")
 
                 (response, consumed) = pyvesc.decode(ser.read(ser.in_waiting))
 
@@ -583,9 +582,9 @@ def start_reading_motor_values():
     
 # This removes the delay between the front and backend by ensuring the pdiff values is synchronised between threads
 def get_recent_pdiff_values():
-    global pdiff1_recent, pdiff2_recent, pdiff3_recent
+    global pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity
     with data_lock:
-        return pdiff1_recent, pdiff2_recent, pdiff3_recent
+        return pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity
     
 
 def get_recent_strain_values():

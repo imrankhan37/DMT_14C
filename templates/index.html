@@ -1082,6 +1082,7 @@ circle {
                 var p_one_data = [];
                 var p_two_data = [];
                 var p_three_data = [];
+                var velocity_data = [];
                 var gauge_one_data = [];
                 var gauge_two_data = [];
                 var motor_duty_cycle = [];
@@ -1096,14 +1097,6 @@ circle {
                     pdiff_requests.done(function (data) {
                         console.log(p_one_data, p_two_data, p_three_data);
                         
-                        // console.log(generate_all_data)
-                        // var p_zero_result = generate_all_data.temp_p_zero;
-                        // console.log(p_zero_result)
-                        // $(".P_0").text("");
-                        // $(".P_0").text(p_zero_result[1]);
-                        // p_zero_data.push([p_zero_result[0], p_zero_result[1]])
-                        // pressurechart.series[0].setData(p_zero_data);
-
                         var pdiff1_recent = data[0];
                         console.log(pdiff1_recent)
                         $(".P_1").text("");
@@ -1125,9 +1118,15 @@ circle {
                         p_three_data.push(pdiff3_recent)
                         pressurechart.series[2].setData(p_three_data);
 
+                        var velocity = data[3];
+                        console.log(velocity)
+                        $(".Velocity").text("");
+                        $("Velocity").text(velocity);
+                        velocity_data.push(velocity)
+                        velocitychart.series[0].setData(velocity);
+
                         setTimeout(request_pdiff_data, 500);
                     });
-
                 }
 
                 function request_strain_data() {
@@ -1151,37 +1150,36 @@ circle {
 
                         setTimeout(request_strain_data, 500);
                     });
-            }
+                }
 
-            function request_motor_data() {
-                if (stopFlag) return;
-                var motor_requests = $.get('/motor_data');
-                motor_requests.done(function (data) {
+                function request_motor_data() {
+                    if (stopFlag) return;
+                    var motor_requests = $.get('/motor_data');
+                    motor_requests.done(function (data) {
 
-                    var motor_duty_cycle_recent = data[0]
-                    console.log(motor_duty_cycle_recent)
-                    $(".motor-duty-cycle").text("");
-                    $(".motor-duty-cycle").text(motor_duty_cycle_recent);
-                    motor_duty_cycle.push(motor_duty_cycle_recent)
-                    motorTempChart.series[0].setData(motor_duty_cycle);
+                        var motor_duty_cycle_recent = data[0]
+                        console.log(motor_duty_cycle_recent)
+                        $(".motor-duty-cycle").text("");
+                        $(".motor-duty-cycle").text(motor_duty_cycle_recent);
+                        motor_duty_cycle.push(motor_duty_cycle_recent)
+                        motorTempChart.series[0].setData(motor_duty_cycle);
 
-                    var motor_temp_recent = data[1]
-                    console.log(motor_temp_recent)
-                    $(".motor-temp").text("");
-                    $(".motor-temp").text(motor_temp_recent);
-                    motor_temp.push(motor_temp_recent)
-                    motorTempChart.series[1].setData(motor_temp);
+                        var motor_temp_recent = data[1]
+                        console.log(motor_temp_recent)
+                        $(".motor-temp").text("");
+                        $(".motor-temp").text(motor_temp_recent);
+                        motor_temp.push(motor_temp_recent)
+                        motorTempChart.series[1].setData(motor_temp);
 
-                    setTimeout(request_motor_data, 500);
-                });
-
-            }
+                        setTimeout(request_motor_data, 500);
+                    });
+                }
                 
                 function start_experiment() {
                     var request = $.post('/start_experiment');
                     request.done(function (data) {
-                        // request_pdiff_data();
-                        // request_strain_data();
+                        request_pdiff_data();
+                        request_strain_data();
                         request_motor_data();
                     });
                 }
@@ -1206,31 +1204,27 @@ circle {
                 function p_one_displayZero() {
                     $(".P_1").text(0);
                 };
-
                 function p_two_displayZero() {
                     $(".P_2").text(0);
                 };
-
                 function p_three_displayZero() {
                     $(".P_3").text(0);
                 };
-
+                function velocity_displayZero() {
+                    $(".Velocity").text(0);
+                };
                 function gauge_one_displayZero() {
                     $(".Gauge_1").text(0);
                 };
-
                 function gauge_two_displayZero() {
                     $(".Gauge_2").text(0);
                 };
-
                 function motor_duty_cycle_displayZero() {
                     $(".motor-duty-cycle").text(0);
                 };
-
                 function motor_temp_displayZero() {
                     $(".motor-temp").text(0);
                 };
-
                 // Function that only calls the python scripts when the start button is pressed
                 $(document).ready(function() {
                     p_one_displayZero();
@@ -1367,6 +1361,64 @@ circle {
                             name: 'Strain gauge 2',
                             data: gauge_two_data,
                             color: 'red'
+                        }]
+                    });
+
+                    velocitychart = Highcharts.chart('velocityChart', {
+                        chart: {
+                            renderTo: 'velocityChart',
+                            type: 'line',
+                            backgroundColor: 'rgba(0,0,0,0)'
+                        },
+                        title: {
+                            text: 'Flow velocity [m/s]',
+                            style: {
+                                    color: 'white'
+                                }
+                        },
+                        xAxis: {
+                            title: {
+                                text: 'Time [s]',
+                                style: {
+                                    color: 'white'
+                                }
+                            },
+                            labels: {
+                                style: {
+                                    color: 'white'
+                                }
+                            },
+                            gridLineColor: 'white',
+                            tickColor: 'white'
+                        },
+                        yAxis: {
+                            title: {
+                                text: 'Flow velocity [m/s]',
+                                style: {
+                                    color: 'white'
+                                }
+                            },
+                            labels: {
+                                style: {
+                                    color: 'white'
+                                }
+                            },
+                            gridLineColor: 'white',
+                        },
+                        legend: {
+                            itemStyle: {
+                                color: 'white'
+                            }
+                        },
+                        credits: {
+                            enabled: false
+                        },
+                        exporting: {
+                            enabled: false
+                        },
+                        series: [{
+                            name: 'Flow velocity',
+                            data: velocity_data
                         }]
                     });
 
@@ -1511,7 +1563,6 @@ circle {
                                 }]
                             });
 
-
                         </script>    
     
 
@@ -1584,7 +1635,7 @@ circle {
         <div class="calculated-measurement-grid">
             <div class="calculated-measurement-card">
                 <p class="calculated-measurement-label">Flow velocity [m/s]</p>
-                <p class="calculated-measurement-value">0</p>
+                <div class="calculated-measurement-value Velocity"></div>
             </div>
             <div class="calculated-measurement-card">
                 <p class="calculated-measurement-label">Yaw angle [&#176;]</p>
