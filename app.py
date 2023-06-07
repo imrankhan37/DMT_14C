@@ -383,6 +383,7 @@ pdiff2_recent = 0.0
 pdiff3_recent = 0.0
 strain1_recent = 0.0
 strain2_recent = 0.0
+velocity = 0.0
 # motor_duty_cycle_recent = 0.0
 # motor_rpm_recent = 0.0
 # motor_temp_recent = 0.0
@@ -392,7 +393,7 @@ strain_queue = Queue() # Initialise the queue for the strain values
 # motor_queue= Queue() # Initialise the queue for the motor values
 
 def read_pdiff_values():
-    ser = serial.Serial('COM6', 9600)  # Replace 'COM6' with the appropriate serial port
+    ser = serial.Serial('COM5', 9600)  # Replace 'COM6' with the appropriate serial port
     global experiment_running, pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity
 
     while experiment_running:
@@ -408,10 +409,20 @@ def read_pdiff_values():
                 logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff2_recent}")
                 logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff3_recent}")
 
-                pdiff_average = (pdiff1_recent + pdiff2_recent + pdiff3_recent) / 3
-                k_beta = (pdiff2_recent - pdiff3_recent) / (pdiff1_recent - pdiff_average)
-                k_t = -0.01617818*k_beta**8 + 0.021501133*k_beta**7 + 0.06570708*k_beta**6 - 0.008913*k_beta**5 - 0.27974366*k_beta**4 + 0.06411619*k_beta**3 + 0.138739*k_beta**2 - 0.00876*k_beta + 0.005485
-                velocity = ((2*(pdiff1_recent - k_t(pdiff1_recent-pdiff_average)))/density)**0.5
+                density = 1.392181 # kg/m^3
+
+                try:
+
+                    pdiff_average = (pdiff1_recent + pdiff2_recent + pdiff3_recent) / 3
+                    k_beta = (pdiff2_recent - pdiff3_recent) / (pdiff1_recent - pdiff_average)
+                    k_t = -0.01617818*k_beta**8 + 0.021501133*k_beta**7 + 0.06570708*k_beta**6 - 0.008913*k_beta**5 - 0.27974366*k_beta**4 + 0.06411619*k_beta**3 + 0.138739*k_beta**2 - 0.00876*k_beta + 0.005485
+                    velocity = ((2*(pdiff1_recent - (k_t * (pdiff1_recent-pdiff_average))))/density)**0.5
+                
+                except ZeroDivisionError:
+                    velocity = 0.0
+                    pdiff1_recent = 0.0
+                    pdiff2_recent = 0.0
+                    pdiff3_recent = 0.0
 
                 pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity]) # Put the values in the queue
 
@@ -623,6 +634,7 @@ def pdiff_data():
         pdiff = pdiff_queue.get()
     else:
         pdiff = get_recent_pdiff_values()
+        logging.debug(pdiff)
     return jsonify(pdiff)
 
 @app.route('/strain_data')

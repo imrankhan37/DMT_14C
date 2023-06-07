@@ -1123,7 +1123,7 @@ circle {
                         $(".Velocity").text("");
                         $("Velocity").text(velocity);
                         velocity_data.push(velocity)
-                        velocitychart.series[0].setData(velocity);
+                        // velocitychart.series[0].setData(velocity);
 
                         setTimeout(request_pdiff_data, 500);
                     });
@@ -1365,63 +1365,64 @@ circle {
                         }]
                     });
 
-                    velocitychart = Highcharts.chart('velocityChart', {
-                        chart: {
-                            renderTo: 'velocityChart',
-                            type: 'line',
-                            backgroundColor: 'rgba(0,0,0,0)'
-                        },
-                        title: {
-                            text: 'Flow velocity [m/s]',
-                            style: {
-                                    color: 'white'
-                                }
-                        },
-                        xAxis: {
-                            title: {
-                                text: 'Time [s]',
-                                style: {
-                                    color: 'white'
-                                }
-                            },
-                            labels: {
-                                style: {
-                                    color: 'white'
-                                }
-                            },
-                            gridLineColor: 'white',
-                            tickColor: 'white'
-                        },
-                        yAxis: {
-                            title: {
-                                text: 'Flow velocity [m/s]',
-                                style: {
-                                    color: 'white'
-                                }
-                            },
-                            labels: {
-                                style: {
-                                    color: 'white'
-                                }
-                            },
-                            gridLineColor: 'white',
-                        },
-                        legend: {
-                            itemStyle: {
-                                color: 'white'
-                            }
-                        },
-                        credits: {
-                            enabled: false
-                        },
-                        exporting: {
-                            enabled: false
-                        },
-                        series: [{
-                            name: 'Flow velocity',
-                            data: velocity_data
-                        }]
-                    });
+                    // velocitychart = Highcharts.chart('velocityChart', {
+                    //     chart: {
+                    //         renderTo: 'velocityChart',
+                    //         type: 'line',
+                    //         backgroundColor: 'rgba(0,0,0,0)'
+                    //     },
+                    //     title: {
+                    //         text: 'Flow velocity [m/s]',
+                    //         style: {
+                    //                 color: 'white'
+                    //             }
+                    //     },
+                    //     xAxis: {
+                    //         title: {
+                    //             text: 'Time [s]',
+                    //             style: {
+                    //                 color: 'white'
+                    //             }
+                    //         },
+                    //         labels: {
+                    //             style: {
+                    //                 color: 'white'
+                    //             }
+                    //         },
+                    //         gridLineColor: 'white',
+                    //         tickColor: 'white'
+                    //     },
+                    //     yAxis: {
+                    //         title: {
+                    //             text: 'Flow velocity [m/s]',
+                    //             style: {
+                    //                 color: 'white'
+                    //             }
+                    //         },
+                    //         labels: {
+                    //             style: {
+                    //                 color: 'white'
+                    //             }
+                    //         },
+                    //         gridLineColor: 'white',
+                    //     },
+                    //     legend: {
+                    //         itemStyle: {
+                    //             color: 'white'
+                    //         }
+                    //     },
+                    //     credits: {
+                    //         enabled: false
+                    //     },
+                    //     exporting: {
+                    //         enabled: false
+                    //     },
+                    //     series: [{
+                    //         name: 'Flow velocity',
+                    //         data: velocity_data
+                    //     }]
+                    // });
+
 
                     $('#startButton').click(function() {
                         // Prevent the form from being submitted
