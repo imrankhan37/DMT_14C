@@ -378,9 +378,9 @@ data_lock = threading.Lock() # Initialise the data lock
 stop_event = threading.Event() # Initialise the stop event
 
 # Initialise the pdiff values
-pdiff1_recent = 0.0
-pdiff2_recent = 0.0
-pdiff3_recent = 0.0
+pdiff1_recent = 1.0
+pdiff2_recent = 1.0
+pdiff3_recent = 1.0
 strain1_recent = 0.0
 strain2_recent = 0.0
 velocity = 0.0
@@ -406,18 +406,22 @@ def read_pdiff_values():
                 pdiff1_recent = float(values[0])  # Convert the first value to float
                 pdiff2_recent = float(values[1])  # Convert the second value to float
                 pdiff3_recent = float(values[2])  # Convert the third value to float
-                logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff1_recent}")
-                logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff2_recent}")
-                logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff3_recent}")
+                logging.debug(f"read_pdiff_values - pdiff_recent1: {pdiff1_recent}")
+                logging.debug(f"read_pdiff_values - pdiff_recent2: {pdiff2_recent}")
+                logging.debug(f"read_pdiff_values - pdiff_recen3: {pdiff3_recent}")
 
                 density = 1.392181 # kg/m^3
 
                 try:
 
                     pdiff_average = (pdiff1_recent + pdiff2_recent + pdiff3_recent) / 3
+                    logging.debug(f"read_pdiff_values - pdiff_average: {pdiff_average}")
                     k_beta = (pdiff2_recent - pdiff3_recent) / (pdiff1_recent - pdiff_average)
+                    logging.debug(f"read_pdiff_values - k_beta: {k_beta}")
                     k_t = -0.01617818*k_beta**8 + 0.021501133*k_beta**7 + 0.06570708*k_beta**6 - 0.008913*k_beta**5 - 0.27974366*k_beta**4 + 0.06411619*k_beta**3 + 0.138739*k_beta**2 - 0.00876*k_beta + 0.005485
-                    velocity = ((2*(pdiff1_recent - (k_t * (pdiff1_recent-pdiff_average))))/density)**0.5
+                    logging.debug(f"read_pdiff_values - k_t: {k_t}")
+                    velocity = abs(((2*(pdiff1_recent - (k_t * (pdiff1_recent-pdiff_average))))/density))**0.5
+                    logging.debug(f"read_pdiff_values - velocity: {velocity}")
                 
                 except ZeroDivisionError:
                     velocity = 0.0
@@ -634,7 +638,7 @@ def pdiff_data():
     if not pdiff_queue.empty() and not velocity_queue.empty():
         # Retrieves most recent values from the queue
         pdiff = pdiff_queue.get()
-        flowvelocity = velocity.get()
+        flowvelocity = velocity_queue.get()
     else:
         pdiff = get_recent_pdiff_values()
         flowvelocity = get_recent_pdiff_values()
