@@ -389,6 +389,7 @@ strain2_recent = 0.0
 
 pdiff_queue = Queue() # Initialise the queue for the pdiff values
 strain_queue = Queue() # Initialise the queue for the strain values
+velocity_queue = Queue()
 # motor_queue= Queue() # Initialise the queue for the motor values
 
 def read_pdiff_values():
