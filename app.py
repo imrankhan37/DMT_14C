@@ -425,7 +425,8 @@ def read_pdiff_values():
                     pdiff2_recent = 0.0
                     pdiff3_recent = 0.0
 
-                pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity]) # Put the values in the queue
+                pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent]) # Put the values in the queue
+                velocity_queue.put([velocity])
 
     ser.close()
     return pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity
@@ -628,15 +629,17 @@ def stop_experiment():
 
 @app.route('/pdiff_data')
 def pdiff_data():
-    global pdiff_queue
+    global pdiff_queue, velocity_queue
     # Checks if the queue is empty
-    if not pdiff_queue.empty():
+    if not pdiff_queue.empty() and not velocity_queue.empty():
         # Retrieves most recent values from the queue
         pdiff = pdiff_queue.get()
+        flowvelocity = velocity.get()
     else:
         pdiff = get_recent_pdiff_values()
+        flowvelocity = get_recent_pdiff_values()
         logging.debug(pdiff)
-    return jsonify(pdiff)
+    return jsonify(pdiff, velocity)
 
 @app.route('/strain_data')
 def strain_data():
