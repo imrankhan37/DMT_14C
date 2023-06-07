@@ -392,29 +392,33 @@ pdiff2_recent = 0.0
 pdiff3_recent = 0.0
 strain1_recent = 0.0
 strain2_recent = 0.0
+motor_duty_cycle_recent = 0.0
+# motor_rpm_recent = 0.0
+motor_temp_recent = 0.0
 
-# # pdiff_queue = Queue() # Initialise the queue for the pdiff values
-# strain_queue = Queue() # Initialise the queue for the strain values
+pdiff_queue = Queue() # Initialise the queue for the pdiff values
+strain_queue = Queue() # Initialise the queue for the strain values
+motor_queue= Queue() # Initialise the queue for the motor values
 
-# # def read_pdiff_values():
-# #     ser = serial.Serial('COM6', 9600)  # Replace 'COM6' with the appropriate serial port
-# #     global experiment_running, pdiff1_recent, pdiff2_recent, pdiff3_recent
+def read_pdiff_values():
+    ser = serial.Serial('COM6', 9600)  # Replace 'COM6' with the appropriate serial port
+    global experiment_running, pdiff1_recent, pdiff2_recent, pdiff3_recent
 
-# #     while experiment_running:
-# #         line = ser.readline().decode().strip()  # Read a line from the serial port and decode it
-# #         if line:
-# #             values = line.split(',')  # Split the line by comma to extract the pdiff values
+    while experiment_running:
+        line = ser.readline().decode().strip()  # Read a line from the serial port and decode it
+        if line:
+            values = line.split(',')  # Split the line by comma to extract the pdiff values
             
-# #             if len(values) >= 3:
-# #                 pdiff1_recent = float(values[0])  # Convert the first value to float
-# #                 pdiff2_recent = float(values[1])  # Convert the second value to float
-# #                 pdiff3_recent = float(values[2])  # Convert the third value to float
-# #                 logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff1_recent}")
-# #                 logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff2_recent}")
-# #                 logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff3_recent}")
-# #                 pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent]) # Put the values in the queue
-# #     ser.close()
-# #     return pdiff1_recent, pdiff2_recent, pdiff3_recent
+            if len(values) >= 3:
+                pdiff1_recent = float(values[0])  # Convert the first value to float
+                pdiff2_recent = float(values[1])  # Convert the second value to float
+                pdiff3_recent = float(values[2])  # Convert the third value to float
+                logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff1_recent}")
+                logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff2_recent}")
+                logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff3_recent}")
+                pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent]) # Put the values in the queue
+    ser.close()
+    return pdiff1_recent, pdiff2_recent, pdiff3_recent
 
 
 def read_strain_values():
@@ -463,7 +467,6 @@ def read_strain_values():
         strain_data = readDAQData(strain_task, samples_per_channel=strain_samples, channels=strain_channels,
                                 type='strain')
         
-        # logging.DEBUG(f"read_strain_values - strain_data: {strain_data}")
 
         if strain_data is not None:
             # Add the data to the DataFrame
@@ -498,8 +501,6 @@ def read_strain_values():
         strain1_recent = strain_gauge_zero_data['Strain Measurement 0'].iloc[-1]
         strain2_recent = strain_gauge_one_data['Strain Measurement 1'].iloc[-1]
 
-        print(strain1_recent, strain2_recent)
-
 
         strain_queue.put([strain1_recent, strain2_recent]) # Put the values in the queue
 
@@ -510,35 +511,92 @@ def read_strain_values():
 
     return strain1_recent, strain2_recent
 
+def read_motor_values():
+    global experiment_running
+    global motor_duty_cycle_recent
+    global motor_temp_recent
+
+    global ser
+
+
+    while experiment_running:
+
+        # Start the motor
+        with serial.Serial("COM4", 115200, timeout=0.1) as ser:
+
+            logging.DEBUG("read_motor_values - serial port opened")
+
+            # Check if there is enough data back for a measurement
+            if ser.in_waiting > 71:
+
+                logging.DEBUG("read_motor_values - serial port has data")
+
+                (response, consumed) = pyvesc.decode(ser.read(ser.in_waiting))
+
+                # Decode and process the response
+                try:
+                    if response:
+
+                        motor_duty_cycle_recent = response.duty_cycle_now
+                        motor_temp_recent = response.temp_fet
+
+                        motor_queue.put([motor_duty_cycle_recent, motor_temp_recent])
+
+
+                        return motor_duty_cycle_recent, motor_temp_recent
+                    
+                        # motor_data.append({
+                        #     'time': elapsed_time,
+                        #     'duty_cycle_now': response.duty_cycle_now,
+                        #     'rpm': response.rpm,
+                        #     'motor_temp': response.temp_fet,
+                        #     'avg_motor_current': response.avg_motor_current,
+                        #     'avg_input_current': response.avg_input_current,
+                        #     'amp_hours': response.amp_hours * 1000
+                        # })
+
+                except Exception as e:
+                    print(f"Error processing response: {str(e)}")
 
         # except Exception as e:
         #     print("An error occurred:", str(e))
         #     strain_task.close()
 
-# def start_reading_pdiff_values():
-#     global experiment_running, stop_event
-#     # Start the data reading thread (threading allows multiple tasks to run simultaneously)
-#     stop_event.clear()
-#     thread_pdiff = threading.Thread(target=read_pdiff_values)
-#     thread_pdiff.start()
+def start_reading_pdiff_values():
+    global experiment_running, stop_event
+    # Start the data reading thread (threading allows multiple tasks to run simultaneously)
+    stop_event.clear()
+    thread_pdiff = threading.Thread(target=read_pdiff_values)
+    thread_pdiff.start()
 
 def start_reading_strain_values():
     global experiment_running, stop_event
     stop_event.clear()
     thread_strain = threading.Thread(target=read_strain_values)
     thread_strain.start()
+
+def start_reading_motor_values():
+    global experiment_running, stop_event
+    stop_event.clear()
+    thread_motor = threading.Thread(target=read_motor_values)
+    thread_motor.start()
     
 # This removes the delay between the front and backend by ensuring the pdiff values is synchronised between threads
-# def get_recent_pdiff_values():
-#     global pdiff1_recent, pdiff2_recent, pdiff3_recent
-#     with data_lock:
-#         return pdiff1_recent, pdiff2_recent, pdiff3_recent
+def get_recent_pdiff_values():
+    global pdiff1_recent, pdiff2_recent, pdiff3_recent
+    with data_lock:
+        return pdiff1_recent, pdiff2_recent, pdiff3_recent
     
 
 def get_recent_strain_values():
     global strain1_recent, strain2_recent
     with data_lock:
         return strain1_recent, strain2_recent
+    
+def get_recent_motor_values():
+    global motor_duty_cycle_recent, motor_temp_recent
+    with data_lock:
+        return motor_duty_cycle_recent, motor_temp_recent
 
 @app.route('/start_experiment', methods=['GET', 'POST'])
 def start_experiment():
@@ -546,7 +604,8 @@ def start_experiment():
     if not experiment_running:
         experiment_running = True
         # start_reading_pdiff_values()
-        start_reading_strain_values()
+        # start_reading_strain_values()
+        start_reading_motor_values()
     return "Started"
 
 @app.route('/stop_experiment')
@@ -555,16 +614,16 @@ def stop_experiment():
     experiment_running = False
     return 'Experiment stopped'
 
-# @app.route('/pdiff_data')
-# def pdiff_data():
-#     global pdiff_queue
-#     # Checks if the queue is empty
-#     if not pdiff_queue.empty():
-#         # Retrieves most recent values from the queue
-#         pdiff = pdiff_queue.get()
-#     else:
-#         pdiff = get_recent_pdiff_values()
-#     return jsonify(pdiff)
+@app.route('/pdiff_data')
+def pdiff_data():
+    global pdiff_queue
+    # Checks if the queue is empty
+    if not pdiff_queue.empty():
+        # Retrieves most recent values from the queue
+        pdiff = pdiff_queue.get()
+    else:
+        pdiff = get_recent_pdiff_values()
+    return jsonify(pdiff)
 
 @app.route('/strain_data')
 def strain_data():
@@ -574,6 +633,15 @@ def strain_data():
     else:
         strain = get_recent_strain_values()
     return jsonify(strain)
+
+@app.route('/motor_data')
+def motor_data():
+    global motor_queue
+    if not motor_queue.empty():
+        motor = motor_queue.get()
+    else:
+        motor = get_recent_motor_values()
+    return jsonify(motor)
 
 # @app.route('/main', methods=['POST'])
 # def read_strain_values():
@@ -710,105 +778,6 @@ def calibrate_load_cells():
     })
 
 
-@app.route('/generate_all_data', methods=['GET', 'POST'])
-def generate_all_data():
-
-    results = {}
-
-    # Get the p_zero_data from the session
-    temp_p_zero_data = session.get('json_p_zero_data', [])
-    temp_p_one_data = session.get('json_p_one_data', [])
-    temp_p_two_data = session.get('json_p_two_data', [])
-    temp_p_three_data = session.get('json_p_three_data', [])
-    temp_strain_gauge_zero_data = session.get('json_strain_gauge_zero_data', [])
-    temp_strain_gauge_one_data = session.get('json_strain_gauge_one_data', [])
-
-
-    if temp_p_zero_data:
-        # Convert it back to a list
-        temp_p_zero_data = json.loads(temp_p_zero_data)
-        # Get the last value and the corresponding time
-        temp_p_zero = temp_p_zero_data[-1]
-        temp_time = session.get('time_data', [])
-        if temp_time:
-            temp_time = json.loads(temp_time)[-1] * 1000
-        else:
-            temp_time = time() * 1000
-
-        results['p_zero'] = [temp_time, temp_p_zero]
-
-    if temp_p_one_data:
-        # Convert it back to a list
-        temp_p_one_data = json.loads(temp_p_one_data)
-        # Get the last value and the corresponding time
-        temp_p_one = temp_p_one_data[-1]
-        temp_time = session.get('time_data', [])
-        if temp_time:
-            temp_time = json.loads(temp_time)[-1] * 1000
-        else:
-            temp_time = time() * 1000
-
-        results['p_one'] = [temp_time, temp_p_one]
-
-    if temp_p_two_data:
-        # Convert it back to a list
-        temp_p_two_data = json.loads(temp_p_two_data)
-        # Get the last value and the corresponding time
-        temp_p_two = temp_p_two_data[-1]
-        temp_time = session.get('time_data', [])
-        if temp_time:
-            temp_time = json.loads(temp_time)[-1] * 1000
-        else:
-            temp_time = time() * 1000
-
-        results['p_two'] = [temp_time, temp_p_two]   
-
-    if temp_p_three_data:
-        # Convert it back to a list
-        temp_p_three_data = json.loads(temp_p_three_data)
-        # Get the last value and the corresponding time
-        temp_p_three = temp_p_three_data[-1]
-        temp_time = session.get('time_data', [])
-        if temp_time:
-            temp_time = json.loads(temp_time)[-1] * 1000
-        else:
-            temp_time = time() * 1000
-
-        results['p_three'] = [temp_time, temp_p_three]
-
-    if temp_strain_gauge_zero_data:
-        # Convert it back to a list
-        temp_strain_gauge_zero_data = json.loads(temp_strain_gauge_zero_data)
-        # Get the last value and the corresponding time
-        temp_strain_gauge_zero = temp_strain_gauge_zero_data[-1]
-        temp_time = session.get('time_data', [])
-        if temp_time:
-            temp_time = json.loads(temp_time)[-1] * 1000
-        else:
-            temp_time = time() * 1000
-
-        results['strain_gauge_zero'] = [temp_time, temp_strain_gauge_zero]
-
-    if temp_strain_gauge_one_data:
-        # Convert it back to a list
-        temp_strain_gauge_one_data = json.loads(temp_strain_gauge_one_data)
-        # Get the last value and the corresponding time
-        temp_strain_gauge_one = temp_strain_gauge_one_data[-1]
-        temp_time = session.get('time_data', [])
-        if temp_time:
-            temp_time = json.loads(temp_time)[-1] * 1000
-        else:
-            temp_time = time() * 1000
-
-        results['strain_gauge_one'] = [temp_time, temp_strain_gauge_one]
-
-    if not results:
-        return make_response('n/a', 204)
-    
-    response = make_response(json.dumps(results))
-    response.content_type = 'application/json'
-    return response
-
 arduino = None
 
 def establish_arduino_connection():
@@ -851,7 +820,7 @@ def start_all():
     #establish_arduino_connection()  # Assign the returned arduino object
     #start_actuators()
 
-    #start_motor()
+    start_motor()
 
     
 
@@ -928,32 +897,6 @@ def start_motor():
                     ser.write(pyvesc.encode_request(GetValues))
 
                     time.sleep(0.01)
-
-                    # Check if there is enough data back for a measurement
-                    if ser.in_waiting > 71:
-                        (response, consumed) = pyvesc.decode(ser.read(ser.in_waiting))
-
-                    # Decode and process the response
-                    try:
-                        if response:
-                            elapsed_time = time.time() - start_time  # Calculate elapsed time
-                            motor_data.append({
-                                'time': elapsed_time,
-                                'duty_cycle_now': response.duty_cycle_now,
-                                'rpm': response.rpm,
-                                'motor_temp': response.temp_fet,
-                                'avg_motor_current': response.avg_motor_current,
-                                'avg_input_current': response.avg_input_current,
-                                'amp_hours': response.amp_hours * 1000
-                            })
-
-                    except Exception as e:
-                        print(f"Error processing response: {str(e)}")
-
-
-                # Convert data to JSON
-                json_data = json.dumps(motor_data)
-                print(json_data)
 
         except Exception as e:
                 print(f"Error: {str(e)}")    
