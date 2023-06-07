@@ -393,28 +393,28 @@ pdiff3_recent = 0.0
 strain1_recent = 0.0
 strain2_recent = 0.0
 
-# pdiff_queue = Queue() # Initialise the queue for the pdiff values
-strain_queue = Queue() # Initialise the queue for the strain values
+# # pdiff_queue = Queue() # Initialise the queue for the pdiff values
+# strain_queue = Queue() # Initialise the queue for the strain values
 
-# def read_pdiff_values():
-#     ser = serial.Serial('COM6', 9600)  # Replace 'COM6' with the appropriate serial port
-#     global experiment_running, pdiff1_recent, pdiff2_recent, pdiff3_recent
+# # def read_pdiff_values():
+# #     ser = serial.Serial('COM6', 9600)  # Replace 'COM6' with the appropriate serial port
+# #     global experiment_running, pdiff1_recent, pdiff2_recent, pdiff3_recent
 
-#     while experiment_running:
-#         line = ser.readline().decode().strip()  # Read a line from the serial port and decode it
-#         if line:
-#             values = line.split(',')  # Split the line by comma to extract the pdiff values
+# #     while experiment_running:
+# #         line = ser.readline().decode().strip()  # Read a line from the serial port and decode it
+# #         if line:
+# #             values = line.split(',')  # Split the line by comma to extract the pdiff values
             
-#             if len(values) >= 3:
-#                 pdiff1_recent = float(values[0])  # Convert the first value to float
-#                 pdiff2_recent = float(values[1])  # Convert the second value to float
-#                 pdiff3_recent = float(values[2])  # Convert the third value to float
-#                 logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff1_recent}")
-#                 logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff2_recent}")
-#                 logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff3_recent}")
-#                 pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent]) # Put the values in the queue
-#     ser.close()
-#     return pdiff1_recent, pdiff2_recent, pdiff3_recent
+# #             if len(values) >= 3:
+# #                 pdiff1_recent = float(values[0])  # Convert the first value to float
+# #                 pdiff2_recent = float(values[1])  # Convert the second value to float
+# #                 pdiff3_recent = float(values[2])  # Convert the third value to float
+# #                 logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff1_recent}")
+# #                 logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff2_recent}")
+# #                 logging.debug(f"read_pdiff_values - pdiff_recent: {pdiff3_recent}")
+# #                 pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent]) # Put the values in the queue
+# #     ser.close()
+# #     return pdiff1_recent, pdiff2_recent, pdiff3_recent
 
 
 def read_strain_values():
