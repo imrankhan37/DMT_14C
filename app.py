@@ -365,6 +365,8 @@ def motor_input_parameters():
 @app.route('/reset_session', methods=['POST'])
 def reset_session():
     session.pop('input_motor_data', None)
+    pressure_data_df =  pressure_data_df.drop(pressure_data_df.index, inplace=True)
+    strain_data_df = strain_data_df.drop(strain_data_df.index, inplace=True)
     return redirect(url_for('index'))
 
 @app.route('/stop_button', methods=['POST'])
