@@ -16,7 +16,7 @@ from queue import Queue
 import threading
 from threading import Thread
 import pyvesc
-# from pyvesc.VESC.messages import Alive, SetDutyCycle, SetRPM, GetValues
+from pyvesc.VESC.messages import Alive, SetDutyCycle, SetRPM, GetValues
 
 
 class ArduinoControl:
@@ -387,13 +387,14 @@ yaw_angle = 0.0
 
 strain1_recent = 0.0
 strain2_recent = 0.0
-# motor_duty_cycle_recent = 0.0
+motor_duty_cycle_recent = 0.0
 # motor_rpm_recent = 0.0
-# motor_temp_recent = 0.0
+ser = None  # Declare ser globally
+motor_temp_recent = 0.0
 
 pdiff_queue = Queue() # Initialise the queue for the pdiff values
 strain_queue = Queue() # Initialise the queue for the strain values
-# motor_queue= Queue() # Initialise the queue for the motor values
+motor_queue= Queue() # Initialise the queue for the motor values
 
 def read_pdiff_values():
     ser = serial.Serial('COM6', 9600)  # Replace 'COM6' with the appropriate serial port
@@ -522,56 +523,30 @@ def read_strain_values():
 
     return strain1_recent, strain2_recent
 
-def read_motor_values():
-    global experiment_running
-    global motor_duty_cycle_recent
-    global motor_temp_recent
+def read_motor_values(ser):
+    global experiment_running, stop_event, motor_duty_cycle_recent, motor_temp_recent
 
-    global ser
+    while experiment_running and not stop_event.is_set():
+        # Check if there is enough data back for a measurement
+        if ser.in_waiting > 71:
+            (response, consumed) = pyvesc.decode(ser.read(ser.in_waiting))
+            # Decode and process the response
+            try:
+                if response:
+                    motor_duty_cycle_recent = response.duty_cycle_now
+                    motor_temp_recent = response.temp_fet
+                    motor_queue.put([motor_duty_cycle_recent, motor_temp_recent])
+            except Exception as e:
+                print(f"Error processing response: {str(e)}")
 
-
-    while experiment_running:
-
-        # Start the motor
-        with serial.Serial("COM4", 115200, timeout=0.1) as ser:
-
-            logging.debug("read_motor_values - serial port opened")
-
-            # Check if there is enough data back for a measurement
-            if ser.in_waiting > 71:
-
-                logging.DEBUG("read_motor_values - serial port has data")
-
-                (response, consumed) = pyvesc.decode(ser.read(ser.in_waiting))
-
-                # Decode and process the response
-                try:
-                    if response:
-
-                        motor_duty_cycle_recent = response.duty_cycle_now
-                        motor_temp_recent = response.temp_fet
-
-                        motor_queue.put([motor_duty_cycle_recent, motor_temp_recent])
-
-                        logging.debug(f"read_motor_values - motor_duty_cycle_recent: {motor_duty_cycle_recent}")
-                        logging.debug(f"read_motor_values - motor_temp_recent: {motor_temp_recent}")
-
-
-                        return motor_duty_cycle_recent, motor_temp_recent
-                    
-                        # motor_data.append({
-                        #     'time': elapsed_time,
-                        #     'duty_cycle_now': response.duty_cycle_now,
-                        #     'rpm': response.rpm,
-                        #     'motor_temp': response.temp_fet,
-                        #     'avg_motor_current': response.avg_motor_current,
-                        #     'avg_input_current': response.avg_input_current,
-                        #     'amp_hours': response.amp_hours * 1000
-                        # })
-
-                except Exception as e:
-                    print(f"Error processing response: {str(e)}")
-
+def start_reading_motor_values():
+    global experiment_running, stop_event
+    # Start the data reading thread
+    motor_queue.queue.clear()
+    thread_motor = threading.Thread(target=start_motor, args=(ser,))
+    thread_motor_values = threading.Thread(target=read_motor_values, args=(ser,))
+    thread_motor.start()
+    thread_motor_values.start()
 
 
 def start_reading_pdiff_values():
@@ -609,27 +584,36 @@ def get_recent_strain_values():
     with data_lock:
         return strain1_recent, strain2_recent
     
-# def get_recent_motor_values():
-#     global motor_duty_cycle_recent, motor_temp_recent
-#     with data_lock:
-#         return motor_duty_cycle_recent, motor_temp_recent
+def get_recent_motor_values():
+    global motor_duty_cycle_recent, motor_temp_recent
+    with data_lock:
+        return motor_duty_cycle_recent, motor_temp_recent
+
 
 @app.route('/start_experiment', methods=['GET', 'POST'])
 def start_experiment():
-    global experiment_running
+    global experiment_running, ser
+    logging.debug('Starting experiment.')
     if not experiment_running:
         experiment_running = True
+        ser = serial.Serial("COM4", 115200, timeout=0.1) 
+
         start_reading_pdiff_values()
         start_reading_strain_values()
-        # start_reading_motor_values()
+        start_reading_motor_values()
+
     return "Started"
 
 @app.route('/stop_experiment')
 def stop_experiment():
-    global experiment_running
+    global experiment_running, ser
     experiment_running = False
     stop_event.set()
+    if ser is not None:
+        ser.close()  # Close the serial connection
+        ser = None
     return 'Experiment stopped'
+
 
 @app.route('/pdiff_data')
 def pdiff_data():
@@ -642,7 +626,6 @@ def pdiff_data():
     else:
         pdiff = get_recent_pdiff_values()
         # flowvelocity = get_recent_pdiff_values()
-        logging.debug(pdiff)
     return jsonify(pdiff)
 
 @app.route('/strain_data')
@@ -654,14 +637,17 @@ def strain_data():
         strain = get_recent_strain_values()
     return jsonify(strain)
 
-# @app.route('/motor_data')
-# def motor_data():
-#     global motor_queue
-#     if not motor_queue.empty():
-#         motor = motor_queue.get()
-#     else:
-#         motor = get_recent_motor_values()
-#     return jsonify(motor)
+@app.route('/motor_data')
+def motor_data():
+    global motor_queue
+    # Checks if the queue is empty
+    if not motor_queue.empty():
+        # Retrieves most recent values from the queue
+        motor = motor_queue.get()
+    else:
+        motor = get_recent_motor_values()
+    return jsonify(motor)
+
 
 # @app.route('/main', methods=['POST'])
 # def read_strain_values():
@@ -885,39 +871,22 @@ def start_all():
     return redirect(url_for('index'))
 
 
-
-def start_motor():
-
-    global ser
-
-    input_motor_data = session.get('input_motor_data', {})
-
-    duty_cycle_start = int(input_motor_data.get('duty_cycle_start', 0))
-    duty_cycle_end = int(input_motor_data.get('duty_cycle_end', 0))
-    duty_cycle_interval = int(input_motor_data.get('duty_cycle_interval', 0))
-    vesc_port = input_motor_data.get('vesc_port', 0)
-
-    motor_data = []
-
-    
-
-    # Start the motor
-    ser = serial.Serial(vesc_port, 115200, timeout=0.1)
-
+def start_motor(ser):
+    global experiment_running, stop_event
+    logging.debug("start_motor: start_motor called")
     try:
-        for i in range(duty_cycle_start, duty_cycle_end):
-
-            for j in range(duty_cycle_interval*100):
-
-
+        i = 5
+        while experiment_running and not stop_event.is_set():
+            for j in range(5 * 100):
                 ser.write(pyvesc.encode(Alive()))  # Send heartbeat
                 ser.write(pyvesc.encode(SetDutyCycle(i / 100)))  # Send command to get values
                 ser.write(pyvesc.encode_request(GetValues))
-
                 time.sleep(0.01)
-
+            if i < 15:
+                i += 1
     except Exception as e:
-            print(f"Error: {str(e)}")    
+        print(f"Error: {str(e)}")
+  
 
 
 

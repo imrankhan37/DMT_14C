@@ -1063,13 +1063,16 @@ circle {
         </div>
     </div>
 
+
+
+
     <div>
 
         <div>
             <button class="bg-green-500 text-white" id="startButton">Temp start button</button>
         </div>
         <div>
-            <button class="bg-red-500 text-white" id="stopButton">Temp stop button</button>
+            <button class="bg-red-500 te>xt-white" id="stopButton">Temp stop button</button>
         </div>
         <p class="section-title">Key parameters</p>
 
@@ -1162,36 +1165,35 @@ circle {
                     });
                 }
 
-            // function request_motor_data() {
-            //     if (stopFlag) return;
-            //     var motor_requests = $.get('/motor_data');
-            //     motor_requests.done(function (data) {
+                function request_motor_data() {
+                    if (stopFlag) return;
+                    var motor_requests = $.get('/motor_data');
+                    motor_requests.done(function (data) {
+                        console.log(data);
+                        
+                        var motor_duty_cycle_recent = data[0];
+                        $(".Motor_Duty_Cycle").text("");
+                        $(".Motor_Duty_Cycle").text(motor_duty_cycle_recent);
+                        motor_duty_cycle.push(motor_duty_cycle_recent)
+                        // Update your chart here
 
-            //         var motor_duty_cycle_recent = data[0]
-            //         console.log(motor_duty_cycle_recent)
-            //         $(".motor-duty-cycle").text("");
-            //         $(".motor-duty-cycle").text(motor_duty_cycle_recent);
-            //         motor_duty_cycle.push(motor_duty_cycle_recent)
-            //         motorTempChart.series[0].setData(motor_duty_cycle);
+                        var motor_temp_recent = data[1];
+                        $(".Motor_Temp").text("");
+                        $(".Motor_Temp").text(motor_temp_recent);
+                        motor_temp.push(motor_temp_recent)
+                        // Update your chart here
 
-            //         var motor_temp_recent = data[1]
-            //         console.log(motor_temp_recent)
-            //         $(".motor-temp").text("");
-            //         $(".motor-temp").text(motor_temp_recent);
-            //         motor_temp.push(motor_temp_recent)
-            //         motorTempChart.series[1].setData(motor_temp);
+                        setTimeout(request_motor_data, 500);
+                    });
+                }
 
-            //         setTimeout(request_motor_data, 500);
-            //     });
-
-            // }
                 
                 function start_experiment() {
                     var request = $.post('/start_experiment');
                     request.done(function (data) {
                         request_pdiff_data();
                         request_strain_data();
-                        // request_motor_data();
+                        request_motor_data();
                     });
                 }
 
