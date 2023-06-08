@@ -289,7 +289,7 @@
         justify-content: center;
 
         /* Apply a top margin */
-        margin-top: 50px;
+        margin-top: 10px;
 
         /* Increase the font size */
         font-size: 2em;
@@ -622,6 +622,21 @@ canvas {
     font-size: 14px;
     font-weight: bold;
     cursor: pointer;
+}
+
+.control-button-stop-motor {
+    background-color: #0b0ed8;
+    border-radius: 8px;
+
+    padding: 5px 5px;
+    font-size: 1rem;
+    margin-top: 20px;
+    margin-left: 20px;
+    margin-right: 20px;
+    font-weight: bold;
+    color: #ffffff;
+    transition: background-color 0.3s ease-in-out;
+
 }
 
 .wrapper {
@@ -1070,6 +1085,9 @@ circle {
                         <button type="submit" value="stop_button" class="control-button-stop" id = "stopButton">Stop</button>
                     </form>
                 </div>
+                <form>
+                    <button type="submit" class="control-button-stop-motor" id = "motorstartButton">I Have Started The Motor</button>
+                </form>
                 <div id="timer" class = "timer">0</div>
             </div>  
         </div>          
@@ -1080,35 +1098,35 @@ circle {
 
     var timerElement = document.getElementById('timer'); 
     var startButton = document.getElementById('startButton');
-    var stopButton = document.getElementById('stopButton');
+    var motorStartButton = document.getElementById('motorstartButton');
     var resetButton = document.getElementById('resetButton');
 
-    var seconds = 0;
+    var time = 0;
     var timerInterval = null;
 
-    // When the start button is clicked, start the timer
-    startButton.addEventListener('click', function() {
-        if (timerInterval === null) {
-            timerInterval = setInterval(function() {
-                seconds++;
-                timerElement.textContent = seconds;
-            }, 1000); // Update the timer every 1 second
-        }
-    });
+// When the start button is clicked, start the timer
+startButton.addEventListener('click', function() {
+    if (timerInterval === null) {
+        timerInterval = setInterval(function() {
+            time += 0.01;
+            timerElement.textContent = time.toFixed(2);
+        }, 10); // Update the timer every 0.01 second
+    }
+});
 
-    // When the stop button is clicked, stop the timer
-    stopButton.addEventListener('click', function() {
-        clearInterval(timerInterval);
-        timerInterval = null;
-    });
+motorstartButton.addEventListener('click', function() {
+    event.preventDefault();
+    clearInterval(timerInterval);
+    timerInterval = null;
+});
 
-    // When the reset button is clicked, reset the timer to zero
-    resetButton.addEventListener('click', function() {
-        clearInterval(timerInterval);
-        timerInterval = null;
-        seconds = 0;
-        timerElement.textContent = seconds;
-    });
+// When the reset button is clicked, reset the timer to zero and display it
+resetButton.addEventListener('click', function() {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    time = 0;
+    timerElement.textContent = time.toFixed(2);
+});
 
 </script>
 

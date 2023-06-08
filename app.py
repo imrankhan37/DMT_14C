@@ -659,13 +659,13 @@ def calibrate_load_cells():
     strain_task = configureDAQ(device_name='Strain_Device', type='strain', channels=strain_channels,
                                sampling_rate=1000, samples_per_channel=300)
     
-    data = readDAQData(strain_task, samples_per_channel=300, channels=["ai0", "ai1"], type='strain')
+    strain_data = readDAQData(strain_task, samples_per_channel=300, channels=["ai0", "ai1"], type='strain')
 
  # Calculate the average value for each load cell
     averages = []
     for channel in strain_channels:
-        if channel in data:
-            values = data[channel]
+        if channel in strain_data:
+            values = strain_data[channel]
             average = np.mean(values)
             averages.append(average)
 
