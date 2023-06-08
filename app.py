@@ -522,59 +522,57 @@ def read_strain_values():
 
     return strain1_recent, strain2_recent
 
-# def read_motor_values():
-#     global experiment_running
-#     global motor_duty_cycle_recent
-#     global motor_temp_recent
+def read_motor_values():
+    global experiment_running
+    global motor_duty_cycle_recent
+    global motor_temp_recent
 
-#     global ser
-
-
-#     while experiment_running:
-
-#         # Start the motor
-#         with serial.Serial("COM4", 115200, timeout=0.1) as ser:
-
-#             logging.debug("read_motor_values - serial port opened")
-
-#             # Check if there is enough data back for a measurement
-#             if ser.in_waiting > 71:
-
-#                 logging.DEBUG("read_motor_values - serial port has data")
-
-#                 (response, consumed) = pyvesc.decode(ser.read(ser.in_waiting))
-
-#                 # Decode and process the response
-#                 try:
-#                     if response:
-
-#                         motor_duty_cycle_recent = response.duty_cycle_now
-#                         motor_temp_recent = response.temp_fet
-
-#                         motor_queue.put([motor_duty_cycle_recent, motor_temp_recent])
-
-#                         logging.debug(f"read_motor_values - motor_duty_cycle_recent: {motor_duty_cycle_recent}")
-#                         logging.debug(f"read_motor_values - motor_temp_recent: {motor_temp_recent}")
+    global ser
 
 
-#                         return motor_duty_cycle_recent, motor_temp_recent
+    while experiment_running:
+
+        # Start the motor
+        with serial.Serial("COM4", 115200, timeout=0.1) as ser:
+
+            logging.debug("read_motor_values - serial port opened")
+
+            # Check if there is enough data back for a measurement
+            if ser.in_waiting > 71:
+
+                logging.DEBUG("read_motor_values - serial port has data")
+
+                (response, consumed) = pyvesc.decode(ser.read(ser.in_waiting))
+
+                # Decode and process the response
+                try:
+                    if response:
+
+                        motor_duty_cycle_recent = response.duty_cycle_now
+                        motor_temp_recent = response.temp_fet
+
+                        motor_queue.put([motor_duty_cycle_recent, motor_temp_recent])
+
+                        logging.debug(f"read_motor_values - motor_duty_cycle_recent: {motor_duty_cycle_recent}")
+                        logging.debug(f"read_motor_values - motor_temp_recent: {motor_temp_recent}")
+
+
+                        return motor_duty_cycle_recent, motor_temp_recent
                     
-#                         # motor_data.append({
-#                         #     'time': elapsed_time,
-#                         #     'duty_cycle_now': response.duty_cycle_now,
-#                         #     'rpm': response.rpm,
-#                         #     'motor_temp': response.temp_fet,
-#                         #     'avg_motor_current': response.avg_motor_current,
-#                         #     'avg_input_current': response.avg_input_current,
-#                         #     'amp_hours': response.amp_hours * 1000
-#                         # })
+                        # motor_data.append({
+                        #     'time': elapsed_time,
+                        #     'duty_cycle_now': response.duty_cycle_now,
+                        #     'rpm': response.rpm,
+                        #     'motor_temp': response.temp_fet,
+                        #     'avg_motor_current': response.avg_motor_current,
+                        #     'avg_input_current': response.avg_input_current,
+                        #     'amp_hours': response.amp_hours * 1000
+                        # })
 
-#                 except Exception as e:
-#                     print(f"Error processing response: {str(e)}")
+                except Exception as e:
+                    print(f"Error processing response: {str(e)}")
 
-#         # except Exception as e:
-#         #     print("An error occurred:", str(e))
-#         #     strain_task.close()
+
 
 def start_reading_pdiff_values():
     global experiment_running, stop_event
