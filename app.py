@@ -392,12 +392,15 @@ motor_duty_cycle_recent = 0.0
 # motor_rpm_recent = 0.0
 ser = None  # Declare ser globally
 motor_temp_recent = 0.0
-pressure_data_df = pd.DataFrame(columns = ['pdiff1', 'pdiff2', 'pdiff3', 'k_beta', 'k_t', 'yaw_angle', 'velocity']) # Initialise the data dataframe
-strain_data_df = pd.DataFrame(columns = ['Thrust 1', 'Thrust 2']) # Initialise the data dataframe
+pressure_data_df = pd.DataFrame(columns = ['time', 'pdiff1', 'pdiff2', 'pdiff3', 'k_beta', 'k_t', 'yaw_angle', 'velocity']) # Initialise the data dataframe
+strain_data_df = pd.DataFrame(columns = ['time', 'Thrust 1', 'Thrust 2']) # Initialise the data dataframe
 
 pdiff_queue = Queue() # Initialise the queue for the pdiff values
 strain_queue = Queue() # Initialise the queue for the strain values
 motor_queue= Queue() # Initialise the queue for the motor values
+
+#start a timer to keep track of the experiment duration
+start_time = time.time()
 
 def read_pdiff_values():
     pressure_serial = serial.Serial('COM6', 9600)  # Replace 'COM6' with the appropriate serial port
@@ -422,7 +425,8 @@ def read_pdiff_values():
                     velocity = abs(((2*(pdiff1_recent - (k_t * (pdiff1_recent-pdiff_average))))/density))**0.5
                     yaw_angle = 0.039989809*k_beta**8 - 0.159177308*k_beta**7 - 0.2904159*k_beta**6 - 0.1602285*k_beta**5 - 0.3923435*k_beta**4 + 0.29777905*k_beta**3 + 1.917721*k_beta**2 - 18.7517*k_beta - 0.51817
                     
-                    pressure_data_df = pd.concat[pressure_data_df, pd.DataFrame([[pdiff1_recent, pdiff2_recent, pdiff3_recent, k_beta, k_t, yaw_angle, velocity]], columns = ['pdiff1', 'pdiff2', 'pdiff3', 'k_beta', 'k_t', 'yaw_angle', 'velocity'])] # Append the sample dataframe to the data dataframe
+                    elapsed_time = time.time() - start_time
+                    pressure_data_df = pd.concat[pressure_data_df, pd.DataFrame([[elapsed_time, pdiff1_recent, pdiff2_recent, pdiff3_recent, k_beta, k_t, yaw_angle, velocity]], columns = ['time', 'pdiff1', 'pdiff2', 'pdiff3', 'k_beta', 'k_t', 'yaw_angle', 'velocity'])] # Append the sample dataframe to the data dataframe
 
                     pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle]) # Put the values in the queue         
                 
@@ -515,7 +519,8 @@ def read_strain_values():
         strain1_recent = strain_gauge_zero_data['Strain Measurement 0'].iloc[-1]
         strain2_recent = strain_gauge_one_data['Strain Measurement 1'].iloc[-1]
 
-        strain_data_df = pd.concat([strain_data_df, pd.DataFrame([[strain1_recent, strain2_recent]], columns = ['Thrust 1', 'Thrust 2'])])
+        elapsed_time = time.time() - start_time
+        strain_data_df = pd.concat([strain_data_df, pd.DataFrame([[elapsed_time, strain1_recent, strain2_recent]], columns = ['time', 'Thrust 1', 'Thrust 2'])])
 
         strain_queue.put([strain1_recent, strain2_recent]) # Put the values in the queue
 
@@ -601,12 +606,10 @@ def start_experiment():
     logging.debug('Starting experiment.')
     if not experiment_running:
         experiment_running = True
-        ser = serial.Serial("COM4", 115200, timeout=0.1)
-        logging.debug('Experiment started and conncetcion was made') 
 
         start_reading_pdiff_values()
         start_reading_strain_values()
-        start_reading_motor_values()
+        # start_reading_motor_values()
 
     return "Started"
 
@@ -642,114 +645,6 @@ def strain_data():
     else:
         strain = get_recent_strain_values()
     return jsonify(strain)
-
-@app.route('/motor_data')
-def motor_data():
-    global motor_queue
-    # Checks if the queue is empty
-    if not motor_queue.empty():
-        # Retrieves most recent values from the queue
-        motor = motor_queue.get()
-    else:
-        motor = get_recent_motor_values()
-    return jsonify(motor)
-
-
-# @app.route('/main', methods=['POST'])
-# def read_strain_values():
-#     global experiment_running
-#     global sample_df
-
-#     global strain_device
-#     global strain_channels
-#     global strain_sampling_rate
-#     global strain_samples
-
-#      # Retrieve the strain gauge offsets from the session
-#     strain_gauge_offset_1 = session.get('strain_gauge_offset_1')
-#     strain_gauge_offset_2 = session.get('strain_gauge_offset_2')
-
-#     # Check if the experiment is not running
-#     if experiment_running == False:
-#         return # Exit the function if the experiment is not running
-
-#     # Define the channels and parameters for each type of data
-#     strain_device = 'Strain_Device'
-#     strain_channels = ['ai1', 'ai2']
-#     strain_sampling_rate = 200
-#     strain_samples = 5
-
-#     # Create empty pandas dataframe to store data
-#     data_df = pd.DataFrame(columns=['Strain Measurement {}'.format(i) for i in range(len(strain_channels))])
-
-#     # Initialize the DAQ tasks
-#     tasks = initializeDAQTasks(strain_device=strain_device,
-#                                strain_channels=strain_channels,
-#                                strain_sampling_rate=strain_sampling_rate,
-#                                strain_samples=strain_samples)
-
-#     strain_task = tasks['strain']
-
-#     time_data = '[]'
-#     json_strain_gauge_zero_data = '[]'
-#     json_strain_gauge_one_data = '[]'
-
-#     while True:
-#         try:
-#             strain_data = readDAQData(strain_task, samples_per_channel=strain_samples, channels=strain_channels,
-#                                     type='strain')
-
-#             if strain_data is not None:
-#                 # Add the data to the DataFrame
-#                 current_time = datetime.datetime.now()
-#                 num_samples = len(strain_data[strain_channels[0]])
-#                 seconds_per_sample = 1.0 / strain_sampling_rate
-#                 seconds = np.arange(num_samples) * seconds_per_sample
-
-#                 sample = {'Time': [current_time] * num_samples, 'Seconds': seconds}
-
-
-#                 for i, channel in enumerate(strain_channels):
-#                     column_name = 'Strain Measurement {}'.format(i)
-#                     sample[column_name] = pd.Series(strain_data[channel])
-
-#                 # Convert the sample dictionary to a DataFrame
-#                 sample_df = pd.DataFrame(sample)
-
-#                 # Apply offsets to each strain measurement column
-#                 if strain_gauge_offset_1 is not None:
-#                     sample_df['Strain Measurement 0'] = sample_df['Strain Measurement 0'].apply(lambda x: -1 * (x + strain_gauge_offset_1))
-#                 if strain_gauge_offset_2 is not None:
-#                     sample_df['Strain Measurement 1'] = sample_df['Strain Measurement 1'].apply(lambda x: x + strain_gauge_offset_2)
-                
-#                 # Append the sample dataframe to the data dataframe
-#                 print(sample_df)
-
-#             # Append the sample dataframe to the data dataframe
-#             data_df = pd.concat([data_df, sample_df], ignore_index=True)
-
-#             strain_gauge_zero_data = sample_df[['Seconds', 'Strain Measurement 0']]
-#             strain_gauge_one_data = sample_df[['Seconds', 'Strain Measurement 1']]
-
-#             strain1_recent = strain_gauge_zero_data['Strain Measurement 0'].iloc[-1]
-#             strain2_recent = strain_gauge_one_data['Strain Measurement 1'].iloc[-1]
-
-#             print(strain1_recent, strain2_recent)
-
-#             strain_queue.put([strain1_recent, strain2_recent]) # Put the values in the queue
-
-#             # Store the required dataframes in the session
-#             session['time_data'] = time_data
-#             session['json_strain_gauge_zero_data'] = json_strain_gauge_zero_data
-#             session['json_strain_gauge_one_data'] = json_strain_gauge_one_data
-
-#         except Exception as e:
-#             print("An error occurred:", str(e))
-#             strain_task.close()
-
-#         strain_task.close()
-
-#         return strain1_recent, strain2_recent
 
 @app.route('/calibrate_load_cells', methods=['POST'])
 def calibrate_load_cells():
@@ -832,7 +727,7 @@ def start_all():
     #establish_arduino_connection()  # Assign the returned arduino object
     #start_actuators()
 
-    start_motor(ser)
+    #start_motor(ser)
 
     
 
@@ -1009,7 +904,7 @@ def stop():
     # Set the experiment_running flag to False
     experiment_running = False
 
-    stop_motor()
+    #stop_motor()
 
     return redirect(url_for('index'))  # Redirect to the main page
 
