@@ -16,6 +16,7 @@ from queue import Queue
 import threading
 from threading import Thread
 import pyvesc
+from pandas import ExcelWriter
 from pyvesc.VESC.messages import Alive, SetDutyCycle, SetRPM, GetValues
 
 
@@ -391,17 +392,19 @@ motor_duty_cycle_recent = 0.0
 # motor_rpm_recent = 0.0
 ser = None  # Declare ser globally
 motor_temp_recent = 0.0
+pressure_data_df = pd.DataFrame(columns = ['pdiff1', 'pdiff2', 'pdiff3', 'k_beta', 'k_t', 'yaw_angle', 'velocity']) # Initialise the data dataframe
+strain_data_df = pd.DataFrame(columns = ['Thrust 1', 'Thrust 2']) # Initialise the data dataframe
 
 pdiff_queue = Queue() # Initialise the queue for the pdiff values
 strain_queue = Queue() # Initialise the queue for the strain values
 motor_queue= Queue() # Initialise the queue for the motor values
 
 def read_pdiff_values():
-    ser = serial.Serial('COM6', 9600)  # Replace 'COM6' with the appropriate serial port
+    pressure_serial = serial.Serial('COM6', 9600)  # Replace 'COM6' with the appropriate serial port
     global experiment_running, pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle
 
     while experiment_running:
-        line = ser.readline().decode().strip()  # Read a line from the serial port and decode it
+        line = pressure_serial.readline().decode().strip()  # Read a line from the serial port and decode it
         if line:
             values = line.split(',')  # Split the line by comma to extract the pdiff values
             
@@ -419,6 +422,8 @@ def read_pdiff_values():
                     velocity = abs(((2*(pdiff1_recent - (k_t * (pdiff1_recent-pdiff_average))))/density))**0.5
                     yaw_angle = 0.039989809*k_beta**8 - 0.159177308*k_beta**7 - 0.2904159*k_beta**6 - 0.1602285*k_beta**5 - 0.3923435*k_beta**4 + 0.29777905*k_beta**3 + 1.917721*k_beta**2 - 18.7517*k_beta - 0.51817
                     
+                    pressure_data_df = pd.concat[pressure_data_df, pd.DataFrame([[pdiff1_recent, pdiff2_recent, pdiff3_recent, k_beta, k_t, yaw_angle, velocity]], columns = ['pdiff1', 'pdiff2', 'pdiff3', 'k_beta', 'k_t', 'yaw_angle', 'velocity'])] # Append the sample dataframe to the data dataframe
+
                     pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle]) # Put the values in the queue         
                 
                 except ZeroDivisionError:
@@ -428,9 +433,11 @@ def read_pdiff_values():
                     pdiff3_recent = 1.0
                     yaw_angle = 0.0
 
+                    pressure_data_df = pd.concat([pressure_data_df, pd.DataFrame([[pdiff1_recent, pdiff2_recent, pdiff3_recent, k_beta, k_t, yaw_angle, velocity]], columns = ['pdiff1', 'pdiff2', 'pdiff3', 'k_beta', 'k_t', 'yaw_angle', 'velocity'])])
+
                     pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle]) # Put the values in the queue
 
-    ser.close()
+    pressure_serial.close()
     return pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle
 
 
@@ -462,7 +469,6 @@ def read_strain_values():
     strain_samples = 3
 
     # Create empty pandas dataframe to store data
-    data_df = pd.DataFrame(columns=['Strain Measurement {}'.format(i) for i in range(len(strain_channels))])
 
     # Initialize the DAQ tasks
     tasks = initializeDAQTasks(strain_device=strain_device,
@@ -472,9 +478,6 @@ def read_strain_values():
 
     strain_task = tasks['strain']
 
-    time_data = '[]'
-    json_strain_gauge_zero_data = '[]'
-    json_strain_gauge_one_data = '[]'
 
     while experiment_running:
         strain_data = readDAQData(strain_task, samples_per_channel=strain_samples, channels=strain_channels,
@@ -505,14 +508,14 @@ def read_strain_values():
             #     sample_df['Strain Measurement 1'] = sample_df['Strain Measurement 1'].apply(lambda x: x + strain_gauge_offset_2)
             
 
-        # Append the sample dataframe to the data dataframe
-        data_df = pd.concat([data_df, sample_df], ignore_index=True)
 
         strain_gauge_zero_data = sample_df[['Seconds', 'Strain Measurement 0']]
         strain_gauge_one_data = sample_df[['Seconds', 'Strain Measurement 1']]
 
         strain1_recent = strain_gauge_zero_data['Strain Measurement 0'].iloc[-1]
         strain2_recent = strain_gauge_one_data['Strain Measurement 1'].iloc[-1]
+
+        strain_data_df = pd.concat([strain_data_df, pd.DataFrame([[strain1_recent, strain2_recent]], columns = ['Thrust 1', 'Thrust 2'])])
 
         strain_queue.put([strain1_recent, strain2_recent]) # Put the values in the queue
 
@@ -543,8 +546,10 @@ def start_reading_motor_values():
     global experiment_running, stop_event
     # Start the data reading thread
     motor_queue.queue.clear()
+    logging.debug('Starting motor thread')
     thread_motor = threading.Thread(target=start_motor, args=(ser,))
     thread_motor_values = threading.Thread(target=read_motor_values, args=(ser,))
+    logging.debug('Starting motor values thread')
     thread_motor.start()
     thread_motor_values.start()
 
@@ -596,7 +601,8 @@ def start_experiment():
     logging.debug('Starting experiment.')
     if not experiment_running:
         experiment_running = True
-        ser = serial.Serial("COM4", 115200, timeout=0.1) 
+        ser = serial.Serial("COM4", 115200, timeout=0.1)
+        logging.debug('Experiment started and conncetcion was made') 
 
         start_reading_pdiff_values()
         start_reading_strain_values()
@@ -814,7 +820,7 @@ def move_linear_and_rotary_actuator(linear_position, rotary_position):
 @app.route('/start_all', methods=['POST'])
 def start_all():
 
-    global experiment_running
+    global experiment_running, ser
     input_motor_data = session.get('input_motor_data', {})
     # Set the experiment_running flag to True
     experiment_running = True
@@ -826,7 +832,7 @@ def start_all():
     #establish_arduino_connection()  # Assign the returned arduino object
     #start_actuators()
 
-    start_motor()
+    start_motor(ser)
 
     
 
@@ -872,6 +878,7 @@ def start_all():
 
 
 def start_motor(ser):
+    
     global experiment_running, stop_event
     logging.debug("start_motor: start_motor called")
     try:
@@ -962,14 +969,16 @@ def update_values():
 
 @app.route('/export_csv', methods=['POST'])
 def export_csv():
-    global data_df, export_csv_enabled
+    global pressure_data_df, strain_data_df, export_csv_enabled
 
     if export_csv_enabled:
         # Define the file path and name on the server
-        file_path = 'data.csv'
+        file_path = 'data.xlsx'  # Change the extension to .xlsx
 
-        # Export the dataframe to the file path
-        data_df.to_csv(file_path, index=False)
+        # Export the dataframes to the file path
+        with ExcelWriter(file_path) as writer:
+            pressure_data_df.to_excel(writer, sheet_name='Pressure', index=False)
+            strain_data_df.to_excel(writer, sheet_name='Strain', index=False)
 
         # Check if the file was successfully saved
         if os.path.isfile(file_path):
