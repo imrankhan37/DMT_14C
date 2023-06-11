@@ -17,7 +17,7 @@ import threading
 from threading import Thread
 import pyvesc
 from pandas import ExcelWriter
-from pyvesc.VESC.messages import Alive, SetDutyCycle, SetRPM, GetValues
+# from pyvesc.VESC.messages import Alive, SetDutyCycle, SetRPM, GetValues
 
 
 class ArduinoControl:
@@ -397,9 +397,9 @@ data_lock = threading.Lock() # Initialise the data lock
 stop_event = threading.Event() # Initialise the stop event
 
 # Initialise values
-pdiff1_recent = 1.0
-pdiff2_recent = 1.0
-pdiff3_recent = 1.0
+pdiff1_recent = 0.0
+pdiff2_recent = 0.0
+pdiff3_recent = 0.0
 pdiff_average = 0.0
 k_beta = 0.0
 k_t = 0.0
@@ -422,50 +422,74 @@ strain_queue = Queue() # Initialise the queue for the strain values
 #start a timer to keep track of the experiment duration
 start_time = time.time()
 
-def read_pdiff_values():
-    pressure_serial = serial.Serial('COM5', 9600)  # Replace 'COM6' with the appropriate serial port
-    global experiment_running, pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle, pressure_data_df
+# def read_pdiff_values():
+#     pressure_serial = serial.Serial('COM6', 9600)  # Replace 'COM6' with the appropriate serial port
+#     global experiment_running, pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle, pressure_data_df
     
-    while experiment_running:
-        line = pressure_serial.readline().decode().strip()  # Read a line from the serial port and decode it
-        if line:
-            values = line.split(',')  # Split the line by comma to extract the pdiff values
+#     while experiment_running:
+#         line = pressure_serial.readline().decode().strip()  # Read a line from the serial port and decode it
+#         pdiff1_recent = random.uniform(1, 10)
+#         pdiff2_recent = random.uniform(1, 10)
+#         pdiff3_recent = random.uniform(1, 10)
+#         if line:
+#             values = line.split(',')  # Split the line by comma to extract the pdiff values
             
-            if len(values) >= 3:
-                try:
-                    pdiff1_recent = float(values[0])  # Convert the first value to float
-                    pdiff2_recent = float(values[1])  # Convert the second value to float
-                    pdiff3_recent = float(values[2])  # Convert the third value to float
+#             if len(values) >= 3:
+#                 try:
+#                     pdiff1_recent = float(values[0])  # Convert the first value to float
+#                     pdiff2_recent = float(values[1])  # Convert the second value to float
+#                     pdiff3_recent = float(values[2])  # Convert the third value to float
 
-                    density = 1.392181 # kg/m^3
+#                     density = 1.392181 # kg/m^3
 
-                    pdiff_average = ((pdiff1_recent + pdiff2_recent + pdiff3_recent) / 3)
-                    k_beta = (pdiff2_recent - pdiff3_recent) / (pdiff1_recent - pdiff_average)
-                    k_t = -0.01617818*k_beta**8 + 0.021501133*k_beta**7 + 0.06570708*k_beta**6 - 0.008913*k_beta**5 - 0.27974366*k_beta**4 + 0.06411619*k_beta**3 + 0.138739*k_beta**2 - 0.00876*k_beta + 0.005485
-                    velocity = abs(((2*(pdiff1_recent - (k_t * (pdiff1_recent-pdiff_average))))/density))**0.5
-                    yaw_angle = 0.039989809*k_beta**8 - 0.159177308*k_beta**7 - 0.2904159*k_beta**6 - 0.1602285*k_beta**5 - 0.3923435*k_beta**4 + 0.29777905*k_beta**3 + 1.917721*k_beta**2 - 18.7517*k_beta - 0.51817
+#                     pdiff_average = ((pdiff1_recent + pdiff2_recent + pdiff3_recent) / 3)
+#                     logging.debug(pdiff_average)
+#                     k_beta = (pdiff2_recent - pdiff3_recent) / (pdiff1_recent - pdiff_average)
+#                     k_t = -0.01617818*k_beta**8 + 0.021501133*k_beta**7 + 0.06570708*k_beta**6 - 0.008913*k_beta**5 - 0.27974366*k_beta**4 + 0.06411619*k_beta**3 + 0.138739*k_beta**2 - 0.00876*k_beta + 0.005485
+#                     velocity = abs(((2*(pdiff1_recent - (k_t * (pdiff1_recent-pdiff_average))))/density))**0.5
+#                     yaw_angle = 0.039989809*k_beta**8 - 0.159177308*k_beta**7 - 0.2904159*k_beta**6 - 0.1602285*k_beta**5 - 0.3923435*k_beta**4 + 0.29777905*k_beta**3 + 1.917721*k_beta**2 - 18.7517*k_beta - 0.51817
                     
-                    elapsed_time = time.time() - start_time
-                    pressure_data_df = pd.concat[pressure_data_df, pd.DataFrame([[elapsed_time, pdiff1_recent, pdiff2_recent, pdiff3_recent, k_beta, k_t, yaw_angle, velocity]], columns = ['time', 'pdiff1', 'pdiff2', 'pdiff3', 'k_beta', 'k_t', 'yaw_angle', 'velocity'])] # Append the sample dataframe to the data dataframe
+#                     # elapsed_time = time.time() - start_time
+#                     # pressure_data_df = pd.concat[pressure_data_df, pd.DataFrame([[elapsed_time, pdiff1_recent, pdiff2_recent, pdiff3_recent, k_beta, k_t, yaw_angle, velocity]], columns = ['time', 'pdiff1', 'pdiff2', 'pdiff3', 'k_beta', 'k_t', 'yaw_angle', 'velocity'])] # Append the sample dataframe to the data dataframe
 
-                    pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle]) # Put the values in the queue         
+#                     pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle]) # Put the values in the queue         
                 
-                except ZeroDivisionError:
-                    velocity = 0.0
-                    pdiff1_recent = 1.0
-                    k_beta = 0.0
-                    k_t = 0.0
-                    pdiff2_recent = 1.0
-                    pdiff3_recent = 1.0
-                    yaw_angle = 0.0
+#                 except ZeroDivisionError:
+#                     velocity = 0.0
+#                     pdiff1_recent = 0.0
+#                     k_beta = 0.0
+#                     k_t = 0.0
+#                     pdiff2_recent = 0.0
+#                     pdiff3_recent = 0.0
+#                     yaw_angle = 0.0
 
-                    pressure_data_df = pd.concat([pressure_data_df, pd.DataFrame([[pdiff1_recent, pdiff2_recent, pdiff3_recent, k_beta, k_t, yaw_angle, velocity]], columns = ['pdiff1', 'pdiff2', 'pdiff3', 'k_beta', 'k_t', 'yaw_angle', 'velocity'])])
+#                     # pressure_data_df = pd.concat([pressure_data_df, pd.DataFrame([[pdiff1_recent, pdiff2_recent, pdiff3_recent, k_beta, k_t, yaw_angle, velocity]], columns = ['pdiff1', 'pdiff2', 'pdiff3', 'k_beta', 'k_t', 'yaw_angle', 'velocity'])])
 
-                    pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle]) # Put the values in the queue
+#                     pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle]) # Put the values in the queue
 
-    pressure_serial.close()
-    return pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle
+#     pressure_serial.close()
+#     return pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle
 
+def update_pdiff_recent():
+    global pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle
+
+    while True: 
+        pdiff1_recent = random.uniform(1, 10)
+        pdiff2_recent = random.uniform(1, 10)
+        pdiff3_recent = random.uniform(1, 10)
+
+        density = 1.392181 # kg/m^3
+
+        pdiff_average = ((pdiff1_recent + pdiff2_recent + pdiff3_recent) / 3)
+        # logging.debug(pdiff_average)
+        k_beta = (pdiff2_recent - pdiff3_recent) / (pdiff1_recent - pdiff_average)
+        k_t = -0.01617818*k_beta**8 + 0.021501133*k_beta**7 + 0.06570708*k_beta**6 - 0.008913*k_beta**5 - 0.27974366*k_beta**4 + 0.06411619*k_beta**3 + 0.138739*k_beta**2 - 0.00876*k_beta + 0.005485
+        velocity = abs(((2*(pdiff1_recent - (k_t * (pdiff1_recent-pdiff_average))))/density))**0.5
+        yaw_angle = 0.039989809*k_beta**8 - 0.159177308*k_beta**7 - 0.2904159*k_beta**6 - 0.1602285*k_beta**5 - 0.3923435*k_beta**4 + 0.29777905*k_beta**3 + 1.917721*k_beta**2 - 18.7517*k_beta - 0.51817
+
+        time.sleep(0.5)
+        pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle])
+        return pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle
 
 def read_strain_values():
     global experiment_running
@@ -481,7 +505,7 @@ def read_strain_values():
     # strain_gauge_offset_1 = session.get('strain_gauge_offset_1')
     # strain_gauge_offset_2 = session.get('strain_gauge_offset_2')
 
-    logging.debug(experiment_running)
+    # logging.debug(experiment_running)
 
 
     # Check if the experiment is not running
@@ -508,12 +532,12 @@ def read_strain_values():
 
     while experiment_running:
 
-        logging.debug('Reading strain data')
+        # logging.debug('Reading strain data')
         strain_data = readDAQData(strain_task, samples_per_channel=strain_samples, channels=strain_channels,
                                 type='strain')
         
 
-        logging.debug(strain_data)
+        # logging.debug(strain_data)
                         
 
         if strain_data is not None:
@@ -544,8 +568,12 @@ def read_strain_values():
         strain_gauge_zero_data = sample_df[['Seconds', 'Strain Measurement 0']]
         strain_gauge_one_data = sample_df[['Seconds', 'Strain Measurement 1']]
 
-        strain1_recent = strain_gauge_zero_data['Strain Measurement 0'].iloc[-1]
-        strain2_recent = strain_gauge_one_data['Strain Measurement 1'].iloc[-1]
+        # strain1_recent = strain_gauge_zero_data['Strain Measurement 0'].iloc[-1]
+        # strain2_recent = strain_gauge_one_data['Strain Measurement 1'].iloc[-1]
+
+        strain1_recent = random.uniform(1, 40)
+        strain2_recent = random.uniform(1, 40)
+        
 
         # logging.debug(strain1_recent)
         # logging.debug(strain2_recent)
@@ -563,32 +591,32 @@ def read_strain_values():
 
     return strain1_recent, strain2_recent
 
-def read_motor_values(ser):
-    global experiment_running, stop_event, motor_duty_cycle_recent, motor_temp_recent
+# def read_motor_values(ser):
+#     global experiment_running, stop_event, motor_duty_cycle_recent, motor_temp_recent
 
-    while experiment_running and not stop_event.is_set():
-        # Check if there is enough data back for a measurement
-        if ser.in_waiting > 71:
-            (response, consumed) = pyvesc.decode(ser.read(ser.in_waiting))
-            # Decode and process the response
-            try:
-                if response:
-                    motor_duty_cycle_recent = response.duty_cycle_now
-                    motor_temp_recent = response.temp_fet
-                    motor_queue.put([motor_duty_cycle_recent, motor_temp_recent])
-            except Exception as e:
-                print(f"Error processing response: {str(e)}")
+#     while experiment_running and not stop_event.is_set():
+#         # Check if there is enough data back for a measurement
+#         if ser.in_waiting > 71:
+#             (response, consumed) = pyvesc.decode(ser.read(ser.in_waiting))
+#             # Decode and process the response
+#             try:
+#                 if response:
+#                     motor_duty_cycle_recent = response.duty_cycle_now
+#                     motor_temp_recent = response.temp_fet
+#                     motor_queue.put([motor_duty_cycle_recent, motor_temp_recent])
+#             except Exception as e:
+#                 print(f"Error processing response: {str(e)}")
 
-def start_reading_motor_values():
-    global experiment_running, stop_event
-    # Start the data reading thread
-    motor_queue.queue.clear()
-    # logging.debug('Starting motor thread')
-    thread_motor = threading.Thread(target=start_motor, args=(ser,))
-    thread_motor_values = threading.Thread(target=read_motor_values, args=(ser,))
-    # logging.debug('Starting motor values thread')
-    thread_motor.start()
-    thread_motor_values.start()
+# def start_reading_motor_values():
+#     global experiment_running, stop_event
+#     # Start the data reading thread
+#     motor_queue.queue.clear()
+#     # logging.debug('Starting motor thread')
+#     thread_motor = threading.Thread(target=start_motor, args=(ser,))
+#     thread_motor_values = threading.Thread(target=read_motor_values, args=(ser,))
+#     # logging.debug('Starting motor values thread')
+#     thread_motor.start()
+#     thread_motor_values.start()
 
 
 def start_reading_pdiff_values():
@@ -597,11 +625,11 @@ def start_reading_pdiff_values():
     pdiff_queue.queue.clear()
     strain_queue.queue.clear()
     stop_event.clear()
-    thread_pdiff = threading.Thread(target=read_pdiff_values)
+    thread_pdiff = threading.Thread(target=update_pdiff_recent)
     thread_pdiff.start()
 
 def start_reading_strain_values():
-    logging.debug('it has started reading values into the thread')
+    # logging.debug('it has started reading values into the thread')
     global experiment_running, stop_event
     pdiff_queue.queue.clear()
     strain_queue.queue.clear()
@@ -627,10 +655,10 @@ def get_recent_strain_values():
     with data_lock:
         return strain1_recent, strain2_recent
     
-def get_recent_motor_values():
-    global motor_duty_cycle_recent, motor_temp_recent
-    with data_lock:
-        return motor_duty_cycle_recent, motor_temp_recent
+# def get_recent_motor_values():
+#     global motor_duty_cycle_recent, motor_temp_recent
+#     with data_lock:
+#         return motor_duty_cycle_recent, motor_temp_recent
 
 
 @app.route('/start_experiment', methods=['GET', 'POST'])
@@ -766,11 +794,11 @@ def start_all():
     # Initialize the last_values dictionary
     last_values = {}
 
-    if arduino is None:
-        arduino = ArduinoControl('COM3')
+    # if arduino is None:
+    #     arduino = ArduinoControl('COM3')
 
-    establish_arduino_connection()  # Assign the returned arduino object
-    start_actuators()
+    # establish_arduino_connection()  # Assign the returned arduino object
+    # start_actuators()
 
     #start_motor(ser)
 

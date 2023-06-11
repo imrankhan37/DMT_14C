@@ -1086,7 +1086,7 @@ circle {
                 <p class="control-header">System control</p>
                 <div class="grid grid-cols-2 gap-4 control-form">
                     <form action="{{url_for('start_all')}}" method="POST">
-                        <button type="submit" value="start_button" class="control-button-start">Start</button>
+                        <button type="submit" value="start_button" class="control-button-start" id ="startButton">Start</button>
                     </form>
                     <!-- <form >
                         <button type="submit" value="start_button" class="control-button-start" id="startButton">Read Data</button>
@@ -1141,21 +1141,21 @@ motorstartButton.addEventListener('click', function() {
 });
 
 // When the reset button is clicked, reset the timer to zero and display it
-resetButton.addEventListener('click', function() {
-    clearInterval(timerInterval);
-    timerInterval = null;
-    time = 0;
-    timerElement.textContent = time.toFixed(2);
+// resetButton.addEventListener('click', function() {
+//     clearInterval(timerInterval);
+//     timerInterval = null;
+//     time = 0;
+//     timerElement.textContent = time.toFixed(2);
 
-            // Make an AJAX request to call the "reset_session" function in the Python script
-            fetch('/reset_session')  
-            .then(response => {
-                // Handle the response if needed
-            })
-            .catch(error => {
-                // Handle any error that occurred during the request
-            });
-});
+//             // Make an AJAX request to call the "reset_session" function in the Python script
+//             fetch('/reset_session')  
+//             .then(response => {
+//                 // Handle the response if needed
+//             })
+//             .catch(error => {
+//                 // Handle any error that occurred during the request
+//             });
+// });
 
 
 </script>
@@ -1175,7 +1175,7 @@ resetButton.addEventListener('click', function() {
 
     <div class="key-parameter-grid">
         <div class="key-parameter-card">
-            <p class="key-parameter-label">Pressure (Differential) - P<sub>1</sub> [Pa]</p>
+            <p class="key-parameter-label">Pressure (Differential) - P<sub>1</sub> [mbar]]</p>
             <div class="key-parameter-value P_1"></div>  
             <script>
                 var p_one_data = [];
@@ -1196,7 +1196,7 @@ resetButton.addEventListener('click', function() {
                     if (stopFlag) return;
                     var pdiff_requests = $.get('/pdiff_data');
                     pdiff_requests.done(function (data) {
-                        //console.log(data);
+                        console.log(data);
                         // console.log(p_one_data, p_two_data, p_three_data);
                         
                         var pdiff1_recent = data[0];
@@ -1244,15 +1244,16 @@ resetButton.addEventListener('click', function() {
                     var strain_requests = $.get('/strain_data');
                     strain_requests.done(function(data) {
 
-                        console.log(data)
+                        // console.log(data)
                         var strain1_recent = data[0];
-                        var strain1_offset = parseFloat("{{ session['strain_gauge_offset_1'] }}");
+                        console.log(strain1_recent)
+                        // var strain1_offset = parseFloat("{{ session['strain_gauge_offset_1'] }}");
                         
-                        if (strain1_offset < 0) {
-                        strain1_recent += Math.abs(strain1_offset);
-                        } else {
-                        strain1_recent -= strain1_offset;
-                        }
+                        // if (strain1_offset < 0) {
+                        // strain1_recent += Math.abs(strain1_offset);
+                        // } else {
+                        // strain1_recent -= strain1_offset;
+                        // }
                         
                         $(".Gauge_1").text("");
                         $(".Gauge_1").text(strain1_recent);
@@ -1260,13 +1261,14 @@ resetButton.addEventListener('click', function() {
                         thrustchart.series[0].setData(gauge_one_data);
 
                         var strain2_recent = data[1];
-                        var strain2_offset = parseFloat("{{ session['strain_gauge_offset_2'] }}");
+                        console.log(strain2_recent)
+                        // var strain2_offset = parseFloat("{{ session['strain_gauge_offset_2'] }}");
                         
-                        if (strain2_offset < 0) {
-                        strain2_recent += Math.abs(strain2_offset);
-                        } else {
-                        strain2_recent -= strain2_offset;
-                        }
+                        // if (strain2_offset < 0) {
+                        // strain2_recent += Math.abs(strain2_offset);
+                        // } else {
+                        // strain2_recent -= strain2_offset;
+                        // }
                         
                         $(".Gauge_2").text("");
                         $(".Gauge_2").text(strain2_recent);
@@ -1375,7 +1377,7 @@ resetButton.addEventListener('click', function() {
                         },
                         yAxis: {
                             title: {
-                                text: 'Pressure [Pa]',
+                                text: 'Pressure [mbar]',
                                 style: {
                                     color: 'white'
                                 }
@@ -1607,11 +1609,11 @@ resetButton.addEventListener('click', function() {
             </script>      
         </div>
         <div class="key-parameter-card">
-            <p class="key-parameter-label">Pressure (Differential) - P<sub>2</sub> [Pa]</p>
+            <p class="key-parameter-label">Pressure (Differential) - P<sub>2</sub> [mbar]</p>
             <div class="key-parameter-value P_2"></div>
         </div>
         <div class="key-parameter-card">
-            <p class="key-parameter-label">Pressure (Differential) - P<sub>3</sub> [Pa]</p>
+            <p class="key-parameter-label">Pressure (Differential) - P<sub>3</sub> [mbar]</p>
             <div class="key-parameter-value P_3"></div>
         </div>
         <div class="key-parameter-card">
