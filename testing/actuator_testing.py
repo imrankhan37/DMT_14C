@@ -13,27 +13,22 @@ class ArduinoControl:
     def move_to(self, linear_position, rotary_position):
         # Send linear position command
         linear_position_str = '{}\n'.format(linear_position)
-        self.ser.write(linear_position_str.encode())
-
+        command_state = 'linear'
         while True:
             if self.ser.in_waiting > 0:
                 response = self.ser.readline().strip().decode()
-
-                if response == 'OK':
+                if command_state == 'linear' and response == 'Enter linear position (mm):':
+                    print('Arduino ready for linear position')
+                    self.ser.write(linear_position_str.encode())
+                    print('Arduino linear position sent')
+                    command_state = 'linear-confirmation'
+                elif response == 'OK':
                     print('Linear position set successfully')
-                    break
-                else:
-                    print('Received:', response)
-
-        # Send rotary position command
-        rotary_position_str = '{}\n'.format(rotary_position)
-        self.ser.write(rotary_position_str.encode())
-
-        while True:
-            if self.ser.in_waiting > 0:
-                response = self.ser.readline().strip().decode()
-
-                if response.startswith('Position set'):
+                    # Now we'll send the rotary command
+                    rotary_position_str = '{}\n'.format(rotary_position)
+                    self.ser.write(rotary_position_str.encode())
+                    command_state = 'rotary'
+                elif command_state == 'rotary' and response.startswith('Position set'):
                     print(response)
                     break
                 elif response.startswith('Error'):

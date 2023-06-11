@@ -184,22 +184,21 @@
         margin-top: 5px;
         margin-left: 5px;
         text-align: center;
-        font-size: 15px;
+        font-size: 25px;
         text-transform: uppercase;
     }
 
     .actuator-header {
     margin-left: 5px;
-    margin-top: 7px;
+    margin-top: 15px;
     margin-bottom: 5px;
     text-align: center;
-    font-size: 15px;
+    font-size: 25px;
     text-transform: uppercase;
 }
     .parameter-details-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 2px; /* Adjust the gap value to make the parameter values closer together */
+    grid-template-columns: repeat(3, 1fr);
     margin-bottom: 10px;
 }
 
@@ -212,27 +211,12 @@
         text-transform: uppercase;
     }
 
-    .param-subdescription {
-    font-size: 15px;
-    margin-top: 25px;
+.param-value {
+    font-size: 20px;
+    margin-top: 20px;
+    font-weight: bold;
     text-align: center;
-    margin-left: 55px;  /* Add margin-left to create horizontal spacing */
-    margin-right: 30px; 
 }
-
-    .param-value {
-        font-size: 20px;
-        margin-top: 5px;
-        font-weight: bold;
-        text-align: center;
-        text-transform: uppercase;
-        gap: 20px; /* Adjust the gap value to make the parameter values closer together */
-        margin-left: 90px;  /* Add margin-left to create horizontal spacing */
-        margin-right: 100px;
-        justify-content: spa;
-        flex: 1;  /* Distribute available space equally among elements */
-
-    }
 
 
 .actuator-card:hover {
@@ -241,15 +225,23 @@
 
 
 .actuator-position-title {
-    font-size: 15px;
-    margin-top: 30px;
+    font-size: 20px;
+    margin-top: 40px;
     text-align: center;
     text-transform: uppercase;
 }
 
+.param-subdescription {
+
+    font-size: 15px;
+    margin-top: 40px;
+    text-align: center;
+
+}
+
 .actuator-position-value {
     font-size: 20px;
-    margin-top: 5px;
+    margin-top: 20px;
     font-weight: bold;
     text-align: center;
 }
@@ -505,6 +497,10 @@
     margin-right: 10px; /* Adjust the spacing between the items as needed */
 }
 
+.motor-item {
+    flex: 1;
+}
+
 .graph-container {
   display: flex;
   justify-content: space-between;
@@ -631,8 +627,8 @@ canvas {
     padding: 5px 5px;
     font-size: 1rem;
     margin-top: 20px;
-    margin-left: 20px;
-    margin-right: 20px;
+    margin-left: 25px;
+    margin-right: 25px;
     font-weight: bold;
     color: #ffffff;
     transition: background-color 0.3s ease-in-out;
@@ -983,40 +979,51 @@ circle {
                     <div class="parameter-card">
                         <p class="parameter-title">FAN MOTOR INPUTS</p>
                         <div class="parameter-details-grid">
-                            <p class="param-subdescription text-center" style="width: 33%;">Duty Cycle Start</p>
-                            <p class="param-subdescription text-center" style="width: 33%;">Duty Cycle End</p>
-                            <p class="param-subdescription text-center" style="width: 33%;">Duty Cycle Interval</p>
+                            <div class = motor-item>
+                            <p class="param-subdescription">Duty Cycle Start</p>
+                            <div>
+                                <p class="param-value">
+                                    {% if input_motor_data and input_motor_data.duty_cycle_start %}
+                                        {{ input_motor_data.duty_cycle_start }}%
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                </p>
+                            </div>
+
+                            </div>
+                            
+                            <div class = motor-item>
+                            <p class="param-subdescription">Duty Cycle End</p>
+
+                            <div>
+                                <p class="param-value">
+                                    {% if input_motor_data and input_motor_data.duty_cycle_end %}
+                                        {{ input_motor_data.duty_cycle_end }}%
+                                    {% else %}
+                                        0%
+                                    {% endif %}
+                                </p>
+                            </div>
+                            </div>
+                            
+                            <div class = motor-item>
+                            <p class="param-subdescription">Duty Cycle Interval</p>
+                                
+                            <div>
+                                <p class="param-value">
+                                    {% if input_motor_data and input_motor_data.duty_cycle_interval %}
+                                        {{ input_motor_data.duty_cycle_interval }}s
+                                    {% else %}
+                                        0s
+                                    {% endif %}
+                                </p>
+                            </div>
 
                         </div>
+                        </div>
                         <div class="grid grid-cols-5 gap-2 mb-2">
-    
-                    <div>
-                        <p class="param-value" style="width: 33%;">
-                            {% if input_motor_data and input_motor_data.duty_cycle_start %}
-                                {{ input_motor_data.duty_cycle_start }}%
-                            {% else %}
-                                0%
-                            {% endif %}
-                        </p>
-                    </div>
-                    <div>
-                        <p class="param-value" style="width: 33%;">
-                            {% if input_motor_data and input_motor_data.duty_cycle_end %}
-                                {{ input_motor_data.duty_cycle_end }}%
-                            {% else %}
-                                0%
-                            {% endif %}
-                        </p>
-                    </div>
-                    <div>
-                        <p class="param-value" style="width: 33%;">
-                            {% if input_motor_data and input_motor_data.duty_cycle_interval %}
-                                {{ input_motor_data.duty_cycle_interval }}s
-                            {% else %}
-                                0s
-                            {% endif %}
-                        </p>
-                    </div>
+
                 </div>
             </div>
             <!--Linear actuator-->
@@ -1079,8 +1086,11 @@ circle {
                 <p class="control-header">System control</p>
                 <div class="grid grid-cols-2 gap-4 control-form">
                     <form action="{{url_for('start_all')}}" method="POST">
-                        <button type="submit" value="start_button" class="control-button-start" id="startButton">Start</button>
+                        <button type="submit" value="start_button" class="control-button-start">Start</button>
                     </form>
+                    <!-- <form >
+                        <button type="submit" value="start_button" class="control-button-start" id="startButton">Read Data</button>
+                    </form> -->
                     <form action ="{{url_for('stop')}}" method="POST">
                         <button type="submit" value="stop_button" class="control-button-stop" id = "stopButton">Stop</button>
                     </form>
@@ -1111,8 +1121,18 @@ startButton.addEventListener('click', function() {
             time += 0.01;
             timerElement.textContent = time.toFixed(2);
         }, 10); // Update the timer every 0.01 second
+        
+        // Make an AJAX request to call the "start_all" function in the Python script
+        fetch('/start_all')  // Replace '/start_all' with the actual endpoint URL
+            .then(response => {
+                // Handle the response if needed
+            })
+            .catch(error => {
+                // Handle any error that occurred during the request
+            });
     }
 });
+
 
 motorstartButton.addEventListener('click', function() {
     event.preventDefault();
@@ -1126,7 +1146,17 @@ resetButton.addEventListener('click', function() {
     timerInterval = null;
     time = 0;
     timerElement.textContent = time.toFixed(2);
+
+            // Make an AJAX request to call the "reset_session" function in the Python script
+            fetch('/reset_session')  
+            .then(response => {
+                // Handle the response if needed
+            })
+            .catch(error => {
+                // Handle any error that occurred during the request
+            });
 });
+
 
 </script>
 
@@ -1166,7 +1196,7 @@ resetButton.addEventListener('click', function() {
                     if (stopFlag) return;
                     var pdiff_requests = $.get('/pdiff_data');
                     pdiff_requests.done(function (data) {
-                        console.log(data);
+                        //console.log(data);
                         // console.log(p_one_data, p_two_data, p_three_data);
                         
                         var pdiff1_recent = data[0];
@@ -1210,27 +1240,43 @@ resetButton.addEventListener('click', function() {
 
                 function request_strain_data() {
                     if (stopFlag) return;
+                    
                     var strain_requests = $.get('/strain_data');
-                    strain_requests.done(function (data) {
-                        console.log(data);
+                    strain_requests.done(function(data) {
 
-                        var strain1_recent = data[0]
-                        // console.log(strain1_recent)
+                        console.log(data)
+                        var strain1_recent = data[0];
+                        var strain1_offset = parseFloat("{{ session['strain_gauge_offset_1'] }}");
+                        
+                        if (strain1_offset < 0) {
+                        strain1_recent += Math.abs(strain1_offset);
+                        } else {
+                        strain1_recent -= strain1_offset;
+                        }
+                        
                         $(".Gauge_1").text("");
                         $(".Gauge_1").text(strain1_recent);
-                        gauge_one_data.push(strain1_recent)
+                        gauge_one_data.push(strain1_recent);
                         thrustchart.series[0].setData(gauge_one_data);
 
-                        var strain2_recent = data[1]
-                        // console.log(strain2_recent)
+                        var strain2_recent = data[1];
+                        var strain2_offset = parseFloat("{{ session['strain_gauge_offset_2'] }}");
+                        
+                        if (strain2_offset < 0) {
+                        strain2_recent += Math.abs(strain2_offset);
+                        } else {
+                        strain2_recent -= strain2_offset;
+                        }
+                        
                         $(".Gauge_2").text("");
                         $(".Gauge_2").text(strain2_recent);
-                        gauge_two_data.push(strain2_recent)
+                        gauge_two_data.push(strain2_recent);
                         thrustchart.series[1].setData(gauge_two_data);
 
                         setTimeout(request_strain_data, 500);
                     });
-                }
+                    }
+
 
                 
                 function start_experiment() {
@@ -1552,6 +1598,8 @@ resetButton.addEventListener('click', function() {
 
                     });
                     $('#stopButton').click(function() {
+
+                        event.preventDefault();
                         
                         stopFlag = true;
                     });

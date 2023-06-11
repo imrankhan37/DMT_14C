@@ -364,13 +364,31 @@ def motor_input_parameters():
 # Clears the input parameters from the session
 @app.route('/reset_session', methods=['POST'])
 def reset_session():
+    global pressure_data_df, strain_data_df, strain_task
+
     session.pop('input_motor_data', None)
-    pressure_data_df =  pressure_data_df.drop(pressure_data_df.index, inplace=True)
-    strain_data_df = strain_data_df.drop(strain_data_df.index, inplace=True)
+    session.pop('strain_gauge_offset_1', None)
+    session.pop('strain_gauge_offset_2', None)
+
+    if pressure_data_df is not None:
+        pressure_data_df = pressure_data_df.drop(pressure_data_df.index, inplace=True)
+    if strain_data_df is not None:
+        strain_data_df = strain_data_df.drop(strain_data_df.index, inplace=True)
+    
+    if strain_task is not None:
+        strain_task.close()
+        strain_task = None
+
     return redirect(url_for('index'))
 
 @app.route('/stop_button', methods=['POST'])
 def stop_button():
+    global experiment_running, stop_event, strain_task
+
+    if strain_task is not None:
+        strain_task.close()
+        strain_task = None
+
     return render_template('index.html')
 
 logging.basicConfig(level=logging.DEBUG)
@@ -399,15 +417,15 @@ strain_data_df = pd.DataFrame(columns = ['time', 'Thrust 1', 'Thrust 2']) # Init
 
 pdiff_queue = Queue() # Initialise the queue for the pdiff values
 strain_queue = Queue() # Initialise the queue for the strain values
-motor_queue= Queue() # Initialise the queue for the motor values
+# motor_queue= Queue() # Initialise the queue for the motor values
 
 #start a timer to keep track of the experiment duration
 start_time = time.time()
 
 def read_pdiff_values():
-    pressure_serial = serial.Serial('COM6', 9600)  # Replace 'COM6' with the appropriate serial port
-    global experiment_running, pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle
-
+    pressure_serial = serial.Serial('COM5', 9600)  # Replace 'COM6' with the appropriate serial port
+    global experiment_running, pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle, pressure_data_df
+    
     while experiment_running:
         line = pressure_serial.readline().decode().strip()  # Read a line from the serial port and decode it
         if line:
@@ -435,6 +453,8 @@ def read_pdiff_values():
                 except ZeroDivisionError:
                     velocity = 0.0
                     pdiff1_recent = 1.0
+                    k_beta = 0.0
+                    k_t = 0.0
                     pdiff2_recent = 1.0
                     pdiff3_recent = 1.0
                     yaw_angle = 0.0
@@ -450,6 +470,7 @@ def read_pdiff_values():
 def read_strain_values():
     global experiment_running
     global sample_df
+    global strain_data_df
 
     global strain_device
     global strain_channels
@@ -460,7 +481,7 @@ def read_strain_values():
     # strain_gauge_offset_1 = session.get('strain_gauge_offset_1')
     # strain_gauge_offset_2 = session.get('strain_gauge_offset_2')
 
-    # logging.DEBUG(experiment_running)
+    logging.debug(experiment_running)
 
 
     # Check if the experiment is not running
@@ -486,9 +507,14 @@ def read_strain_values():
 
 
     while experiment_running:
+
+        logging.debug('Reading strain data')
         strain_data = readDAQData(strain_task, samples_per_channel=strain_samples, channels=strain_channels,
                                 type='strain')
         
+
+        logging.debug(strain_data)
+                        
 
         if strain_data is not None:
             # Add the data to the DataFrame
@@ -521,10 +547,14 @@ def read_strain_values():
         strain1_recent = strain_gauge_zero_data['Strain Measurement 0'].iloc[-1]
         strain2_recent = strain_gauge_one_data['Strain Measurement 1'].iloc[-1]
 
+        # logging.debug(strain1_recent)
+        # logging.debug(strain2_recent)
+
         elapsed_time = time.time() - start_time
         strain_data_df = pd.concat([strain_data_df, pd.DataFrame([[elapsed_time, strain1_recent, strain2_recent]], columns = ['time', 'Thrust 1', 'Thrust 2'])])
 
         strain_queue.put([strain1_recent, strain2_recent]) # Put the values in the queue
+
 
         # # Store the required dataframes in the session
         # session['time_data'] = time_data
@@ -553,10 +583,10 @@ def start_reading_motor_values():
     global experiment_running, stop_event
     # Start the data reading thread
     motor_queue.queue.clear()
-    logging.debug('Starting motor thread')
+    # logging.debug('Starting motor thread')
     thread_motor = threading.Thread(target=start_motor, args=(ser,))
     thread_motor_values = threading.Thread(target=read_motor_values, args=(ser,))
-    logging.debug('Starting motor values thread')
+    # logging.debug('Starting motor values thread')
     thread_motor.start()
     thread_motor_values.start()
 
@@ -571,6 +601,7 @@ def start_reading_pdiff_values():
     thread_pdiff.start()
 
 def start_reading_strain_values():
+    logging.debug('it has started reading values into the thread')
     global experiment_running, stop_event
     pdiff_queue.queue.clear()
     strain_queue.queue.clear()
@@ -605,7 +636,6 @@ def get_recent_motor_values():
 @app.route('/start_experiment', methods=['GET', 'POST'])
 def start_experiment():
     global experiment_running, ser
-    logging.debug('Starting experiment.')
     if not experiment_running:
         experiment_running = True
 
@@ -655,6 +685,11 @@ def calibrate_load_cells():
     global strain_channels
     global strain_sampling_rate
     global strain_samples
+    global strain_task
+
+    if strain_task is not None:
+        strain_task.close()
+        strain_task = None
 
     strain_channels = ['ai0', 'ai1']
 
@@ -671,12 +706,14 @@ def calibrate_load_cells():
             average = np.mean(values)
             averages.append(average)
 
-    # Close the DAQ task
-    strain_task.close()
 
     # Store the offsets in the session
     session['strain_gauge_offset_1'] = averages[0]
     session['strain_gauge_offset_2'] = averages[1]
+
+    if strain_task is not None:
+        strain_task.close()
+        strain_task = None
 
     # Return the calibrated offsets as JSON
     return jsonify({
@@ -692,9 +729,11 @@ arduino = None
 def establish_arduino_connection():
     global arduino
 
+
     if arduino is None:
         try:
             input_motor_data = session.get('input_motor_data', {})
+            logging.debug(input_motor_data['arduino_port'])
             arduino = ArduinoControl(input_motor_data['arduino_port'])
         except Exception as e:
             return "Error: Failed to establish Arduino connection.", 400
@@ -702,9 +741,12 @@ def establish_arduino_connection():
             print(f"establish_arduino_connection: arduino is {arduino}")
 
 def move_linear_and_rotary_actuator(linear_position, rotary_position):
-    
+
     global arduino
 
+    if arduino is None:
+        arduino = ArduinoControl('COM3')
+    
     try:
         # Move the linear and rotary actuators to the specified positions
         arduino.move_to(linear_position, rotary_position)
@@ -714,20 +756,21 @@ def move_linear_and_rotary_actuator(linear_position, rotary_position):
 
 
 
-@app.route('/start_all', methods=['POST'])
+@app.route('/start_all', methods=['GET', 'POST'])
 def start_all():
 
-    global experiment_running, ser
-    input_motor_data = session.get('input_motor_data', {})
+    global experiment_running, arduino
     # Set the experiment_running flag to True
     experiment_running = True
 
     # Initialize the last_values dictionary
     last_values = {}
 
+    if arduino is None:
+        arduino = ArduinoControl('COM3')
 
-    #establish_arduino_connection()  # Assign the returned arduino object
-    #start_actuators()
+    establish_arduino_connection()  # Assign the returned arduino object
+    start_actuators()
 
     #start_motor(ser)
 
@@ -797,19 +840,24 @@ def start_motor(ser):
 
 def start_actuators():
 
+    global arduino
+
+
     # Retrieve linear actuator and rotary motor positions from session
     input_motor_data = session.get('input_motor_data', {})
     linear_position = input_motor_data.get('linear_actuator', 0)
     rotary_position = input_motor_data.get('rotary_motor', 0)
 
+    if arduino is None:
+        arduino = ArduinoControl('COM3')
 
     # Move the linear actuator to the specified positions
-    print(f"start_actuators: Before move_linear_and_rotary_actuator, arduino is {arduino}")
+    # print(f"start_actuators: Before move_linear_and_rotary_actuator, arduino is {arduino}")
     try:
         move_linear_and_rotary_actuator(linear_position, rotary_position)
     except ValueError as e:
         return str(e), 400
-    print(f"start_actuators: After move_linear_and_rotary_actuator, arduino is {arduino}")
+    # print(f"start_actuators: After move_linear_and_rotary_actuator, arduino is {arduino}")
 
 
 
@@ -889,19 +937,19 @@ def export_csv():
 def stop():
     global experiment_running
     global arduino
+    global strain_task
+
+    strain_task.close()
 
     # Check if the experiment is not running
     if not experiment_running:
         return redirect(url_for('index'))  # Redirect to the main page
     
-    # save the data to a csv file
-    # save_data_to_csv()
-
     # Update the export CSV button status
     export_csv_enabled = True
 
     # Stop the actuators
-    #stop_actuators()
+    stop_actuators()
 
     # Set the experiment_running flag to False
     experiment_running = False
