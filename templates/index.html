@@ -1085,7 +1085,7 @@ circle {
             <div class="control-card">
                 <p class="control-header">System control</p>
                 <div class="grid grid-cols-2 gap-4 control-form">
-                    <form action="{{url_for('start_all')}}" method="POST">
+                    <form method="POST">
                         <button type="submit" value="start_button" class="control-button-start" id ="startButton">Start</button>
                     </form>
                     <!-- <form >
@@ -1095,9 +1095,9 @@ circle {
                         <button type="submit" value="stop_button" class="control-button-stop" id = "stopButton">Stop</button>
                     </form>
                 </div>
-                <form>
+                <!-- <form>
                     <button type="submit" class="control-button-stop-motor" id = "motorstartButton">I Have Started The Motor</button>
-                </form>
+                </form> -->
                 <div id="timer" class = "timer">0</div>
             </div>  
         </div>          
@@ -1114,31 +1114,31 @@ circle {
     var time = 0;
     var timerInterval = null;
 
-// When the start button is clicked, start the timer
-startButton.addEventListener('click', function() {
-    if (timerInterval === null) {
-        timerInterval = setInterval(function() {
-            time += 0.01;
-            timerElement.textContent = time.toFixed(2);
-        }, 10); // Update the timer every 0.01 second
+// // When the start button is clicked, start the timer
+// startButton.addEventListener('click', function() {
+//     if (timerInterval === null) {
+//         timerInterval = setInterval(function() {
+//             time += 0.01;
+//             timerElement.textContent = time.toFixed(2);
+//         }, 10); // Update the timer every 0.01 second
         
-        // Make an AJAX request to call the "start_all" function in the Python script
-        fetch('/start_all')  // Replace '/start_all' with the actual endpoint URL
-            .then(response => {
-                // Handle the response if needed
-            })
-            .catch(error => {
-                // Handle any error that occurred during the request
-            });
-    }
-});
+//         // Make an AJAX request to call the "start_all" function in the Python script
+//         fetch('/start_all')  // Replace '/start_all' with the actual endpoint URL
+//             .then(response => {
+//                 // Handle the response if needed
+//             })
+//             .catch(error => {
+//                 // Handle any error that occurred during the request
+//             });
+//     }
+// });
 
 
-motorstartButton.addEventListener('click', function() {
-    event.preventDefault();
-    clearInterval(timerInterval);
-    timerInterval = null;
-});
+// motorstartButton.addEventListener('click', function() {
+//     event.preventDefault();
+//     clearInterval(timerInterval);
+//     timerInterval = null;
+// });
 
 // When the reset button is clicked, reset the timer to zero and display it
 // resetButton.addEventListener('click', function() {
@@ -1175,7 +1175,7 @@ motorstartButton.addEventListener('click', function() {
 
     <div class="key-parameter-grid">
         <div class="key-parameter-card">
-            <p class="key-parameter-label">Pressure (Differential) - P<sub>1</sub> [mbar]]</p>
+            <p class="key-parameter-label">Pressure (Differential) - P<sub>1</sub> [Pa]</p>
             <div class="key-parameter-value P_1"></div>  
             <script>
                 var p_one_data = [];
@@ -1377,7 +1377,7 @@ motorstartButton.addEventListener('click', function() {
                         },
                         yAxis: {
                             title: {
-                                text: 'Pressure [mbar]',
+                                text: 'Pressure [Pa]',
                                 style: {
                                     color: 'white'
                                 }
@@ -1609,11 +1609,11 @@ motorstartButton.addEventListener('click', function() {
             </script>      
         </div>
         <div class="key-parameter-card">
-            <p class="key-parameter-label">Pressure (Differential) - P<sub>2</sub> [mbar]</p>
+            <p class="key-parameter-label">Pressure (Differential) - P<sub>2</sub> [Pa]</p>
             <div class="key-parameter-value P_2"></div>
         </div>
         <div class="key-parameter-card">
-            <p class="key-parameter-label">Pressure (Differential) - P<sub>3</sub> [mbar]</p>
+            <p class="key-parameter-label">Pressure (Differential) - P<sub>3</sub> [Pa]</p>
             <div class="key-parameter-value P_3"></div>
         </div>
         <div class="key-parameter-card">

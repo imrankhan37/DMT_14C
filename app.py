@@ -474,9 +474,10 @@ def update_pdiff_recent():
     global pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle
 
     while True: 
-        pdiff1_recent = random.uniform(1, 10)
-        pdiff2_recent = random.uniform(1, 10)
-        pdiff3_recent = random.uniform(1, 10)
+        logging.debug(pdiff1_recent)
+        pdiff2_recent = random.uniform(1, 500)
+        pdiff3_recent = random.uniform(1, 500)
+        pdiff1_recent = pdiff2_recent + pdiff3_recent
 
         density = 1.392181 # kg/m^3
 
@@ -485,111 +486,121 @@ def update_pdiff_recent():
         k_beta = (pdiff2_recent - pdiff3_recent) / (pdiff1_recent - pdiff_average)
         k_t = -0.01617818*k_beta**8 + 0.021501133*k_beta**7 + 0.06570708*k_beta**6 - 0.008913*k_beta**5 - 0.27974366*k_beta**4 + 0.06411619*k_beta**3 + 0.138739*k_beta**2 - 0.00876*k_beta + 0.005485
         velocity = abs(((2*(pdiff1_recent - (k_t * (pdiff1_recent-pdiff_average))))/density))**0.5
-        yaw_angle = 0.039989809*k_beta**8 - 0.159177308*k_beta**7 - 0.2904159*k_beta**6 - 0.1602285*k_beta**5 - 0.3923435*k_beta**4 + 0.29777905*k_beta**3 + 1.917721*k_beta**2 - 18.7517*k_beta - 0.51817
+        yaw_angle = 0.039989809*k_beta**8 - 0.159177308*k_beta**7 + 0.2904159*k_beta**6 - 0.1602285*k_beta**5 - 0.3923435*k_beta**4 + 0.29777905*k_beta**3 + 1.917721*k_beta**2 - 18.7517*k_beta - 0.51817
 
         time.sleep(0.5)
         pdiff_queue.put([pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle])
-        return pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle
+    # return pdiff1_recent, pdiff2_recent, pdiff3_recent, velocity, yaw_angle
 
-def read_strain_values():
-    global experiment_running
-    global sample_df
-    global strain_data_df
+# def read_strain_values():
+#     global experiment_running
+#     global sample_df
+#     global strain_data_df
 
-    global strain_device
-    global strain_channels
-    global strain_sampling_rate
-    global strain_samples
+#     global strain_device
+#     global strain_channels
+#     global strain_sampling_rate
+#     global strain_samples
 
-     # Retrieve the strain gauge offsets from the session
-    # strain_gauge_offset_1 = session.get('strain_gauge_offset_1')
-    # strain_gauge_offset_2 = session.get('strain_gauge_offset_2')
+#      # Retrieve the strain gauge offsets from the session
+#     # strain_gauge_offset_1 = session.get('strain_gauge_offset_1')
+#     # strain_gauge_offset_2 = session.get('strain_gauge_offset_2')
 
-    # logging.debug(experiment_running)
+#     # logging.debug(experiment_running)
 
 
-    # Check if the experiment is not running
-    if experiment_running == False:
-        return # Exit the function if the experiment is not running
+#     # Check if the experiment is not running
+#     if experiment_running == False:
+#         return # Exit the function if the experiment is not running
     
 
-    # Define the channels and parameters for each type of data
-    strain_device = 'Strain_Device'
-    strain_channels = ['ai0', 'ai1']
-    strain_sampling_rate = 10
-    strain_samples = 3
+#     # Define the channels and parameters for each type of data
+#     strain_device = 'Strain_Device'
+#     strain_channels = ['ai0', 'ai1']
+#     strain_sampling_rate = 10
+#     strain_samples = 3
 
-    # Create empty pandas dataframe to store data
+#     # Create empty pandas dataframe to store data
 
-    # Initialize the DAQ tasks
-    tasks = initializeDAQTasks(strain_device=strain_device,
-                               strain_channels=strain_channels,
-                               strain_sampling_rate=strain_sampling_rate,
-                               strain_samples=strain_samples)
+#     # Initialize the DAQ tasks
+#     tasks = initializeDAQTasks(strain_device=strain_device,
+#                                strain_channels=strain_channels,
+#                                strain_sampling_rate=strain_sampling_rate,
+#                                strain_samples=strain_samples)
 
-    strain_task = tasks['strain']
+#     strain_task = tasks['strain']
 
 
-    while experiment_running:
+#     while experiment_running:
 
-        # logging.debug('Reading strain data')
-        strain_data = readDAQData(strain_task, samples_per_channel=strain_samples, channels=strain_channels,
-                                type='strain')
+#         # logging.debug('Reading strain data')
+#         strain_data = readDAQData(strain_task, samples_per_channel=strain_samples, channels=strain_channels,
+#                                 type='strain')
         
 
-        # logging.debug(strain_data)
+#         # logging.debug(strain_data)
                         
 
-        if strain_data is not None:
-            # Add the data to the DataFrame
-            current_time = datetime.datetime.now()
-            num_samples = len(strain_data[strain_channels[0]])
-            seconds_per_sample = 1.0 / strain_sampling_rate
-            seconds = np.arange(num_samples) * seconds_per_sample
+#         if strain_data is not None:
+#             # Add the data to the DataFrame
+#             current_time = datetime.datetime.now()
+#             num_samples = len(strain_data[strain_channels[0]])
+#             seconds_per_sample = 1.0 / strain_sampling_rate
+#             seconds = np.arange(num_samples) * seconds_per_sample
 
-            sample = {'Time': [current_time] * num_samples, 'Seconds': seconds}
+#             sample = {'Time': [current_time] * num_samples, 'Seconds': seconds}
 
 
-            for i, channel in enumerate(strain_channels):
-                column_name = 'Strain Measurement {}'.format(i)
-                sample[column_name] = pd.Series(strain_data[channel])
+#             for i, channel in enumerate(strain_channels):
+#                 column_name = 'Strain Measurement {}'.format(i)
+#                 sample[column_name] = pd.Series(strain_data[channel])
 
-            # Convert the sample dictionary to a DataFrame
-            sample_df = pd.DataFrame(sample)
+#             # Convert the sample dictionary to a DataFrame
+#             sample_df = pd.DataFrame(sample)
 
-            # # Apply offsets to each strain measurement column
-            # if strain_gauge_offset_1 is not None:
-            #     sample_df['Strain Measurement 0'] = sample_df['Strain Measurement 0'].apply(lambda x: -1 * (x + strain_gauge_offset_1))
-            # if strain_gauge_offset_2 is not None:
-            #     sample_df['Strain Measurement 1'] = sample_df['Strain Measurement 1'].apply(lambda x: x + strain_gauge_offset_2)
+#             # # Apply offsets to each strain measurement column
+#             # if strain_gauge_offset_1 is not None:
+#             #     sample_df['Strain Measurement 0'] = sample_df['Strain Measurement 0'].apply(lambda x: -1 * (x + strain_gauge_offset_1))
+#             # if strain_gauge_offset_2 is not None:
+#             #     sample_df['Strain Measurement 1'] = sample_df['Strain Measurement 1'].apply(lambda x: x + strain_gauge_offset_2)
             
 
 
-        strain_gauge_zero_data = sample_df[['Seconds', 'Strain Measurement 0']]
-        strain_gauge_one_data = sample_df[['Seconds', 'Strain Measurement 1']]
+#         strain_gauge_zero_data = sample_df[['Seconds', 'Strain Measurement 0']]
+#         strain_gauge_one_data = sample_df[['Seconds', 'Strain Measurement 1']]
 
-        # strain1_recent = strain_gauge_zero_data['Strain Measurement 0'].iloc[-1]
-        # strain2_recent = strain_gauge_one_data['Strain Measurement 1'].iloc[-1]
+#         # strain1_recent = strain_gauge_zero_data['Strain Measurement 0'].iloc[-1]
+#         # strain2_recent = strain_gauge_one_data['Strain Measurement 1'].iloc[-1]
 
-        strain1_recent = random.uniform(1, 40)
-        strain2_recent = random.uniform(1, 40)
+#         strain1_recent = random.uniform(1, 40)
+#         strain2_recent = random.uniform(1, 40)
         
 
-        # logging.debug(strain1_recent)
-        # logging.debug(strain2_recent)
+#         # logging.debug(strain1_recent)
+#         # logging.debug(strain2_recent)
 
-        elapsed_time = time.time() - start_time
-        strain_data_df = pd.concat([strain_data_df, pd.DataFrame([[elapsed_time, strain1_recent, strain2_recent]], columns = ['time', 'Thrust 1', 'Thrust 2'])])
+#         elapsed_time = time.time() - start_time
+#         strain_data_df = pd.concat([strain_data_df, pd.DataFrame([[elapsed_time, strain1_recent, strain2_recent]], columns = ['time', 'Thrust 1', 'Thrust 2'])])
 
-        strain_queue.put([strain1_recent, strain2_recent]) # Put the values in the queue
+#         strain_queue.put([strain1_recent, strain2_recent]) # Put the values in the queue
 
 
-        # # Store the required dataframes in the session
-        # session['time_data'] = time_data
-        # session['json_strain_gauge_zero_data'] = json_strain_gauge_zero_data
-        # session['json_strain_gauge_one_data'] = json_strain_gauge_one_data
+#         # # Store the required dataframes in the session
+#         # session['time_data'] = time_data
+#         # session['json_strain_gauge_zero_data'] = json_strain_gauge_zero_data
+#         # session['json_strain_gauge_one_data'] = json_strain_gauge_one_data
 
-    return strain1_recent, strain2_recent
+#     return strain1_recent, strain2_recent
+
+def update_strain_values():
+    global strain1_recent, strain2_recent
+
+    while True:
+        strain1_recent = random.uniform(1, 40)
+        strain2_recent = random.uniform(1, 40)
+
+        strain_queue.put([strain1_recent, strain2_recent])
+    # return strain1_recent, strain2_recent
 
 # def read_motor_values(ser):
 #     global experiment_running, stop_event, motor_duty_cycle_recent, motor_temp_recent
@@ -634,7 +645,7 @@ def start_reading_strain_values():
     pdiff_queue.queue.clear()
     strain_queue.queue.clear()
     stop_event.clear()
-    thread_strain = threading.Thread(target=read_strain_values)
+    thread_strain = threading.Thread(target=update_strain_values)
     thread_strain.start()
 
 # def start_reading_motor_values():
@@ -678,9 +689,9 @@ def stop_experiment():
     global experiment_running, ser
     experiment_running = False
     stop_event.set()
-    if ser is not None:
-        ser.close()  # Close the serial connection
-        ser = None
+    # if ser is not None:
+    #     ser.close()  # Close the serial connection
+    #     ser = None
     return 'Experiment stopped'
 
 
